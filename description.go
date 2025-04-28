@@ -1,13 +1,17 @@
 package pageseo
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/dkotik/pageseo/htmltest"
+)
 
 const (
 	DefaultMinimumDescriptionLength = 4
 	DefaultMaximumDescriptionLength = 150
 )
 
-func NewDescriptionValidator(s StringConstraints) Validator {
+func NewDescriptionValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = NormalizeText
 	}

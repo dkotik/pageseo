@@ -1,4 +1,4 @@
-package pageseo
+package htmltest
 
 import (
 	"fmt"
@@ -9,6 +9,10 @@ import (
 
 func ParseTextContent(node *html.Node) string {
 	b := strings.Builder{}
+	if node.Type == html.TextNode {
+		_, _ = b.WriteString(strings.TrimSpace(node.Data))
+		_, _ = b.WriteRune(' ')
+	}
 	for descendant := range node.Descendants() {
 		if descendant.Type != html.TextNode {
 			continue
@@ -19,7 +23,7 @@ func ParseTextContent(node *html.Node) string {
 	return strings.TrimSuffix(b.String(), ` `)
 }
 
-func ParseTagAttributes(node *html.Node) (map[string]string, error) {
+func ParseAttributes(node *html.Node) (map[string]string, error) {
 	attrs := make(map[string]string)
 	var ok bool
 	for _, attr := range node.Attr {
@@ -47,25 +51,3 @@ func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
 	}
 	return values, nil
 }
-
-type Tag struct {
-	Name       string
-	Attributes map[string]Validator
-	Contents   Validator
-}
-
-func (t Tag) Match(node *html.Node) bool {
-	if node.Type == html.ElementNode && node.Data == t.Name {
-		return true
-	}
-	return false
-}
-
-// func (t Tag) Validate(data string) error {
-// 	for attr, validator := range t.AttributeConstraints {
-// 		if err := validator.Validate(data); err != nil {
-// 			return fmt.Errorf("attribute %q: %w", attr, err)
-// 		}
-// 	}
-// 	return nil
-// }

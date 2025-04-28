@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -18,20 +19,10 @@ type StringConstraints struct {
 	MaximumLength int
 }
 
-type Validator interface {
-	Validate(string) error
-}
-
-type ValidatorFunc func(string) error
-
-func (f ValidatorFunc) Validate(s string) error {
-	return f(s)
-}
-
 type Requirements struct {
-	Title       Validator
-	Description Validator
-	Language    Validator
+	Title       htmltest.Validator
+	Description htmltest.Validator
+	Language    htmltest.Validator
 }
 
 func (r Requirements) WithDefaults() Requirements {
@@ -42,7 +33,7 @@ func (r Requirements) WithDefaults() Requirements {
 		r.Description = NewDescriptionValidator(StringConstraints{})
 	}
 	if r.Language == nil {
-		r.Language = ValidatorFunc(func(s string) error {
+		r.Language = htmltest.ValidatorFunc(func(s string) error {
 			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
 				return errors.New("invalid language code")
 			}
@@ -69,7 +60,7 @@ func (r Requirements) Test(node *html.Node) func(t *testing.T) {
 		if node == nil {
 			t.Fatal("HTML node is nil")
 		}
-		attributes, err := ParseTagAttributes(node.FirstChild.NextSibling)
+		attributes, err := htmltest.ParseAttributes(node.FirstChild.NextSibling)
 		if err != nil {
 			t.Errorf("failed to parse <HTML> tag attributes: %v", err)
 		}

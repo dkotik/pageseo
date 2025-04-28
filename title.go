@@ -2,6 +2,8 @@ package pageseo
 
 import (
 	"errors"
+
+	"github.com/dkotik/pageseo/htmltest"
 )
 
 const (
@@ -9,7 +11,7 @@ const (
 	DefaultMaximumTitleLength = 55
 )
 
-func NewTitleValidator(s StringConstraints) Validator {
+func NewTitleValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = NormalizeLine
 	}

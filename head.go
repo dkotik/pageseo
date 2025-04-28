@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -55,7 +56,7 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 				}
 				found.FoundValidTitle = true
 			case "meta":
-				attributes, err := ParseTagAttributes(child)
+				attributes, err := htmltest.ParseAttributes(child)
 				if err != nil {
 					t.Errorf("unable to collect tag attributes: %v", err)
 				}
@@ -80,7 +81,7 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 						if found.FoundValidViewPort {
 							t.Error("there are multiple viewport meta tags")
 						}
-						csv, err := ParseCommaSeparatedKeyedValues(content)
+						csv, err := htmltest.ParseCommaSeparatedKeyedValues(content)
 						if err != nil {
 							t.Errorf("meta tag content for viewport %q is not valid: %v", content, err)
 							continue
@@ -142,7 +143,7 @@ func (r Requirements) TestHeadings(node *html.Node) func(t *testing.T) {
 			}
 			switch descendant.Data {
 			case "h1":
-				text := ParseTextContent(descendant)
+				text := htmltest.ParseTextContent(descendant)
 				if text == "" {
 					t.Errorf("H1 tag has no text content")
 					continue
@@ -153,7 +154,7 @@ func (r Requirements) TestHeadings(node *html.Node) func(t *testing.T) {
 				}
 				foundValidH1 = true
 			case "h2", "h3", "h4", "h5", "h6":
-				text := ParseTextContent(descendant)
+				text := htmltest.ParseTextContent(descendant)
 				if text == "" {
 					t.Errorf("heading tag %q has no text content", descendant.Data)
 					continue
