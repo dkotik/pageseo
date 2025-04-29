@@ -23,6 +23,7 @@ Project status: draft in progress.
 
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [ ] Provide a command line scanner that can crawl live websites.
+- [ ] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Add open graph validations.
 
 ## Similar Projects

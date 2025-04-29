@@ -105,6 +105,22 @@ func (r Requirements) Test(node *html.Node) func(t *testing.T) {
 		if ok {
 			t.Errorf("HTML tag contains more than two children: %s", child.Data)
 		}
+
+		for node := range node.Descendants() {
+			if node.Type != html.ElementNode {
+				continue
+			}
+			switch node.Data {
+			case "a":
+				if err = ValidateLink(node); err != nil {
+					t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
+				}
+				// case "script":
+				// 	t.Run("script tag has valid attributes", r.TestScript(node))
+				// case "style":
+				// 	t.Run("style tag has valid attributes", r.TestStyle(node))
+			}
+		}
 	}
 }
 

@@ -8,10 +8,25 @@ import (
 	"fmt"
 	"iter"
 	"path"
+	"slices"
 	"strings"
 
 	"golang.org/x/net/html"
 )
+
+func Path(node *html.Node) string {
+	if node == nil {
+		return ""
+	}
+	segments := []string{node.Data}
+	for ancestor := range node.Ancestors() {
+		if ancestor.Type == html.ElementNode {
+			segments = append(segments, ancestor.Data)
+		}
+	}
+	slices.Reverse(segments)
+	return path.Join(segments...)
+}
 
 type MatchError struct {
 	Path  []string
