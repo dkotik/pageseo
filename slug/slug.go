@@ -5,6 +5,7 @@ Reference:
 
 - https://neilpatel.com/blog/seo-urls/
 - https://cseo.com/blog/seo-stop-words/
+- https://github.com/mozillazg/go-unidecode
 */
 package slug
 

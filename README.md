@@ -10,11 +10,19 @@ HTML page search engine optimization test and utility suite. Aims to prevent the
 
 The library works by providing a reasonable set of tests that any HTML must conform to in order to fit the best current search engine optimization expectations.
 
+## Command Line Usage
+
+```sh
+go install github.com/dkotik/pageseo@latest
+pageseo scan ./**/*.html
+```
+
 ## Development Road Map
 
-Project status: work draft in progress.
+Project status: draft in progress.
 
-- [ ] Provide a command line scanner that can validate statically generated websites and crawl live websites.
+- [x] Provide a command line scanner that can validate statically generated websites.
+- [ ] Provide a command line scanner that can crawl live websites.
 - [ ] Add open graph validations.
 
 ## Similar Projects

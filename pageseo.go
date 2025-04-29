@@ -53,13 +53,7 @@ func (r Requirements) Test(node *html.Node) func(t *testing.T) {
 		if err != nil {
 			t.Errorf("page has an invalid <DOCTYPE> tag: %v", err)
 		}
-		if node.FirstChild.NextSibling.NextSibling != nil {
-			t.Log("found an unexpected third root tag:", node.FirstChild.NextSibling.NextSibling.Data)
-			t.Fatal("page has an un expected number of root tags: should include only <DOCTYPE> and <HTML> tags")
-		}
-		if node == nil {
-			t.Fatal("HTML node is nil")
-		}
+		TestDocumentRootHasExactlyDoctypeAndHTMLNodes(node)(t)
 		attributes, err := htmltest.ParseAttributes(node.FirstChild.NextSibling)
 		if err != nil {
 			t.Errorf("failed to parse <HTML> tag attributes: %v", err)
