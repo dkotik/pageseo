@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"io"
+	"net/url"
 	"reflect"
 	"testing"
 	"time"
@@ -9,7 +11,15 @@ import (
 	"github.com/dkotik/pageseo"
 )
 
-func newTest(target string) testing.InternalTest {
+func newTest(ctx context.Context, target string) testing.InternalTest {
+	url, err := url.Parse(target)
+	if err == nil && (url.Scheme == "http" || url.Scheme == "https") {
+		return testing.InternalTest{
+			Name: target,
+			F:    pageseo.Requirements{}.TestURL(ctx, url),
+		}
+	}
+
 	return testing.InternalTest{
 		Name: target,
 		F:    pageseo.Requirements{}.TestFile(target),

@@ -32,7 +32,7 @@ func main() {
 					}
 					tests := make([]testing.InternalTest, 0, targets.Len())
 					for _, target := range targets.Slice() {
-						tests = append(tests, newTest(target))
+						tests = append(tests, newTest(ctx, target))
 					}
 					m := testing.MainStart(testDeps{}, tests, nil, nil, nil)
 					switch m.Run() {

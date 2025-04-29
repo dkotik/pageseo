@@ -1,10 +1,13 @@
 package pageseo
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"iter"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"testing"
@@ -153,6 +156,22 @@ func (v Requirements) TestFile(p string) func(t *testing.T) {
 			}
 		})
 		v.TestReader(f)(t)
+	}
+}
+
+func (v Requirements) TestURL(ctx context.Context, url *url.URL) func(t *testing.T) {
+	return func(t *testing.T) {
+		// TODO: inject context into request
+		resp, err := http.Get(url.String())
+		if err != nil {
+			t.Fatalf("unable to fetch URL %q: %v", url, err)
+		}
+		t.Cleanup(func() {
+			if cerr := resp.Body.Close(); cerr != nil {
+				t.Errorf("unable to close response body for URL %q: %v", url, cerr)
+			}
+		})
+		v.TestReader(resp.Body)(t)
 	}
 }
 
