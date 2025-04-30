@@ -58,9 +58,9 @@ pageseo scan --strict ./**/*.html
 - [x] Provide a command line scanner that can validate URLs.
 - [x] Add open graph validations.
 - [x] Add twitter validations.
+- [ ] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Provide a command line scanner that can crawl live websites.
 - [ ] Provide a service that can crawl a target at an interval.
-- [ ] Unique contraint by namespace with a namespace flag for CLI.
 
 ## Similar Projects
 

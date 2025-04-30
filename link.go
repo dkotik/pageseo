@@ -2,6 +2,7 @@ package pageseo
 
 import (
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
@@ -67,6 +68,23 @@ func (r Requirements) TestLink(node *html.Node) func(t *testing.T) {
 				}
 			}
 			t.Errorf("invalid anchor text: %v", err)
+		}
+
+		attributes, err := htmltest.ParseAttributes(node)
+		if err != nil {
+			t.Errorf("failed to parse attributes: %v", err)
+			return
+		}
+
+		if target, ok := attributes["target"]; ok {
+			if strings.ToLower(strings.TrimSpace(target)) == "_blank" {
+				rel, ok := attributes["rel"]
+				if !ok {
+					t.Errorf("anchor text with target=\"_blank\" should have a rel attribute")
+				} else if slices.Index(strings.Fields(rel), "noopener") == -1 {
+					t.Errorf("anchor text with target=\"_blank\" should have a rel=\"noopener\" setting to prevent tab nabbing; if you need to support older versions of Firefox, use rel=\"noopener noreferrer\"")
+				}
+			}
 		}
 	}
 }
