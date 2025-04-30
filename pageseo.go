@@ -71,19 +71,19 @@ func (r Requirements) WithDefaults() Requirements {
 
 func (r Requirements) WithStrictDefaults() Requirements {
 	if r.Normalizer == nil {
-		r.Normalizer = NormalizeText
+		r.Normalizer = NormalizeTextToNFC
 	}
 	if r.Title == nil {
-		r.Title = NewTitleValidator(StringConstraints{Normalizer: NormalizeLine})
+		r.Title = NewTitleValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
 	if r.Heading == nil {
 		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
 	if r.LinkText == nil {
-		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLine})
+		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
 	if r.ImageAltText == nil {
-		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLine})
+		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
 	return r.WithDefaults()
 }

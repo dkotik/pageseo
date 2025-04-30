@@ -26,15 +26,15 @@ var PassthroughNormalizer NormalizerFunc = func(s string) (string, error) {
 	return s, nil
 }
 
-var NormalizeLine NormalizerFunc = func(line string) (string, error) {
+var NormalizeLineToNFC NormalizerFunc = func(line string) (string, error) {
 	line = norm.NFC.String(strings.TrimSpace(line))
 	return reCollapseSpaces.ReplaceAllString(line, " "), nil
 }
 
-var NormalizeText NormalizerFunc = func(text string) (line string, err error) {
+var NormalizeTextToNFC NormalizerFunc = func(text string) (line string, err error) {
 	b := strings.Builder{}
 	for _, line = range reCollapseNewlines.Split(text, -1) {
-		line, err = NormalizeLine(line)
+		line, err = NormalizeLineToNFC(line)
 		if err != nil {
 			return "", err
 		}

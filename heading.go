@@ -15,7 +15,7 @@ const (
 
 func NewHeadingValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
-		s.Normalizer = NormalizeLine
+		s.Normalizer = NormalizeLineToNFC
 	}
 	if s.MinimumLength < 1 {
 		s.MinimumLength = DefaultMinimumHeadingLength

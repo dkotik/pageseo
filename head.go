@@ -14,6 +14,8 @@ type headRequirements struct {
 	FoundValidCharset     bool
 	FoundValidTitle       bool
 	FoundValidDescription bool
+	FoundTwitterCard      bool
+	FoundOpenGraphCard    bool
 }
 
 func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
@@ -104,6 +106,8 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 							t.Errorf("meta tag content for viewport scale %q has invalid initial scale attribute: %v", scale, err)
 						}
 						found.FoundValidViewPort = true
+					case MetaTwitterCard, MetaTwitterImage, MetaTwitterTitle, MetaTwitterDescription, MetaTwitterSite, MetaTwitterURL:
+						found.FoundTwitterCard = true
 					}
 				} else {
 					charset, ok := attributes["charset"]
@@ -118,12 +122,31 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 						}
 					}
 				}
+
+				property, ok := attributes["property"]
+				if ok {
+					_, ok := attributes["content"]
+					if !ok {
+						t.Errorf("meta tag property is missing content attribute: %s/%s", name, property)
+					}
+					switch property {
+					case MetaOpenGraphType, MetaOpenGraphTitle, MetaOpenGraphDescription, MetaOpenGraphImage, MetaOpenGraphURL:
+						found.FoundOpenGraphCard = true
+					}
+				}
 			default:
 				if child.Type == html.TextNode && len(strings.TrimSpace(child.Data)) == 0 {
 					continue
 				}
 				// t.Logf("found unexpected tag: %v", child.Data)
 			}
+		}
+
+		if found.FoundOpenGraphCard {
+			t.Run("validate Open Graph card", r.TestOpenGraphCard(node))
+		}
+		if found.FoundTwitterCard {
+			t.Run("validate Twitter card", r.TestTwitterCard(node))
 		}
 	}
 }

@@ -8,12 +8,12 @@ import (
 
 const (
 	DefaultMinimumDescriptionLength = 4
-	DefaultMaximumDescriptionLength = 150 * 2
+	DefaultMaximumDescriptionLength = 150
 )
 
 func NewDescriptionValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
-		s.Normalizer = NormalizeText
+		s.Normalizer = NormalizeTextToNFC
 	}
 	if s.MinimumLength < 1 {
 		s.MinimumLength = DefaultMinimumDescriptionLength
