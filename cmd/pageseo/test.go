@@ -11,18 +11,18 @@ import (
 	"github.com/dkotik/pageseo"
 )
 
-func newTest(ctx context.Context, target string) testing.InternalTest {
+func newTest(ctx context.Context, target string, r pageseo.Requirements) testing.InternalTest {
 	url, err := url.Parse(target)
 	if err == nil && (url.Scheme == "http" || url.Scheme == "https") {
 		return testing.InternalTest{
 			Name: target,
-			F:    pageseo.Requirements{}.TestURL(ctx, url),
+			F:    r.TestURL(ctx, url),
 		}
 	}
 
 	return testing.InternalTest{
 		Name: target,
-		F:    pageseo.Requirements{}.TestFile(target),
+		F:    r.TestFile(target),
 	}
 }
 

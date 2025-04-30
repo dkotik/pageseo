@@ -8,7 +8,7 @@ import (
 
 const (
 	DefaultMinimumTitleLength = 4
-	DefaultMaximumTitleLength = 55
+	DefaultMaximumTitleLength = 55 * 2
 )
 
 func NewTitleValidator(s StringConstraints) htmltest.Validator {
@@ -31,7 +31,7 @@ type titleValidator struct {
 }
 
 func (s titleValidator) Validate(value string) error {
-	normalized, err := s.Normalizer(value)
+	normalized, err := s.Normalizer.Normalize(value)
 	if err != nil {
 		return err
 	}

@@ -10,11 +10,35 @@ HTML page search engine optimization test and utility suite. Aims to prevent the
 
 The library works by providing a reasonable set of tests that any HTML must conform to in order to fit the best current search engine optimization expectations.
 
+## Library Usage
+
+```sh
+go get -u github.com/dkotik/pageseo@latest
+```
+
+```go
+import (
+	"bytes"
+	"testing"
+
+	"github.com/dkotik/pageseo"
+)
+
+func TestViewSearchEngineOptimization(t *testing.T) {
+	view := "<html></html>"
+
+	pageseo.Requirements{}.WithStrictDefaults().TestReader(
+		bytes.NewReader(view),
+	)
+}
+
+```
+
 ## Command Line Usage
 
 ```sh
-go install github.com/dkotik/pageseo@latest
-pageseo scan ./**/*.html
+go install github.com/dkotik/pageseo/cmd/pageseo@latest
+pageseo scan --strict ./**/*.html
 ```
 
 ## Development Road Map

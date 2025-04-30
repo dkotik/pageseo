@@ -12,14 +12,26 @@ var (
 	reCollapseNewlines = regexp.MustCompile(`(\n\r?)+`)
 )
 
-type Normalizer func(string) (string, error)
+type Normalizer interface {
+	Normalize(string) (string, error)
+}
 
-func NormalizeLine(line string) (string, error) {
+type NormalizerFunc func(string) (string, error)
+
+func (fn NormalizerFunc) Normalize(s string) (string, error) {
+	return fn(s)
+}
+
+var PassthroughNormalizer NormalizerFunc = func(s string) (string, error) {
+	return s, nil
+}
+
+var NormalizeLine NormalizerFunc = func(line string) (string, error) {
 	line = norm.NFC.String(strings.TrimSpace(line))
 	return reCollapseSpaces.ReplaceAllString(line, " "), nil
 }
 
-func NormalizeText(text string) (line string, err error) {
+var NormalizeText NormalizerFunc = func(text string) (line string, err error) {
 	b := strings.Builder{}
 	for _, line = range reCollapseNewlines.Split(text, -1) {
 		line, err = NormalizeLine(line)

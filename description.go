@@ -8,7 +8,7 @@ import (
 
 const (
 	DefaultMinimumDescriptionLength = 4
-	DefaultMaximumDescriptionLength = 150
+	DefaultMaximumDescriptionLength = 150 * 2
 )
 
 func NewDescriptionValidator(s StringConstraints) htmltest.Validator {
@@ -31,7 +31,7 @@ type descriptionValidator struct {
 }
 
 func (d descriptionValidator) Validate(value string) error {
-	normalized, err := d.Normalizer(value)
+	normalized, err := d.Normalizer.Normalize(value)
 	if err != nil {
 		return err
 	}

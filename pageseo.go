@@ -16,6 +16,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+//go:generate go run ./testdata/generate.go
+
 type StringConstraints struct {
 	Normalizer    Normalizer
 	MinimumLength int
@@ -23,18 +25,39 @@ type StringConstraints struct {
 }
 
 type Requirements struct {
+	// Normalizer is passed to all default validator constructors.
+	// If you are using custom validators, you should pass your
+	// own normalizer to each constructor manually.
+	//
+	// Default value is [PassthroughNormalizer] that does not do anything.
+	Normalizer Normalizer
+
 	Title       htmltest.Validator
 	Description htmltest.Validator
+	Heading     htmltest.Validator
 	Language    htmltest.Validator
+
+	LinkText     htmltest.Validator
+	ImageAltText htmltest.Validator
+	ImageSrc     htmltest.Validator
 }
 
 func (r Requirements) WithDefaults() Requirements {
+	if r.Normalizer == nil {
+		r.Normalizer = PassthroughNormalizer
+	}
 	if r.Title == nil {
-		r.Title = NewTitleValidator(StringConstraints{})
+		r.Title = NewTitleValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
 	if r.Description == nil {
-		r.Description = NewDescriptionValidator(StringConstraints{})
+		r.Description = NewDescriptionValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
+	if r.ImageAltText == nil {
+		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: r.Normalizer})
+	}
+	// if r.ImageSrc == nil {
+	// 	r.ImageSrc = NewImageSrcValidator(StringConstraints{Normalizer: r.Normalizer})
+	// }
 	if r.Language == nil {
 		r.Language = htmltest.ValidatorFunc(func(s string) error {
 			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
@@ -44,6 +67,25 @@ func (r Requirements) WithDefaults() Requirements {
 		})
 	}
 	return r
+}
+
+func (r Requirements) WithStrictDefaults() Requirements {
+	if r.Normalizer == nil {
+		r.Normalizer = NormalizeText
+	}
+	if r.Title == nil {
+		r.Title = NewTitleValidator(StringConstraints{Normalizer: NormalizeLine})
+	}
+	if r.Heading == nil {
+		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
+	}
+	if r.LinkText == nil {
+		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLine})
+	}
+	if r.ImageAltText == nil {
+		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLine})
+	}
+	return r.WithDefaults()
 }
 
 func (r Requirements) Test(node *html.Node) func(t *testing.T) {
@@ -115,13 +157,18 @@ func (r Requirements) Test(node *html.Node) func(t *testing.T) {
 			}
 			switch node.Data {
 			case "a":
-				if err = ValidateLink(node); err != nil {
-					t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
+				if r.LinkText == nil || r.LinkText == htmltest.SkipValidator {
+					continue
 				}
+				t.Run(htmltest.Path(node), r.TestLink(node))
 			case "img":
-				if err = ValidateImage(node); err != nil {
-					t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
-				}
+				// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
+				// 	continue
+				// }
+				t.Run(htmltest.Path(node), r.TestImage(node))
+				// if err = ValidateImage(node); err != nil {
+				// 	t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
+				// }
 				// case "script":
 				// 	t.Run("script tag has valid attributes", r.TestScript(node))
 				// case "style":

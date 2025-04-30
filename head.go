@@ -17,7 +17,6 @@ type headRequirements struct {
 }
 
 func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
-	r = r.WithDefaults()
 	return func(t *testing.T) {
 		found := headRequirements{}
 		t.Cleanup(func() {
@@ -87,9 +86,12 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 							continue
 						}
 						width, ok := csv["width"]
-						if !ok {
-							t.Errorf("meta tag content for viewport %q is missing width attribute", content)
-						} else if width == "" {
+						// if !ok {
+						// 	t.Errorf("meta tag content for viewport %q is missing width attribute", content)
+						// } else if width == "" {
+						// 	t.Errorf("meta tag content for viewport %q has empty width attribute", content)
+						// }
+						if ok && width == "" {
 							t.Errorf("meta tag content for viewport %q has empty width attribute", content)
 						}
 						scale, ok := csv["initial-scale"]
@@ -109,7 +111,7 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 						if found.FoundValidCharset {
 							t.Error("there are multiple meta tags with charset attribute")
 						}
-						if charset == "utf-8" {
+						if strings.ToLower(charset) == "utf-8" {
 							found.FoundValidCharset = true
 						} else {
 							t.Errorf("meta tag content for charset has invalid charset attribute: %s", charset)
@@ -120,49 +122,7 @@ func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
 				if child.Type == html.TextNode && len(strings.TrimSpace(child.Data)) == 0 {
 					continue
 				}
-				t.Logf("found unexpected tag: %v", child.Data)
-			}
-		}
-	}
-}
-
-func (r Requirements) TestHeadings(node *html.Node) func(t *testing.T) {
-	r = r.WithDefaults()
-	return func(t *testing.T) {
-		foundValidH1 := false
-		t.Cleanup(func() {
-			if !foundValidH1 {
-				t.Errorf("H1 tag not found under %q tag", node.Data)
-			}
-		})
-
-		var err error
-		for descendant := range node.Descendants() {
-			if descendant.Type != html.ElementNode {
-				continue
-			}
-			switch descendant.Data {
-			case "h1":
-				text := htmltest.ParseTextContent(descendant)
-				if text == "" {
-					t.Errorf("H1 tag has no text content")
-					continue
-				}
-				if err = r.Title.Validate(text); err != nil {
-					t.Errorf("H1 tag text content is not valid: %v", err)
-					continue
-				}
-				foundValidH1 = true
-			case "h2", "h3", "h4", "h5", "h6":
-				text := htmltest.ParseTextContent(descendant)
-				if text == "" {
-					t.Errorf("heading tag %q has no text content", descendant.Data)
-					continue
-				}
-				if err = r.Title.Validate(text); err != nil {
-					t.Errorf("heading tag %q text content is not valid: %v", descendant.Data, err)
-					continue
-				}
+				// t.Logf("found unexpected tag: %v", child.Data)
 			}
 		}
 	}

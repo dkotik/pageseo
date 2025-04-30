@@ -2,19 +2,71 @@ package pageseo
 
 import (
 	"errors"
-	"fmt"
+	"strings"
+	"testing"
 
 	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
-func ValidateLink(node *html.Node) error {
-	if node.FirstChild == nil || node.FirstChild.Data == "" {
-		return errors.New("link text content is empty")
+const (
+	DefaultMinimumLinkTextLength = 4
+	DefaultMaximumLinkTextLength = DefaultMaximumTitleLength * 6
+)
+
+func NewLinkTextValidator(s StringConstraints) htmltest.Validator {
+	if s.Normalizer == nil {
+		s.Normalizer = NormalizeLine
 	}
-	textContent := htmltest.ParseTextContent(node)
-	if len(textContent) > DefaultMaximumTitleLength {
-		return fmt.Errorf("link text content is too long: %d vs %d maximum", len(textContent), DefaultMaximumTitleLength)
+	if s.MinimumLength < 1 {
+		s.MinimumLength = DefaultMinimumLinkTextLength
 	}
-	return nil
+	if s.MaximumLength < 1 {
+		s.MaximumLength = DefaultMaximumLinkTextLength
+	}
+	return linkTextValidator(s)
+}
+
+type linkTextValidator struct {
+	Normalizer    Normalizer
+	MinimumLength int
+	MaximumLength int
+}
+
+func (s linkTextValidator) Validate(value string) error {
+	normalized, err := s.Normalizer.Normalize(value)
+	if err != nil {
+		return err
+	}
+	if normalized != value {
+		return errors.New("anchor text is not UTF normalized")
+	}
+
+	switch length := len(normalized); {
+	case length == 0:
+		return errors.New("anchor text is empty")
+	case length < s.MinimumLength:
+		return errors.New("anchor text is too short")
+	case length > s.MaximumLength:
+		return errors.New("anchor text is too long")
+	default:
+		return nil
+	}
+}
+
+func (r Requirements) TestLink(node *html.Node) func(t *testing.T) {
+	return func(t *testing.T) {
+		if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
+			for descendant := range node.Descendants() {
+				if descendant.Type != html.ElementNode {
+					continue
+				}
+				switch strings.ToLower(descendant.Data) {
+				case "a", "svg":
+					return // contains an image
+				}
+			}
+			t.Errorf("invalid anchor text: %v", err)
+		}
+	}
 }
