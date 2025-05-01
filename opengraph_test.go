@@ -21,5 +21,5 @@ func TestOpenGraphCard(t *testing.T) {
 		t.Fatal("html.Parse returned nil")
 	}
 
-	Requirements{}.WithStrictDefaults().TestOpenGraphCard(tree)(t)
+	NewStrict(Requirements{}).TestOpenGraphCard(tree)(t)
 }

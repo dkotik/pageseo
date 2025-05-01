@@ -79,7 +79,7 @@ func GetPictureSourceList(node *html.Node) (result []string, err error) {
 	return result, err
 }
 
-func (r Requirements) TestImage(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestImage(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		attributes, err := htmltest.ParseAttributes(node)
 		if err != nil {

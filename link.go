@@ -55,7 +55,7 @@ func (s linkTextValidator) Validate(value string) error {
 	}
 }
 
-func (r Requirements) TestLink(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestLink(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
 			for descendant := range node.Descendants() {

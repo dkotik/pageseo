@@ -24,21 +24,29 @@ import (
 	"github.com/dkotik/pageseo"
 )
 
-func TestViewSearchEngineOptimization(t *testing.T) {
-	view := "<html></html>"
-
-	pageseo.Requirements{
-		// override requirements as needed
-		Title: pageseo.NewTitleValidator(
-			pageseo.StringConstraints{
-				MinimumLength: 12,
-				MaximumLength: pageseo.DefaultMaximumTitleLength * 4,
-				Normalizer: pageseo.NomalizeLineToNFC,
-			},
-		),
-	}.WithStrictDefaults().TestReader(
-		bytes.NewReader(view),
+func TestSearchEngineOptimization(t *testing.T) {
+	validator := pageseo.NewStrict(
+		pageseo.Requirements{
+			// override requirements as needed
+			Title: pageseo.NewTitleValidator(
+				pageseo.StringConstraints{
+					MinimumLength: 12,
+					MaximumLength: pageseo.DefaultMaximumTitleLength * 4,
+					Normalizer: pageseo.NomalizeLineToNFC,
+				},
+			),
+		},
 	)
+
+	t.Run("index.html", 	validator.TestReader(
+		t.Name(), // identify the origin for content de-duplication
+		bytes.NewReader([]byte("<html><p>index</p></html>")),
+	))
+
+	t.Run("sitemap.html", 	validator.TestReader(
+		t.Name(), // identify the origin for content de-duplication
+		bytes.NewReader([]byte("<html><p>sitemap</p></html>")),
+	))
 }
 
 ```

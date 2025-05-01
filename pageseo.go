@@ -7,9 +7,9 @@ import (
 	"io"
 	"iter"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/dkotik/pageseo/htmltest"
@@ -42,7 +42,24 @@ type Requirements struct {
 	ImageSrc     htmltest.Validator
 }
 
-func (r Requirements) WithDefaults() Requirements {
+type PageValidator struct {
+	Requirements
+	mu                 *sync.Mutex
+	deduplicationIndex map[string]struct{}
+}
+
+func (p *PageValidator) IsDuplicate(key string) bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	_, ok := p.deduplicationIndex[key]
+	if !ok {
+		p.deduplicationIndex[key] = struct{}{}
+	}
+	return ok
+}
+
+func New(r Requirements) *PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = PassthroughNormalizer
 	}
@@ -66,10 +83,15 @@ func (r Requirements) WithDefaults() Requirements {
 			return nil
 		})
 	}
-	return r
+
+	return &PageValidator{
+		Requirements:       r,
+		mu:                 &sync.Mutex{},
+		deduplicationIndex: make(map[string]struct{}),
+	}
 }
 
-func (r Requirements) WithStrictDefaults() Requirements {
+func NewStrict(r Requirements) *PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = NormalizeTextToNFC
 	}
@@ -85,11 +107,10 @@ func (r Requirements) WithStrictDefaults() Requirements {
 	if r.ImageAltText == nil {
 		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
-	return r.WithDefaults()
+	return New(r)
 }
 
-func (r Requirements) Test(node *html.Node) func(t *testing.T) {
-	r = r.WithDefaults()
+func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if node.FirstChild == nil {
 			t.Fatal("page contains no HTML nodes")
@@ -178,7 +199,7 @@ func (r Requirements) Test(node *html.Node) func(t *testing.T) {
 	}
 }
 
-func (v Requirements) TestReader(r io.Reader) func(t *testing.T) {
+func (v PageValidator) TestReader(origin string, r io.Reader) func(t *testing.T) {
 	return func(t *testing.T) {
 		tree, err := html.Parse(r)
 		if err != nil {
@@ -187,11 +208,11 @@ func (v Requirements) TestReader(r io.Reader) func(t *testing.T) {
 		if tree == nil {
 			t.Fatal("no HTML tree found in the reader")
 		}
-		v.Test(tree)(t)
+		t.Run(origin, v.Test(origin, tree))
 	}
 }
 
-func (v Requirements) TestFile(p string) func(t *testing.T) {
+func (v PageValidator) TestFile(p string) func(t *testing.T) {
 	return func(t *testing.T) {
 		f, err := os.Open(p)
 		if err != nil {
@@ -202,14 +223,17 @@ func (v Requirements) TestFile(p string) func(t *testing.T) {
 				t.Errorf("unable to close HTML file %q: %v", p, cerr)
 			}
 		})
-		v.TestReader(f)(t)
+		v.TestReader(p, f)(t)
 	}
 }
 
-func (v Requirements) TestURL(ctx context.Context, url *url.URL) func(t *testing.T) {
+func (v PageValidator) TestURL(ctx context.Context, url string) func(t *testing.T) {
 	return func(t *testing.T) {
-		// TODO: inject context into request
-		resp, err := http.Get(url.String())
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Fatal("unable to create request", err)
+		}
+		resp, err := http.DefaultClient.Do(req.WithContext(t.Context()))
 		if err != nil {
 			t.Fatalf("unable to fetch URL %q: %v", url, err)
 		}
@@ -218,7 +242,7 @@ func (v Requirements) TestURL(ctx context.Context, url *url.URL) func(t *testing
 				t.Errorf("unable to close response body for URL %q: %v", url, cerr)
 			}
 		})
-		v.TestReader(resp.Body)(t)
+		v.TestReader(url, resp.Body)(t)
 	}
 }
 

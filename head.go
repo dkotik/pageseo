@@ -18,7 +18,7 @@ type headRequirements struct {
 	FoundOpenGraphCard    bool
 }
 
-func (r Requirements) TestHead(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestHead(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		found := headRequirements{}
 		t.Cleanup(func() {

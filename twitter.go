@@ -71,7 +71,7 @@ func loadTwitterCard(node *html.Node) (result twitter, err error) {
 	return
 }
 
-func (r Requirements) TestTwitterCard(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestTwitterCard(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		card, err := loadTwitterCard(node)
 		if err != nil {

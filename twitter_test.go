@@ -21,5 +21,5 @@ func TestTwitterCard(t *testing.T) {
 		t.Fatal("html.Parse returned nil")
 	}
 
-	Requirements{}.WithStrictDefaults().TestTwitterCard(tree)(t)
+	NewStrict(Requirements{}).TestTwitterCard(tree)(t)
 }

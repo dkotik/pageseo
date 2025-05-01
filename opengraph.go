@@ -68,7 +68,7 @@ func loadOpenGraphCard(node *html.Node) (result openGraph, err error) {
 	return
 }
 
-func (r Requirements) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		card, err := loadOpenGraphCard(node)
 		if err != nil {

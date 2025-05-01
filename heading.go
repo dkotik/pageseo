@@ -53,8 +53,7 @@ func (s headingValidator) Validate(value string) error {
 	}
 }
 
-func (r Requirements) TestHeadings(node *html.Node) func(t *testing.T) {
-	r = r.WithDefaults()
+func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if r.Heading == htmltest.SkipValidator || r.Heading == nil {
 			t.Skip("heading validation is skipped by user request")

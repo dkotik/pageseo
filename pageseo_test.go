@@ -15,5 +15,5 @@ func TestMinimalPage(t *testing.T) {
 	}
 	defer f.Close()
 
-	Requirements{}.TestReader(f)(t)
+	NewStrict(Requirements{}).TestReader(t.Name(), f)(t)
 }

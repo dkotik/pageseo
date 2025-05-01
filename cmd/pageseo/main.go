@@ -12,13 +12,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func TestGood(t *testing.T) {
-}
-
-func TestBad(t *testing.T) {
-	t.Error("This is a mocked failed test")
-}
-
 func main() {
 	cmd := &cli.Command{
 		Name:  "pageseo",
@@ -47,16 +40,16 @@ func main() {
 						return fmt.Errorf("no targets provided")
 					}
 
-					r := pageseo.Requirements{}
+					var v *pageseo.PageValidator
 					if cmd.Bool("strict") {
-						r = r.WithStrictDefaults()
+						v = pageseo.NewStrict(pageseo.Requirements{})
 					} else {
-						r = r.WithDefaults()
+						v = pageseo.New(pageseo.Requirements{})
 					}
 
 					tests := make([]testing.InternalTest, 0, targets.Len())
 					for _, target := range targets.Slice() {
-						tests = append(tests, newTest(ctx, target, r))
+						tests = append(tests, newTest(ctx, target, v))
 					}
 					m := testing.MainStart(testDeps{}, tests, nil, nil, nil)
 					switch m.Run() {

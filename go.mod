@@ -1,6 +1,6 @@
 module github.com/dkotik/pageseo
 
-go 1.23.3
+go 1.24
 
 require golang.org/x/text v0.24.0
 
