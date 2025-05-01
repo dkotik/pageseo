@@ -55,7 +55,7 @@ func (s linkTextValidator) Validate(value string) error {
 	}
 }
 
-func (r PageValidator) TestLink(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestLink(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
 			for descendant := range node.Descendants() {
@@ -85,6 +85,19 @@ func (r PageValidator) TestLink(node *html.Node) func(t *testing.T) {
 					t.Errorf("anchor text with target=\"_blank\" should have a rel=\"noopener\" setting to prevent tab nabbing; if you need to support older versions of Firefox, use rel=\"noopener noreferrer\"")
 				}
 			}
+		}
+
+		if href, ok := attributes["href"]; ok {
+			href, err := htmltest.JoinURL(origin, href)
+			if err != nil {
+				t.Errorf("failed to join path: %v", err)
+				return
+			}
+			if err := r.URL.Validate(href); err != nil {
+				t.Fatalf("dead URL: %v", err)
+			}
+		} else {
+			t.Log("anchor text without href")
 		}
 	}
 }

@@ -79,12 +79,12 @@ func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
 		}
 		if card.Title == "" {
 			t.Error(MetaOpenGraphTitle + " not found")
-		} else if err = r.Title.Validate(card.Title); err != nil {
+		} else if err = r.OpenGraphCardTitle.Validate(card.Title); err != nil {
 			t.Error(MetaOpenGraphTitle+" validation failed:", err)
 		}
 		if card.Description == "" {
 			t.Error(MetaOpenGraphDescription + " not found")
-		} else if err = r.Description.Validate(card.Description); err != nil {
+		} else if err = r.OpenGraphCardDescription.Validate(card.Description); err != nil {
 			t.Error(MetaOpenGraphDescription+" validation failed:", err)
 		}
 		// if card.URL == "" {

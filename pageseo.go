@@ -32,37 +32,68 @@ type Requirements struct {
 	// Default value is [PassthroughNormalizer] that does not do anything.
 	Normalizer Normalizer
 
+	DeduplicationNamespace               string
+	TitleDeduplicator                    htmltest.Middleware
+	DescriptionDeduplicator              htmltest.Middleware
+	OpenGraphCardTitleDeduplicator       htmltest.Middleware
+	OpenGraphCardDescriptionDeduplicator htmltest.Middleware
+	TwitterCardTitleDeduplicator         htmltest.Middleware
+	TwitterCardDescriptionDeduplicator   htmltest.Middleware
+
 	Title       htmltest.Validator
 	Description htmltest.Validator
 	Heading     htmltest.Validator
 	Language    htmltest.Validator
 
+	URL          htmltest.Validator
 	LinkText     htmltest.Validator
 	ImageAltText htmltest.Validator
 	ImageSrc     htmltest.Validator
 }
 
 type PageValidator struct {
-	Requirements
+	Title                    htmltest.Validator
+	Description              htmltest.Validator
+	OpenGraphCardTitle       htmltest.Validator
+	OpenGraphCardDescription htmltest.Validator
+	TwitterCardTitle         htmltest.Validator
+	TwitterCardDescription   htmltest.Validator
+	Heading                  htmltest.Validator
+	Language                 htmltest.Validator
+
+	URL          htmltest.Validator
+	LinkText     htmltest.Validator
+	ImageAltText htmltest.Validator
+	ImageSrc     htmltest.Validator
+
 	mu                 *sync.Mutex
 	deduplicationIndex map[string]struct{}
-}
-
-func (p *PageValidator) IsDuplicate(key string) bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	_, ok := p.deduplicationIndex[key]
-	if !ok {
-		p.deduplicationIndex[key] = struct{}{}
-	}
-	return ok
 }
 
 func New(r Requirements) *PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = PassthroughNormalizer
 	}
+
+	if r.TitleDeduplicator == nil {
+		r.TitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+	if r.DescriptionDeduplicator == nil {
+		r.DescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+	if r.OpenGraphCardTitleDeduplicator == nil {
+		r.OpenGraphCardTitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+	if r.OpenGraphCardDescriptionDeduplicator == nil {
+		r.OpenGraphCardDescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+	if r.TwitterCardTitleDeduplicator == nil {
+		r.TwitterCardTitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+	if r.TwitterCardDescriptionDeduplicator == nil {
+		r.TwitterCardDescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+	}
+
 	if r.Title == nil {
 		r.Title = NewTitleValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
@@ -83,9 +114,25 @@ func New(r Requirements) *PageValidator {
 			return nil
 		})
 	}
+	if r.URL == nil {
+		r.URL = htmltest.NewURLValidator(nil, http.StatusOK)
+	}
 
 	return &PageValidator{
-		Requirements:       r,
+		Title:                    r.TitleDeduplicator.Wrap(r.Title),
+		Description:              r.DescriptionDeduplicator.Wrap(r.Description),
+		OpenGraphCardTitle:       r.OpenGraphCardTitleDeduplicator.Wrap(r.Title),
+		OpenGraphCardDescription: r.OpenGraphCardDescriptionDeduplicator.Wrap(r.Description),
+		TwitterCardTitle:         r.TwitterCardTitleDeduplicator.Wrap(r.Title),
+		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
+		Heading:                  r.Heading,
+		Language:                 r.Language,
+
+		URL:          r.URL,
+		LinkText:     r.LinkText,
+		ImageAltText: r.ImageAltText,
+		ImageSrc:     r.ImageSrc,
+
 		mu:                 &sync.Mutex{},
 		deduplicationIndex: make(map[string]struct{}),
 	}
@@ -181,12 +228,12 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				if r.LinkText == nil || r.LinkText == htmltest.SkipValidator {
 					continue
 				}
-				t.Run(htmltest.Path(node), r.TestLink(node))
+				t.Run(htmltest.Path(node), r.TestLink(origin, node))
 			case "img":
 				// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
 				// 	continue
 				// }
-				t.Run(htmltest.Path(node), r.TestImage(node))
+				t.Run(htmltest.Path(node), r.TestImage(origin, node))
 				// if err = ValidateImage(node); err != nil {
 				// 	t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
 				// }
@@ -223,7 +270,7 @@ func (v PageValidator) TestFile(p string) func(t *testing.T) {
 				t.Errorf("unable to close HTML file %q: %v", p, cerr)
 			}
 		})
-		v.TestReader(p, f)(t)
+		v.TestReader("file://"+p, f)(t)
 	}
 }
 

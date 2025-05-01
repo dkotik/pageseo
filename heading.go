@@ -78,7 +78,7 @@ func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 					t.Errorf("H1 tag has no text content")
 					continue
 				}
-				if err = r.Title.Validate(text); err != nil {
+				if err = r.Heading.Validate(text); err != nil {
 					t.Errorf("H1 tag text content is not valid: %v", err)
 					continue
 				}
@@ -89,7 +89,7 @@ func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 					t.Errorf("heading tag %q has no text content", descendant.Data)
 					continue
 				}
-				if err = r.Title.Validate(text); err != nil {
+				if err = r.Heading.Validate(text); err != nil {
 					t.Errorf("heading tag %q text content is not valid: %v", descendant.Data, err)
 					continue
 				}

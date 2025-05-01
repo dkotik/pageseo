@@ -26,3 +26,17 @@ func NewExactMatch(expected string) Validator {
 		return nil
 	})
 }
+
+type Middleware interface {
+	Wrap(Validator) Validator
+}
+
+type MiddlewareFunc func(Validator) Validator
+
+func (f MiddlewareFunc) Wrap(v Validator) Validator {
+	return f(v)
+}
+
+var SkipMiddleware Middleware = MiddlewareFunc(func(v Validator) Validator {
+	return v
+})

@@ -79,19 +79,41 @@ func GetPictureSourceList(node *html.Node) (result []string, err error) {
 	return result, err
 }
 
-func (r PageValidator) TestImage(node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		attributes, err := htmltest.ParseAttributes(node)
 		if err != nil {
 			t.Fatal("unable to extract image attributes:", err)
 		}
-		if src, ok := attributes["src"]; !ok || src == "" {
+		if src, ok := attributes["src"]; ok {
+			src, err := htmltest.JoinURL(origin, src)
+			if err != nil {
+				t.Fatalf("failed to join path: %v", err)
+			}
+			// TODO:? r.ImageSrc
+			if err := r.URL.Validate(src); err != nil {
+				t.Log("Src:", src)
+				t.Errorf("invalid image source: %v", err)
+			}
+		} else {
 			srcSet, err := GetPictureSourceList(node.Parent)
 			if err != nil {
 				t.Fatal("unable to extract picture source list:", err)
 			}
 			if len(srcSet) == 0 {
 				t.Fatal("missing src attribute")
+			}
+			for _, src := range srcSet {
+				src, err := htmltest.JoinURL(origin, src)
+				if err != nil {
+					t.Errorf("failed to join path: %v", err)
+					continue
+				}
+				// TODO:? r.ImageSrc
+				if err := r.URL.Validate(src); err != nil {
+					t.Log("Src:", src)
+					t.Errorf("invalid image source: %v", err)
+				}
 			}
 		}
 

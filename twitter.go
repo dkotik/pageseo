@@ -82,12 +82,12 @@ func (r PageValidator) TestTwitterCard(node *html.Node) func(t *testing.T) {
 		}
 		if card.Title == "" {
 			t.Error(MetaTwitterTitle + " not found")
-		} else if err = r.Title.Validate(card.Title); err != nil {
+		} else if err = r.TwitterCardTitle.Validate(card.Title); err != nil {
 			t.Error(MetaTwitterTitle+" validation failed:", err)
 		}
 		if card.Description == "" {
 			t.Error(MetaTwitterDescription + " not found")
-		} else if err = r.Description.Validate(card.Description); err != nil {
+		} else if err = r.TwitterCardDescription.Validate(card.Description); err != nil {
 			t.Error(MetaTwitterDescription+" validation failed:", err)
 		}
 		// if card.URL == "" {

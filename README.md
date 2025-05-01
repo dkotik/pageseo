@@ -18,37 +18,36 @@ go get -u github.com/dkotik/pageseo@latest
 
 ```go
 import (
-	"bytes"
-	"testing"
+  "bytes"
+  "testing"
 
-	"github.com/dkotik/pageseo"
+  "github.com/dkotik/pageseo"
 )
 
 func TestSearchEngineOptimization(t *testing.T) {
-	validator := pageseo.NewStrict(
-		pageseo.Requirements{
-			// override requirements as needed
-			Title: pageseo.NewTitleValidator(
-				pageseo.StringConstraints{
-					MinimumLength: 12,
-					MaximumLength: pageseo.DefaultMaximumTitleLength * 4,
-					Normalizer: pageseo.NomalizeLineToNFC,
-				},
-			),
-		},
-	)
+  validator := pageseo.NewStrict(
+    pageseo.Requirements{
+      // override requirements as needed
+      Title: pageseo.NewTitleValidator(
+        pageseo.StringConstraints{
+          MinimumLength: 12,
+          MaximumLength: pageseo.DefaultMaximumTitleLength * 4,
+          Normalizer: pageseo.NomalizeLineToNFC,
+        },
+      ),
+    },
+  )
 
-	t.Run("index.html", 	validator.TestReader(
-		t.Name(), // identify the origin for content de-duplication
-		bytes.NewReader([]byte("<html><p>index</p></html>")),
-	))
+  t.Run("index.html", validator.TestReader(
+    t.Name(), // identify the origin for content de-duplication
+    bytes.NewReader([]byte("<html><p>index</p></html>")),
+  ))
 
-	t.Run("sitemap.html", 	validator.TestReader(
-		t.Name(), // identify the origin for content de-duplication
-		bytes.NewReader([]byte("<html><p>sitemap</p></html>")),
-	))
+  t.Run("sitemap.html", validator.TestReader(
+    t.Name(), // identify the origin for content de-duplication
+    bytes.NewReader([]byte("<html><p>sitemap</p></html>")),
+  ))
 }
-
 ```
 
 ## Command Line Usage
@@ -69,6 +68,7 @@ pageseo scan --strict ./**/*.html
 - [ ] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Provide a command line scanner that can crawl live websites.
 - [ ] Provide a service that can crawl a target at an interval.
+- [ ] Make sure `--failfast` works for CLI.
 
 ## Similar Projects
 
