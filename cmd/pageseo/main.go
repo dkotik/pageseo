@@ -27,6 +27,12 @@ func main() {
 						Usage:   "enable strict mode",
 						Value:   false,
 					},
+					&cli.StringFlag{
+						Name:    "namespace",
+						Aliases: []string{"n"},
+						Usage:   "namespace for metadata unique constraint",
+						Value:   "",
+					},
 					// &cli.BoolFlag{
 					// 	Name:    "verbose",
 					// 	Aliases: []string{"v"},
@@ -42,9 +48,13 @@ func main() {
 
 					var v *pageseo.PageValidator
 					if cmd.Bool("strict") {
-						v = pageseo.NewStrict(pageseo.Requirements{})
+						v = pageseo.NewStrict(pageseo.Requirements{
+							DeduplicationNamespace: cmd.String("namespace"),
+						})
 					} else {
-						v = pageseo.New(pageseo.Requirements{})
+						v = pageseo.New(pageseo.Requirements{
+							DeduplicationNamespace: cmd.String("namespace"),
+						})
 					}
 
 					tests := make([]testing.InternalTest, 0, targets.Len())
