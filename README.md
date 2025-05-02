@@ -66,6 +66,7 @@ pageseo scan --strict ./**/*.html
 - [x] Add open graph validations.
 - [x] Add twitter validations.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
+- [ ] Validate image size.
 - [ ] Provide a command line scanner that can crawl live websites.
 - [ ] Provide a service that can crawl a target at an interval.
 - [ ] Make sure `--failfast` works for CLI.

@@ -13,7 +13,7 @@ const (
 
 func NewTitleValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
-		s.Normalizer = NormalizeLineToNFC
+		s.Normalizer = PassthroughNormalizer
 	}
 	if s.MinimumLength < 1 {
 		s.MinimumLength = DefaultMinimumTitleLength
