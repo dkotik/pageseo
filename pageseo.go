@@ -100,12 +100,9 @@ func New(r Requirements) *PageValidator {
 	if r.Description == nil {
 		r.Description = NewDescriptionValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
-	if r.ImageAltText == nil {
-		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: r.Normalizer})
+	if r.Heading == nil {
+		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
-	// if r.ImageSrc == nil {
-	// 	r.ImageSrc = NewImageSrcValidator(StringConstraints{Normalizer: r.Normalizer})
-	// }
 	if r.Language == nil {
 		r.Language = htmltest.ValidatorFunc(func(s string) error {
 			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
@@ -117,6 +114,15 @@ func New(r Requirements) *PageValidator {
 	if r.URL == nil {
 		r.URL = htmltest.NewURLValidator(nil, http.StatusOK)
 	}
+	if r.LinkText == nil {
+		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: r.Normalizer})
+	}
+	if r.ImageAltText == nil {
+		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: r.Normalizer})
+	}
+	// if r.ImageSrc == nil {
+	// 	r.ImageSrc = NewImageSrcValidator(StringConstraints{Normalizer: r.Normalizer})
+	// }
 
 	return &PageValidator{
 		Title:                    r.TitleDeduplicator.Wrap(r.Title),
@@ -225,7 +231,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			}
 			switch node.Data {
 			case "a":
-				if r.LinkText == nil || r.LinkText == htmltest.SkipValidator {
+				if r.LinkText == htmltest.SkipValidator {
 					continue
 				}
 				t.Run(htmltest.Path(node), r.TestLink(origin, node))

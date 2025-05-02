@@ -15,5 +15,11 @@ func TestMinimalPage(t *testing.T) {
 	}
 	defer f.Close()
 
-	NewStrict(Requirements{}).TestReader(t.Name(), f)(t)
+	NewStrict(Requirements{
+		// LinkText: htmltest.SkipValidator,
+		// LinkText: NewLinkTextValidator(StringConstraints{
+		// 	MinimumLength: 1,
+		// 	MaximumLength: 100,
+		// }),
+	}).TestReader(t.Name(), f)(t)
 }

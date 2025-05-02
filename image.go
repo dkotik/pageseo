@@ -117,7 +117,7 @@ func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing
 			}
 		}
 
-		if r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator {
+		if r.ImageAltText == htmltest.SkipValidator {
 			return
 		}
 		alt, ok := attributes["alt"]
