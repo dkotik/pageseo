@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	DefaultMinimumLinkTextLength = 4
+	// DefaultMinimumLinkTextLength sets the minimum length of the anchor text.
+	// A pagination link is often a single character.
+	DefaultMinimumLinkTextLength = 1
 	DefaultMaximumLinkTextLength = DefaultMaximumTitleLength * 6
 )
 
