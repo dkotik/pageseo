@@ -261,7 +261,7 @@ func (v PageValidator) TestReader(origin string, r io.Reader) func(t *testing.T)
 		if tree == nil {
 			t.Fatal("no HTML tree found in the reader")
 		}
-		t.Run(origin, v.Test(origin, tree))
+		v.Test(origin, tree)(t)
 	}
 }
 

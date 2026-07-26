@@ -81,6 +81,7 @@ func GetPictureSourceList(node *html.Node) (result []string, err error) {
 
 func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
+		logAttributes(t, node.Attr)
 		attributes, err := htmltest.ParseAttributes(node)
 		if err != nil {
 			t.Fatal("unable to extract image attributes:", err)

@@ -59,17 +59,24 @@ func (s linkTextValidator) Validate(value string) error {
 
 func (r PageValidator) TestLink(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
-		if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
-			for descendant := range node.Descendants() {
-				if descendant.Type != html.ElementNode {
-					continue
-				}
+		logAttributes(t, node.Attr)
+		isEmpty := true
+		for descendant := range node.Descendants() {
+			switch descendant.Type {
+			case html.TextNode:
+				// if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
+				// 	t.Errorf("invalid anchor text: %v", err)
+				// }
+				isEmpty = false
+			case html.ElementNode:
 				switch strings.ToLower(descendant.Data) {
-				case "a", "svg":
-					return // contains an image
+				case "a", "svg": // contains an image
 				}
+				isEmpty = false
 			}
-			t.Errorf("invalid anchor text: %v", err)
+		}
+		if isEmpty {
+			t.Error("anchor is empty of meaningful content")
 		}
 
 		attributes, err := htmltest.ParseAttributes(node)
@@ -89,7 +96,13 @@ func (r PageValidator) TestLink(origin string, node *html.Node) func(t *testing.
 			}
 		}
 
-		if href, ok := attributes["href"]; ok {
+		if href, ok := attributes["href"]; ok && len(href) > 0 {
+			href, _, ok := strings.Cut(href, "#")
+			if ok {
+				if strings.TrimSpace(href) == "" {
+					return // just a #hash reference
+				}
+			}
 			href, err := htmltest.JoinURL(origin, href)
 			if err != nil {
 				t.Errorf("failed to join path: %v", err)

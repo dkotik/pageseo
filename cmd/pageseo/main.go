@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime/debug"
 	"testing"
 
 	"github.com/dkotik/pageseo"
@@ -14,8 +15,9 @@ import (
 
 func main() {
 	cmd := &cli.Command{
-		Name:  "pageseo",
-		Usage: "validate HTML page conformity to common search engine optimization practices",
+		Name:    "pageseo",
+		Usage:   "validate HTML page conformity to common search engine optimization practices",
+		Version: version(),
 		Commands: []*cli.Command{
 			{
 				Name:  "scan",
@@ -77,4 +79,18 @@ func main() {
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatalf("🚫 Search engine optimization validation failed: %v.", err)
 	}
+}
+
+func version() string {
+	v := "dev"
+	if info, ok := debug.ReadBuildInfo(); ok {
+		v = info.Main.Version
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				v = v + "-" + setting.Value
+				break
+			}
+		}
+	}
+	return v
 }

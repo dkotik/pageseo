@@ -52,8 +52,24 @@ func TestSearchEngineOptimization(t *testing.T) {
 
 ## Command Line Usage
 
+### Installation
+
+- MacOS:
+  ```sh
+  brew tap dkotik/tap
+  brew install curl pageseo
+  ```
+- Debian Package: [latest release](releases)
+- Linux Binary: [latest release](releases)
+- Windows Binary: [latest release](releases)
+- Build from source:
+  ```sh
+  go install github.com/dkotik/pageseo/cmd/pageseo@latest
+  ```
+
+### Scanning
+
 ```sh
-go install github.com/dkotik/pageseo/cmd/pageseo@latest
 pageseo scan --strict ./**/*.html
 ```
 
