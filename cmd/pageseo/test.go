@@ -28,6 +28,7 @@ func newTest(ctx context.Context, target string, r *pageseo.PageValidator) testi
 
 type testDeps struct{}
 
+func (td testDeps) ModulePath() string                          { return "github.com/dkotik/pageseo" }
 func (td testDeps) MatchString(pat, str string) (bool, error)   { return true, nil }
 func (td testDeps) StartCPUProfile(w io.Writer) error           { return nil }
 func (td testDeps) StopCPUProfile()                             {}

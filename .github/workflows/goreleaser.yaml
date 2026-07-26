@@ -1,0 +1,37 @@
+name: goreleaser
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write # needed for signing the images with GitHub OIDC Token
+  # issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+      - name: Release
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          # 'latest', 'nightly', or a semver
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GO_RELEASER_GITHUB_TOKEN }}

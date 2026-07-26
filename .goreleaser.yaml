@@ -1,0 +1,68 @@
+version: 2
+before:
+  hooks:
+    - go generate ./...
+    - go test ./...
+builds:
+  - main: ./cmd/pageseo
+    id: "pageseo"
+    binary: pageseo
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - formats: ["zip"]
+checksum:
+  name_template: "checksums.txt"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs"
+      - "^testdata"
+homebrew_casks:
+  - name: pageseo
+    url:
+      template: "https://github.com/dkotik/pageseo/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      verified: github.com/dkotik/pageseo/
+      # Never `using: ":homebrew_curl"` as it requires installing homebrew
+      # curl before the cask itself can be installed
+      # MacOS comes with curl installed already.
+      using: ":homebrew_curl"
+    repository:
+      owner: dkotik
+      name: homebrew-tap
+      branch: main
+    homepage: "https://github.com/dkotik/pageseo"
+    description: "Send markdown files as electronic mail. Maintain mailing lists as templated text files."
+    license: "MIT"
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/pageseo"]
+          end
+nfpms:
+  - id: pageseo.deb
+    package_name: pageseo
+    formats:
+      - deb
+    vendor: "Dmitry Kotik"
+    homepage: "https://github.com/dkotik/pageseo"
+    maintainer: "Dmitry Kotik <7bt7hnl6f@relay.firefox.com>"
+    description: "HTML page search engine optimization test and utility suite."
+    license: "MIT" # required together with the copyright file below
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/pageseo/copyright
+        file_info:
+          mode: 0644
+signs:
+  - id: cosign
+    cmd: cosign
+    args: ["sign-blob", "--bundle", "${signature}", "${artifact}", "--yes"]
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
