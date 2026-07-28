@@ -70,7 +70,7 @@ func TestSearchEngineOptimization(t *testing.T) {
 ### Scanning
 
 ```sh
-pageseo scan --strict ./**/*.html
+pageseo --strict ./**/*.html
 ```
 
 ## Development Road Map
