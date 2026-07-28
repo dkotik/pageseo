@@ -201,7 +201,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				t.Errorf("first child element tag is not a <HEAD> tag: %s", child.Data)
 				break
 			}
-			t.Run("<HEAD> tag contains every required element", r.TestHead(child))
+			t.Run(htmltest.Path(child), r.TestHead(child))
 			break // found a head tag
 		}
 
@@ -216,7 +216,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			if child.Data != "body" {
 				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
 			}
-			t.Run("<BODY> tag contains valid headings", r.TestHeadings(child))
+			t.Run(htmltest.Path(child), r.TestHeadings(child))
 			break // found a body tag
 		}
 

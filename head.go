@@ -143,10 +143,10 @@ func (r PageValidator) TestHead(node *html.Node) func(t *testing.T) {
 		}
 
 		if found.FoundOpenGraphCard {
-			t.Run("validate Open Graph card", r.TestOpenGraphCard(node))
+			t.Run("og:card", r.TestOpenGraphCard(node))
 		}
 		if found.FoundTwitterCard {
-			t.Run("validate Twitter card", r.TestTwitterCard(node))
+			t.Run("twitter:card", r.TestTwitterCard(node))
 		}
 	}
 }
