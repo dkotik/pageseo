@@ -34,10 +34,10 @@ func main() {
 				Value:   "",
 			},
 			// &cli.BoolFlag{
-			// 	Name:    "verbose",
-			// 	Aliases: []string{"v"},
-			// 	Usage:   "enable verbose output",
-			// 	Value:   false,
+			// 	Name: "verbose",
+			// 	// Aliases: []string{"v"},
+			// 	Usage: "enable verbose output",
+			// 	Value: false,
 			// },
 		},
 		Action: cli.ActionFunc(func(ctx context.Context, cmd *cli.Command) error {
@@ -58,22 +58,46 @@ func main() {
 			}
 
 			tests := make([]testing.InternalTest, 0, targets.Len())
-			fsys := os.DirFS(".")
-			for _, target := range targets.Slice() {
-				if strings.IndexByte(target, '*') >= 0 {
-					matches, err := fs.Glob(fsys, target)
-					if err != nil {
-						return fmt.Errorf("file path glob failed: %w", err)
-					}
-					for _, target = range matches {
-						if info, err := fs.Stat(fsys, target); err == nil && !info.IsDir() {
-							tests = append(tests, newTest(ctx, target, v))
+			local, remote := separateLocalFromRemoteTargets(targets.Slice())
+			if len(local) > 0 {
+				fsys := os.DirFS(".")
+				loader := pageseo.NewFS(fsys)
+				for _, target := range local {
+					if strings.IndexByte(target, '*') >= 0 {
+						matches, err := fs.Glob(fsys, target)
+						if err != nil {
+							return fmt.Errorf("file path glob failed: %w", err)
 						}
+						for _, target = range matches {
+							if info, err := fs.Stat(fsys, target); err == nil && !info.IsDir() {
+								tests = append(tests, testing.InternalTest{
+									Name: newTestName(target),
+									F:    v.TestFile(target, loader),
+								})
+							}
+						}
+					} else {
+						tests = append(tests, testing.InternalTest{
+							Name: newTestName(target),
+							F:    v.TestFile(target, loader),
+						})
 					}
-				} else {
-					tests = append(tests, newTest(ctx, target, v))
 				}
 			}
+			if len(remote) > 0 {
+				crawler := pageseo.NewCrawler(
+					v,
+					newClientHTTP(),
+					newClientHTTP(),
+				)
+				for _, target := range remote {
+					tests = append(tests, testing.InternalTest{
+						Name: newTestName(target),
+						F:    crawler(target),
+					})
+				}
+			}
+
 			m := testing.MainStart(testDeps{}, tests, nil, nil, nil)
 			switch m.Run() {
 			case 0:

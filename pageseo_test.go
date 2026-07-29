@@ -2,6 +2,7 @@ package pageseo
 
 import (
 	"embed"
+	"os"
 	"testing"
 )
 
@@ -21,5 +22,5 @@ func TestMinimalPage(t *testing.T) {
 		// 	MinimumLength: 1,
 		// 	MaximumLength: 100,
 		// }),
-	}).TestReader(t.Name(), f)(t)
+	}).TestReader(t.Name(), f, NewFS(os.DirFS("testdata")))(t)
 }

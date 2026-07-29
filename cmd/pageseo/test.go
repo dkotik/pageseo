@@ -1,19 +1,50 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"io"
 	"net/url"
 	"os"
 	"reflect"
 	"strings"
-	"testing"
 	"time"
 
-	"github.com/dkotik/pageseo"
 	"mvdan.cc/xurls/v2"
 )
+
+func separateLocalFromRemoteTargets(targets []string) (local, remote []string) {
+nextTarget:
+	for _, target := range targets {
+		target = strings.TrimSpace(target)
+		if target == "" {
+			continue nextTarget
+		}
+		url, err := url.Parse(target)
+		if err == nil {
+			switch strings.ToLower(url.Scheme) {
+			case "http", "https":
+				remote = append(remote, url.String())
+				continue nextTarget
+			case "":
+				if url.Host == "localhost" || url.Host == "127.0.0.1" || url.Host == "::1" {
+					remote = append(remote, "http://"+target)
+					continue nextTarget
+				}
+				if _, err = os.Stat(target); err != nil {
+					if errors.Is(err, os.ErrNotExist) {
+						if xurls.Relaxed().MatchString(target) {
+							// likely a URL like <truthonly.com> or <www.something...>
+							remote = append(remote, "https://"+target)
+							continue nextTarget
+						}
+					}
+				}
+			}
+		}
+		local = append(local, url.Path)
+	}
+	return
+}
 
 func newTestName(target string) string {
 	i := len(target) - 1
@@ -26,55 +57,6 @@ func newTestName(target string) string {
 		}
 	}
 	return target
-}
-
-func newTest(ctx context.Context, target string, r *pageseo.PageValidator) testing.InternalTest {
-	target = strings.TrimSpace(target)
-	if target == "" {
-		return testing.InternalTest{
-			Name: newTestName(target),
-			F: func(t *testing.T) {
-				t.Fatal("invalid test target:", target)
-			},
-		}
-	}
-
-	url, err := url.Parse(target)
-	if err == nil {
-		switch strings.ToLower(url.Scheme) {
-		case "http", "https":
-			return testing.InternalTest{
-				Name: newTestName(target),
-				F:    r.TestURL(ctx, url.String()),
-			}
-		case "file":
-			target = url.Path
-		case "":
-			if _, err = os.Stat(target); err != nil {
-				if errors.Is(err, os.ErrNotExist) {
-					if xurls.Relaxed().MatchString(target) {
-						// likely a URL like <truthonly.com> or <www.something...>
-						return testing.InternalTest{
-							Name: newTestName(target),
-							F:    r.TestURL(ctx, "https://"+target),
-						}
-					}
-				} else {
-					return testing.InternalTest{
-						Name: newTestName(target),
-						F: func(t *testing.T) {
-							t.Fatal("invalid test target:", target)
-						},
-					}
-				}
-			}
-		}
-	}
-
-	return testing.InternalTest{
-		Name: newTestName(target),
-		F:    r.TestFile(target),
-	}
 }
 
 type testDeps struct{}

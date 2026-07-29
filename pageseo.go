@@ -1,7 +1,6 @@
 package pageseo
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -252,7 +251,11 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 	}
 }
 
-func (v PageValidator) TestReader(origin string, r io.Reader) func(t *testing.T) {
+func (v PageValidator) TestReader(
+	origin string,
+	r io.Reader,
+	loader Loader,
+) func(t *testing.T) {
 	return func(t *testing.T) {
 		tree, err := html.Parse(r)
 		if err != nil {
@@ -265,7 +268,7 @@ func (v PageValidator) TestReader(origin string, r io.Reader) func(t *testing.T)
 	}
 }
 
-func (v PageValidator) TestFile(p string) func(t *testing.T) {
+func (v PageValidator) TestFile(p string, loader Loader) func(t *testing.T) {
 	return func(t *testing.T) {
 		f, err := os.Open(p)
 		if err != nil {
@@ -276,26 +279,7 @@ func (v PageValidator) TestFile(p string) func(t *testing.T) {
 				t.Errorf("unable to close HTML file %q: %v", p, cerr)
 			}
 		})
-		v.TestReader("file://"+p, f)(t)
-	}
-}
-
-func (v PageValidator) TestURL(ctx context.Context, url string) func(t *testing.T) {
-	return func(t *testing.T) {
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			t.Fatal("unable to create request", err)
-		}
-		resp, err := http.DefaultClient.Do(req.WithContext(t.Context()))
-		if err != nil {
-			t.Fatalf("unable to fetch URL %q: %v", url, err)
-		}
-		t.Cleanup(func() {
-			if cerr := resp.Body.Close(); cerr != nil {
-				t.Errorf("unable to close response body for URL %q: %v", url, cerr)
-			}
-		})
-		v.TestReader(url, resp.Body)(t)
+		v.TestReader("file://"+p, f, loader)(t)
 	}
 }
 
