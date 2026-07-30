@@ -71,20 +71,22 @@ func newTest(name string, run func(*testing.T)) testing.InternalTest {
 	}
 }
 
+var errMain = errors.New("testing: unexpected use of main testing function")
+
 type testDeps struct{}
 
 func (td testDeps) ModulePath() string                          { return "github.com/dkotik/pageseo" }
 func (td testDeps) MatchString(pat, str string) (bool, error)   { return true, nil }
-func (td testDeps) StartCPUProfile(w io.Writer) error           { return nil }
+func (td testDeps) StartCPUProfile(w io.Writer) error           { return errMain }
 func (td testDeps) StopCPUProfile()                             {}
-func (td testDeps) WriteProfileTo(string, io.Writer, int) error { return nil }
+func (td testDeps) WriteProfileTo(string, io.Writer, int) error { return errMain }
 func (td testDeps) CoordinateFuzzing(time.Duration, int64, time.Duration, int64, int, []corpusEntry, []reflect.Type, string, string) error {
 	return nil
 }
 func (td testDeps) InitRuntimeCoverage() (mode string, tearDown func(coverprofile string, gocoverdir string) (string, error), snapcov func() float64) {
 	return "", nil, nil
 }
-func (td testDeps) RunFuzzWorker(func(corpusEntry) error) error { return nil }
+func (td testDeps) RunFuzzWorker(func(corpusEntry) error) error { return errMain }
 func (td testDeps) ReadCorpus(string, []reflect.Type) ([]corpusEntry, error) {
 	return nil, nil
 }

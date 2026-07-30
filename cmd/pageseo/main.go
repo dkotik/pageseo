@@ -21,24 +21,8 @@ func main() {
 		Usage:   "validate HTML page conformity to common search engine optimization practices",
 		Version: version(),
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "strict",
-				Aliases: []string{"s"},
-				Usage:   "enable strict mode",
-				Value:   false,
-			},
-			&cli.StringFlag{
-				Name:    "namespace",
-				Aliases: []string{"n"},
-				Usage:   "namespace for metadata unique constraint",
-				Value:   "",
-			},
-			// &cli.BoolFlag{
-			// 	Name: "verbose",
-			// 	// Aliases: []string{"v"},
-			// 	Usage: "enable verbose output",
-			// 	Value: false,
-			// },
+			flagStrict,
+			flagVerbose,
 		},
 		Action: cli.ActionFunc(func(ctx context.Context, cmd *cli.Command) error {
 			targets := cmd.Args()
