@@ -81,6 +81,9 @@ func (web loaderHTTP) Load(ctx context.Context, url string) (data []byte, conten
 	if err != nil {
 		return nil, "", fmt.Errorf("unable to parse header <Content-Type> <%s>: %w", contentTypeRaw, err)
 	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		err = fmt.Errorf("HTTP %d error: %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
 	// if contentType == "" {
 	// 	contentType = "application/octet-stream"
 	// }

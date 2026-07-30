@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TestInternalJoinPathURL(t *testing.T) {
+	// requires the protocol prefix!
+	origin, err := url.Parse("https://www.google.com/some/path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(origin.Host)
+	location, err := url.Parse("/rooted/path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// t.Log(location.Path)
+	result := joinInternalPath(origin, location).String()
+	if result != "" {
+		t.Log(result)
+		t.Fatal("does not match expected")
+	}
+}
+
 func TestIsExternalLocation(t *testing.T) {
 	tcs := []struct {
 		Origin     string
@@ -56,6 +75,18 @@ func TestIsExternalLocation(t *testing.T) {
 				t.Fatal("location is not external to origin")
 			}
 		}
+	}
+}
+
+func TestStandardBehaviorOfPathJoinURL(t *testing.T) {
+	parsed, err := url.Parse("www.google.com/skdjlf//dslfjskjadf")
+	if err != nil {
+		t.Fatal("unable to parse:", err)
+	}
+	joined := parsed.JoinPath("/1/2/3/4")
+	// JoinPath does not think of absolute paths
+	if joined.String() != "www.google.com/skdjlf/dslfjskjadf/1/2/3/4" {
+		t.Fatal("unexpected path join:", joined)
 	}
 }
 

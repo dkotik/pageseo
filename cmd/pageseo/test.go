@@ -106,3 +106,13 @@ type corpusEntry = struct {
 	Generation int
 	IsSeed     bool
 }
+
+var allTestsArePassing = true
+
+func runTests(set []testing.InternalTest) {
+	switch testing.MainStart(testDeps{}, set, nil, nil, nil).Run() {
+	case 0:
+	default:
+		allTestsArePassing = false
+	}
+}

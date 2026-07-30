@@ -35,6 +35,28 @@ func IsExternalLocation(origin, location *url.URL) bool {
 	return !IsLocalHost(origin.Hostname()) || !!IsLocalHost(location.Hostname()) || (origin.Port() != location.Port())
 }
 
+func joinInternalPath(origin, location *url.URL) *url.URL {
+	if location.Path == "" {
+		return origin
+	}
+	if location.Path[0] == '/' {
+		return &url.URL{
+			Scheme:      origin.Scheme,
+			Opaque:      origin.Opaque,
+			User:        origin.User,
+			Host:        origin.Host,
+			Path:        location.Path,
+			Fragment:    location.Fragment,
+			RawQuery:    origin.RawQuery,
+			RawPath:     location.RawPath,
+			RawFragment: location.RawFragment,
+			ForceQuery:  origin.ForceQuery,
+			OmitHost:    origin.OmitHost,
+		}
+	}
+	return origin.JoinPath(location.Path)
+}
+
 func NewLinkTextValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = PassthroughNormalizer
@@ -148,7 +170,7 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"nofollow\" directive")
 				}
 			} else {
-				url = origin.JoinPath(url.Path)
+				url = joinInternalPath(origin, url)
 			}
 			// _, _, err = r.Loader.Load(t.Context(), href)
 			// if err != nil {

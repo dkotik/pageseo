@@ -87,14 +87,16 @@ func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing
 			t.Fatal("unable to extract image attributes:", err)
 		}
 		if src, ok := attributes["src"]; ok {
-			src, err := htmltest.JoinURL(origin, src)
-			if err != nil {
-				t.Fatalf("failed to join path: %v", err)
-			}
-			// TODO:? r.ImageSrc
-			if err := r.URL.Validate(src); err != nil {
-				t.Log("Src:", src)
-				t.Errorf("invalid image source: %v", err)
+			if !strings.HasPrefix(src, "data:") {
+				src, err := htmltest.JoinURL(origin, src)
+				if err != nil {
+					t.Fatalf("failed to join path: %v", err)
+				}
+				// TODO:? r.ImageSrc
+				if err := r.URL.Validate(src); err != nil {
+					t.Log("Src:", src)
+					t.Errorf("invalid image source: %v", err)
+				}
 			}
 		} else {
 			srcSet, err := GetPictureSourceList(node.Parent)

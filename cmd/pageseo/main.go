@@ -1,11 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"runtime/debug"
 	"strings"
@@ -22,13 +21,15 @@ func main() {
 		Version: version(),
 		Flags: []cli.Flag{
 			flagStrict,
+			flagFailFast,
 			flagVerbose,
 		},
-		Action: cli.ActionFunc(func(ctx context.Context, cmd *cli.Command) error {
+		Action: cli.ActionFunc(func(ctx context.Context, cmd *cli.Command) (err error) {
 			targets := cmd.Args()
 			if !targets.Present() {
 				return cli.ShowRootCommandHelp(cmd) // nothing is happening
 			}
+			// failfast := cmd.Bool(flagFailFast.Name)
 
 			var v pageseo.PageValidator
 			fsys := os.DirFS(".")
@@ -67,43 +68,39 @@ func main() {
 					}
 				}
 			}
+			runTests(tests)
+			tests = tests[:0]
+
 			if len(remote) > 0 {
-				crawler := pageseo.NewCrawler(
-					v,
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-					newClientHTTP(),
-				)
+				queue := newResourceQueue(remote...)
+				loader := pageseo.NewCache(queue.Push).WrapLoader(newClientPool(6))
+				v.Loader = loader
 				for _, target := range remote {
-					tests = append(tests, newTest(
-						target,
-						crawler(target),
-					))
+					_, _, _ = loader.Load(ctx, target)
+				}
+
+				for {
+					batch := queue.Pull()
+					if len(batch) == 0 {
+						return nil // all finished
+					}
+					for _, target := range batch {
+						tests = append(tests, newTest(
+							target.URL,
+							v.TestReader(target.URL, bytes.NewReader(target.Content)),
+						))
+					}
+					runTests(tests)
 				}
 			}
-
-			m := testing.MainStart(testDeps{}, tests, nil, nil, nil)
-			switch m.Run() {
-			case 0:
-				fmt.Println("\n🟢 All tests passed.")
-				return nil
-			default:
-				return errors.New("some validation tests failed")
-			}
+			return nil
 		}),
 	}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		log.Fatalf("🚫 Search engine optimization validation failed: %v.", err)
+		fmt.Printf(" [🚫] Unable to analyze pages: %v.\n", err.Error())
+	} else if allTestsArePassing {
+		fmt.Println(" [🟢] Scanned pages are optimized for search engines.")
 	}
 }
 

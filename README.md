@@ -70,22 +70,22 @@ func TestSearchEngineOptimization(t *testing.T) {
 ### Scanning
 
 ```sh
-pageseo --strict ./**/*.html
+pageseo --strict --verbose --failfast=false ./**/*.html
 ```
 
 ## Development Road Map
 
 **Project status: draft in progress. The test suite is minimal, but in strict mode it will find at least one reasonable optimization suggestion for your website.**
 
+- [x] Provide a command line scanner that can crawl live websites.
+- [x] Make sure `--failfast` works for CLI.
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [x] Provide a command line scanner that can validate URLs.
 - [x] Add open graph validations.
 - [x] Add twitter validations.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Validate image size.
-- [ ] Provide a command line scanner that can crawl live websites.
 - [ ] Provide a service that can crawl a target at an interval.
-- [ ] Make sure `--failfast` works for CLI.
 
 ## Similar Projects
 
