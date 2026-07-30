@@ -23,6 +23,7 @@ func ParseTextContent(node *html.Node) string {
 	return strings.TrimSuffix(b.String(), ` `)
 }
 
+// TODO: deprecate into a pageseo.TestDuplicateAttributes
 func ParseAttributes(node *html.Node) (map[string]string, error) {
 	attrs := make(map[string]string)
 	var ok bool

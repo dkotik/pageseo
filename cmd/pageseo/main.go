@@ -69,17 +69,17 @@ func main() {
 						}
 						for _, target = range matches {
 							if info, err := fs.Stat(fsys, target); err == nil && !info.IsDir() {
-								tests = append(tests, testing.InternalTest{
-									Name: newTestName(target),
-									F:    v.TestFile(target),
-								})
+								tests = append(tests, newTest(
+									target,
+									v.TestFile(target),
+								))
 							}
 						}
 					} else {
-						tests = append(tests, testing.InternalTest{
-							Name: newTestName(target),
-							F:    v.TestFile(target),
-						})
+						tests = append(tests, newTest(
+							target,
+							v.TestFile(target),
+						))
 					}
 				}
 			}
@@ -100,10 +100,10 @@ func main() {
 					newClientHTTP(),
 				)
 				for _, target := range remote {
-					tests = append(tests, testing.InternalTest{
-						Name: newTestName(target),
-						F:    crawler(target),
-					})
+					tests = append(tests, newTest(
+						target,
+						crawler(target),
+					))
 				}
 			}
 

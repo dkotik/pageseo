@@ -227,30 +227,41 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			t.Errorf("HTML tag contains more than two children: %s", child.Data)
 		}
 
-		for node := range node.Descendants() {
-			if node.Type != html.ElementNode {
-				continue
-			}
+		for rc := range r.loadResources(t, originURL, node) {
 			switch node.Data {
 			case "a":
-				if r.LinkText == htmltest.SkipValidator {
-					continue
-				}
-				t.Run(htmltest.Path(node), r.TestLink(originURL, node))
+				t.Run(htmltest.Path(rc.Node), r.TestLink(originURL, rc.Node))
 			case "img":
-				// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
-				// 	continue
-				// }
-				t.Run(htmltest.Path(node), r.TestImage(origin, node))
-				// if err = ValidateImage(node); err != nil {
-				// 	t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
-				// }
-				// case "script":
-				// 	t.Run("script tag has valid attributes", r.TestScript(node))
-				// case "style":
-				// 	t.Run("style tag has valid attributes", r.TestStyle(node))
+				t.Run(htmltest.Path(rc.Node), r.TestImage(origin, rc.Node))
+			default:
+				t.Error(htmltest.Path(rc.Node), ": unexpected link node:", node.Data)
 			}
 		}
+
+		// for node := range node.Descendants() {
+		// 	if node.Type != html.ElementNode {
+		// 		continue
+		// 	}
+		// 	switch node.Data {
+		// 	case "a":
+		// 		// if r.LinkText == htmltest.SkipValidator {
+		// 		// 	continue
+		// 		// }
+		// 		t.Run(htmltest.Path(node), r.TestLink(originURL, node))
+		// 	case "img":
+		// 		// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
+		// 		// 	continue
+		// 		// }
+		// 		t.Run(htmltest.Path(node), r.TestImage(origin, node))
+		// 		// if err = ValidateImage(node); err != nil {
+		// 		// 	t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
+		// 		// }
+		// 		// case "script":
+		// 		// 	t.Run("script tag has valid attributes", r.TestScript(node))
+		// 		// case "style":
+		// 		// 	t.Run("style tag has valid attributes", r.TestStyle(node))
+		// 	}
+		// }
 	}
 }
 

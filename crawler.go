@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"net/http"
 	"net/url"
-	"slices"
-	"strings"
 	"sync"
 	"testing"
 )
@@ -35,7 +33,7 @@ func NewCrawler(
 	semaphore := NewSemaphore(loaders...)
 	return func(origin string) func(*testing.T) {
 		return func(t *testing.T) {
-			root, err := url.Parse(origin)
+			_, err := url.Parse(origin)
 			if err != nil {
 				t.Fatalf("invalid URL <%s>: %v", origin, err)
 			}
@@ -64,36 +62,36 @@ func NewCrawler(
 			validator.Loader = loader
 			validator.TestReader(origin, bytes.NewReader(content))(t)
 
-			limit := 100
-			next = next[1:] // first item is the page itself
-			for {
-				if len(next) == 0 {
-					break
-				}
-				batch := slices.Clone(next)
-				next = next[:0]
-				for _, next := range batch {
-					limit--
-					if limit == 0 {
-						t.Error("100 attempts ran out")
-					}
-					nextTarget, err := url.Parse(next.URL)
-					if err != nil {
-						t.Errorf("invalid URL <%s>: %v", next.URL, err)
-						continue
-					}
-					if nextTarget.Host != root.Host {
-						continue // external URL, outside of this domain
-					}
-					t.Run(
-						strings.TrimPrefix(nextTarget.Path, "/"),
-						validator.TestReader(
-							next.URL,
-							bytes.NewReader(next.Content),
-						),
-					)
-				}
-			}
+			// limit := 100
+			// next = next[1:] // first item is the page itself
+			// for {
+			// 	if len(next) == 0 {
+			// 		break
+			// 	}
+			// 	batch := slices.Clone(next)
+			// 	next = next[:0]
+			// 	for _, next := range batch {
+			// 		limit--
+			// 		if limit == 0 {
+			// 			t.Error("100 attempts ran out")
+			// 		}
+			// 		nextTarget, err := url.Parse(next.URL)
+			// 		if err != nil {
+			// 			t.Errorf("invalid URL <%s>: %v", next.URL, err)
+			// 			continue
+			// 		}
+			// 		if nextTarget.Host != root.Host {
+			// 			continue // external URL, outside of this domain
+			// 		}
+			// 		t.Run(
+			// 			strings.TrimPrefix(nextTarget.Path, "/"),
+			// 			validator.TestReader(
+			// 				next.URL,
+			// 				bytes.NewReader(next.Content),
+			// 			),
+			// 		)
+			// 	}
+			// }
 		}
 	}
 }

@@ -5,13 +5,6 @@ import (
 	"sync"
 )
 
-type Resource struct {
-	URL         string
-	ContentType string
-	Content     []byte
-	Error       error
-}
-
 type cachedResource struct {
 	Content     []byte
 	ContentType string

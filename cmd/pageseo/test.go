@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/dkotik/pageseo"
@@ -58,6 +59,16 @@ func newTestName(target string) string {
 		}
 	}
 	return target
+}
+
+func newTest(name string, run func(*testing.T)) testing.InternalTest {
+	return testing.InternalTest{
+		Name: newTestName(name),
+		F: func(t *testing.T) {
+			t.Parallel()
+			run(t)
+		},
+	}
 }
 
 type testDeps struct{}

@@ -6,6 +6,15 @@ import (
 	"golang.org/x/net/html"
 )
 
+func getAttribute(node *html.Node, name string) (value string, ok bool) {
+	for _, attr := range node.Attr {
+		if attr.Key == name {
+			return attr.Val, true
+		}
+	}
+	return "", false
+}
+
 func TestDocumentRootHasExactlyDoctypeAndHTMLNodes(root *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if root.FirstChild.NextSibling == nil {

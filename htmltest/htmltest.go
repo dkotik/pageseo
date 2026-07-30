@@ -25,7 +25,8 @@ func Path(node *html.Node) string {
 		}
 	}
 	slices.Reverse(segments)
-	return path.Join(segments...)
+	// return path.Join(segments...)
+	return strings.Join(segments, ">")
 }
 
 type MatchError struct {
