@@ -7,7 +7,6 @@ import (
 	"path"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -58,12 +57,12 @@ func (r PageValidator) enumerateResources(
 			case "a":
 				href, ok := getAttribute(node, `href`)
 				if !ok {
-					t.Error(htmltest.Path(node)+":", "here is no a[href] attribute")
+					t.Error(getElementPath(node)+":", "here is no a[href] attribute")
 					continue
 				}
 				url, err := url.Parse(href)
 				if err != nil {
-					t.Errorf("%s: broken a[href] <%s>: %v", htmltest.Path(node), href, err)
+					t.Errorf("%s: broken a[href] <%s>: %v", getElementPath(node), href, err)
 					continue
 				}
 				incomplete = newResourceAssociation(node, origin, url)
@@ -73,12 +72,12 @@ func (r PageValidator) enumerateResources(
 			case "img":
 				src, ok := getAttribute(node, `src`)
 				if !ok {
-					t.Error(htmltest.Path(node)+":", "here is no img[src] attribute")
+					t.Error(getElementPath(node)+":", "here is no img[src] attribute")
 					continue
 				}
 				url, err := url.Parse(src)
 				if err != nil {
-					t.Errorf("%s: broken img[src] <%s>: %v", htmltest.Path(node), src, err)
+					t.Errorf("%s: broken img[src] <%s>: %v", getElementPath(node), src, err)
 					continue
 				}
 				incomplete = newResourceAssociation(node, origin, url)

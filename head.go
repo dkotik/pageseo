@@ -82,7 +82,7 @@ func (r PageValidator) TestHead(node *html.Node) func(t *testing.T) {
 						if found.FoundValidViewPort {
 							t.Error("there are multiple viewport meta tags")
 						}
-						csv, err := htmltest.ParseCommaSeparatedKeyedValues(content)
+						csv, err := ParseCommaSeparatedKeyedValues(content)
 						if err != nil {
 							t.Errorf("meta tag content for viewport %q is not valid: %v", content, err)
 							continue

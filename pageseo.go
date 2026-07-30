@@ -76,22 +76,22 @@ func New(loader Loader, r Requirements) PageValidator {
 	}
 
 	if r.TitleDeduplicator == nil {
-		r.TitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.TitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 	if r.DescriptionDeduplicator == nil {
-		r.DescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.DescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 	if r.OpenGraphCardTitleDeduplicator == nil {
-		r.OpenGraphCardTitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.OpenGraphCardTitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 	if r.OpenGraphCardDescriptionDeduplicator == nil {
-		r.OpenGraphCardDescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.OpenGraphCardDescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 	if r.TwitterCardTitleDeduplicator == nil {
-		r.TwitterCardTitleDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.TwitterCardTitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 	if r.TwitterCardDescriptionDeduplicator == nil {
-		r.TwitterCardDescriptionDeduplicator = htmltest.NewDeduplicator(r.DeduplicationNamespace)
+		r.TwitterCardDescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 
 	if r.Title == nil {
@@ -203,7 +203,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				t.Errorf("first child element tag is not a <HEAD> tag: %s", child.Data)
 				break
 			}
-			t.Run(pathPrefixForHTML+htmltest.Path(child), r.TestHead(child))
+			t.Run(getElementPath(child), r.TestHead(child))
 			break // found a head tag
 		}
 
@@ -218,7 +218,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			if child.Data != "body" {
 				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
 			}
-			t.Run(pathPrefixForHTML+htmltest.Path(child), r.TestHeadings(child))
+			t.Run(getElementPath(child), r.TestHeadings(child))
 			break // found a body tag
 		}
 
@@ -230,11 +230,11 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 		for rc := range r.loadResources(t, originURL, node) {
 			switch rc.Node.Data {
 			case "a":
-				t.Run(pathPrefixForHTML+htmltest.Path(rc.Node), r.TestLink(originURL, rc.Node))
+				t.Run(getElementPath(rc.Node), r.TestLink(originURL, rc.Node))
 			case "img":
-				t.Run(pathPrefixForHTML+htmltest.Path(rc.Node), r.TestImage(origin, rc.Node))
+				t.Run(getElementPath(rc.Node), r.TestImage(origin, rc.Node))
 			default:
-				t.Errorf("%s: unexpected link node: %s", htmltest.Path(rc.Node), rc.Node.Data)
+				t.Errorf("%s: unexpected link node: %s", getElementPath(rc.Node), rc.Node.Data)
 			}
 		}
 

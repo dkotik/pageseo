@@ -35,20 +35,3 @@ func ParseAttributes(node *html.Node) (map[string]string, error) {
 	}
 	return attrs, nil
 }
-
-func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
-	values := make(map[string]string)
-	var ok bool
-	for _, pair := range strings.Split(s, ",") {
-		key, value, _ := strings.Cut(pair, "=")
-		key = strings.TrimSpace(key)
-		if key == "" {
-			continue
-		}
-		if _, ok = values[key]; ok {
-			return nil, fmt.Errorf("duplicate tag attribute found: %s", key)
-		}
-		values[key] = strings.TrimSpace(value)
-	}
-	return values, nil
-}

@@ -1,13 +1,15 @@
-package htmltest
+package pageseo
 
 import (
 	"errors"
 	"testing"
+
+	"github.com/dkotik/pageseo/htmltest"
 )
 
 func TestDeduplication(t *testing.T) {
 	dd := NewDeduplicator("test").Wrap(
-		ValidatorFunc(func(s string) error {
+		htmltest.ValidatorFunc(func(s string) error {
 			return nil
 		}),
 	)

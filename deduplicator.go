@@ -1,8 +1,10 @@
-package htmltest
+package pageseo
 
 import (
 	"errors"
 	"sync"
+
+	"github.com/dkotik/pageseo/htmltest"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 
 type deduplicator struct {
 	nameSpace string
-	next      Validator
+	next      htmltest.Validator
 	mu        *sync.Mutex
 	known     map[string]struct{}
 }
@@ -35,7 +37,7 @@ type deduplicatorMiddleware struct {
 	known     map[string]struct{}
 }
 
-func (d *deduplicatorMiddleware) Wrap(next Validator) Validator {
+func (d *deduplicatorMiddleware) Wrap(next htmltest.Validator) htmltest.Validator {
 	return &deduplicator{
 		nameSpace: d.nameSpace,
 		next:      next,
@@ -44,7 +46,7 @@ func (d *deduplicatorMiddleware) Wrap(next Validator) Validator {
 	}
 }
 
-func NewDeduplicator(nameSpace string) Middleware {
+func NewDeduplicator(nameSpace string) htmltest.Middleware {
 	return &deduplicatorMiddleware{
 		nameSpace: nameSpace,
 		mu:        &sync.Mutex{},

@@ -75,8 +75,6 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 
 ## Development Road Map
 
-**Project status: draft in progress. The test suite is minimal, but in strict mode it will find at least one reasonable optimization suggestion for your website.**
-
 - [x] Provide a command line scanner that can crawl live websites.
 - [x] Make sure `--failfast` works for CLI.
 - [x] Provide a command line scanner that can validate statically generated websites.
@@ -84,6 +82,7 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Add open graph validations.
 - [x] Add twitter validations.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
+- [ ] Deprecate `htmltest` package.
 - [ ] Validate image size.
 - [ ] Provide a service that can crawl a target at an interval.
 
