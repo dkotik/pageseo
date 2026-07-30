@@ -32,7 +32,7 @@ func newResourceAssociation(
 	URL.Path = path.Clean(URL.Path)
 	isExternal := IsExternalLocation(origin, URL)
 	if !isExternal {
-		URL = origin.JoinPath(URL.Path)
+		URL = joinInternalPath(origin, URL)
 	}
 	return resourceAssociation{
 		Node: node,

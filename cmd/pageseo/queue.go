@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/url"
 	"slices"
 	"strings"
@@ -23,7 +22,7 @@ func newResourceQueue(origins ...string) *resourceQueue {
 		parsed, err := url.Parse(origin)
 		if err == nil {
 			host := strings.TrimSpace(parsed.Hostname())
-			if host != "" {
+			if host != "" && slices.Index(domains, host) == -1 {
 				domains = append(domains, host)
 			}
 		}
@@ -41,7 +40,7 @@ func newResourceQueue(origins ...string) *resourceQueue {
 
 func (rq *resourceQueue) Push(r pageseo.Resource) {
 	if r.Error != nil || r.ContentType != "text/html" {
-		fmt.Println("SKIP ", r.URL, r.Error)
+		// fmt.Println("SKIP ", r.URL, r.Error)
 		return
 	}
 	parsed, err := url.Parse(r.URL)

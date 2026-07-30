@@ -162,6 +162,9 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 				t.Errorf("failed to parse location: %v", err)
 				return
 			}
+			// TODO: is external should be pulled out of resource
+			// path merging should be taken care of when
+			// resource is loading
 			if IsExternalLocation(origin, url) {
 				if _, ok = rel["external"]; !ok {
 					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"external\" directive")

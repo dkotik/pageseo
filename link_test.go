@@ -16,9 +16,8 @@ func TestInternalJoinPathURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// t.Log(location.Path)
 	result := joinInternalPath(origin, location).String()
-	if result != "" {
+	if result != "https://www.google.com/rooted/path" {
 		t.Log(result)
 		t.Fatal("does not match expected")
 	}
