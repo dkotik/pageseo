@@ -2,7 +2,7 @@ package pageseo
 
 import (
 	"errors"
-	"slices"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -16,6 +16,24 @@ const (
 	DefaultMinimumLinkTextLength = 1
 	DefaultMaximumLinkTextLength = DefaultMaximumTitleLength * 6
 )
+
+// IsLocalHost return true if the host is a common
+// reference to the same local machine. If checking
+// a [url.URL] use the output of its `Hostname()` method
+// as input to this function.
+func IsLocalHost(host string) bool {
+	return host == "localhost" || host == "127.0.0.1" || host == "::1"
+}
+
+func IsExternalLocation(origin, location *url.URL) bool {
+	if location.Scheme != origin.Scheme && location.Scheme != "" {
+		return true
+	}
+	if location.Host == "" || location.Host == origin.Host {
+		return false
+	}
+	return !IsLocalHost(origin.Hostname()) || !!IsLocalHost(location.Hostname()) || (origin.Port() != location.Port())
+}
 
 func NewLinkTextValidator(s StringConstraints) htmltest.Validator {
 	if s.Normalizer == nil {
@@ -57,7 +75,7 @@ func (s linkTextValidator) Validate(value string) error {
 	}
 }
 
-func (r PageValidator) TestLink(origin string, node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		logAttributes(t, node.Attr)
 		isEmpty := true
@@ -85,32 +103,57 @@ func (r PageValidator) TestLink(origin string, node *html.Node) func(t *testing.
 			return
 		}
 
+		rel := make(map[string]struct{})
+		if relString, ok := attributes["rel"]; ok {
+			for _, directive := range strings.Fields(relString) {
+				_, ok = rel[directive]
+				if ok {
+					t.Errorf("duplicatel a[rel] directive: %s", directive)
+				} else {
+					rel[directive] = struct{}{}
+				}
+			}
+		}
+
 		if target, ok := attributes["target"]; ok {
 			if strings.ToLower(strings.TrimSpace(target)) == "_blank" {
-				rel, ok := attributes["rel"]
-				if !ok {
-					t.Errorf("anchor text with target=\"_blank\" should have a rel attribute")
-				} else if slices.Index(strings.Fields(rel), "noopener") == -1 {
+				if _, ok = rel["noopener"]; !ok {
 					t.Errorf("anchor text with target=\"_blank\" should have a rel=\"noopener\" setting to prevent tab nabbing; if you need to support older versions of Firefox, use rel=\"noopener noreferrer\"")
 				}
 			}
 		}
 
 		if href, ok := attributes["href"]; ok && len(href) > 0 {
+			// TODO: return this as string validator
+			// err = r.URL.Validate(href)
+			// if err != nil {
+			// 	t.Fatalf("dead URL: %v", err)
+			// }
 			href, _, ok := strings.Cut(href, "#")
 			if ok {
 				if strings.TrimSpace(href) == "" {
 					return // just a #hash reference
 				}
 			}
-			href, err := htmltest.JoinURL(origin, href)
+			url, err := url.Parse(href)
 			if err != nil {
-				t.Errorf("failed to join path: %v", err)
+				t.Errorf("failed to parse location: %v", err)
 				return
 			}
-			if err := r.URL.Validate(href); err != nil {
-				t.Fatalf("dead URL: %v", err)
+			if IsExternalLocation(origin, url) {
+				if _, ok = rel["external"]; !ok {
+					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"external\" directive")
+				}
+				if _, ok = rel["nofollow"]; !ok {
+					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"nofollow\" directive")
+				}
+			} else {
+				url = origin.JoinPath(url.Path)
 			}
+			// _, _, err = r.Loader.Load(t.Context(), href)
+			// if err != nil {
+			// 	t.Fatalf("unable to load URL <%s>: %v", err, href)
+			// }
 		} else {
 			t.Log("anchor text without href")
 		}

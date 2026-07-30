@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dkotik/pageseo"
 	"mvdan.cc/xurls/v2"
 )
 
@@ -26,7 +27,7 @@ nextTarget:
 				remote = append(remote, url.String())
 				continue nextTarget
 			case "":
-				if url.Host == "localhost" || url.Host == "127.0.0.1" || url.Host == "::1" {
+				if pageseo.IsLocalHost(url.Hostname()) {
 					remote = append(remote, "http://"+target)
 					continue nextTarget
 				}

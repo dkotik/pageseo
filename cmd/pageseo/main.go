@@ -46,22 +46,21 @@ func main() {
 				return cli.ShowRootCommandHelp(cmd) // nothing is happening
 			}
 
-			var v *pageseo.PageValidator
+			var v pageseo.PageValidator
+			fsys := os.DirFS(".")
+			loader := pageseo.NewFS(fsys)
 			if cmd.Bool("strict") {
-				v = pageseo.NewStrict(pageseo.Requirements{
+				v = pageseo.NewStrict(loader, pageseo.Requirements{
 					DeduplicationNamespace: cmd.String("namespace"),
 				})
 			} else {
-				v = pageseo.New(pageseo.Requirements{
+				v = pageseo.New(loader, pageseo.Requirements{
 					DeduplicationNamespace: cmd.String("namespace"),
 				})
 			}
-
 			tests := make([]testing.InternalTest, 0, targets.Len())
 			local, remote := separateLocalFromRemoteTargets(targets.Slice())
 			if len(local) > 0 {
-				fsys := os.DirFS(".")
-				loader := pageseo.NewFS(fsys)
 				for _, target := range local {
 					if strings.IndexByte(target, '*') >= 0 {
 						matches, err := fs.Glob(fsys, target)
@@ -72,14 +71,14 @@ func main() {
 							if info, err := fs.Stat(fsys, target); err == nil && !info.IsDir() {
 								tests = append(tests, testing.InternalTest{
 									Name: newTestName(target),
-									F:    v.TestFile(target, loader),
+									F:    v.TestFile(target),
 								})
 							}
 						}
 					} else {
 						tests = append(tests, testing.InternalTest{
 							Name: newTestName(target),
-							F:    v.TestFile(target, loader),
+							F:    v.TestFile(target),
 						})
 					}
 				}
@@ -87,6 +86,16 @@ func main() {
 			if len(remote) > 0 {
 				crawler := pageseo.NewCrawler(
 					v,
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
+					newClientHTTP(),
 					newClientHTTP(),
 					newClientHTTP(),
 				)

@@ -1,19 +1,19 @@
 package pageseo
 
 import (
+	"bytes"
 	"testing"
 
 	"golang.org/x/net/html"
 )
 
 func TestOpenGraphCard(t *testing.T) {
-	f, err := testData.Open("testdata/opengraph.html")
+	f, _, err := testData.Load(t.Context(), "opengraph.html")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
 
-	tree, err := html.Parse(f)
+	tree, err := html.Parse(bytes.NewReader(f))
 	if err != nil {
 		t.Fatal("unable to parse HTML tree:", err)
 	}
@@ -21,5 +21,5 @@ func TestOpenGraphCard(t *testing.T) {
 		t.Fatal("html.Parse returned nil")
 	}
 
-	NewStrict(Requirements{}).TestOpenGraphCard(tree)(t)
+	NewStrict(testData, Requirements{}).TestOpenGraphCard(tree)(t)
 }

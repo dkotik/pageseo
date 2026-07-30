@@ -6,9 +6,9 @@ import (
 	"io"
 	"iter"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
-	"sync"
 	"testing"
 
 	"github.com/dkotik/pageseo/htmltest"
@@ -51,6 +51,7 @@ type Requirements struct {
 }
 
 type PageValidator struct {
+	Loader                   Loader
 	Title                    htmltest.Validator
 	Description              htmltest.Validator
 	OpenGraphCardTitle       htmltest.Validator
@@ -64,12 +65,12 @@ type PageValidator struct {
 	LinkText     htmltest.Validator
 	ImageAltText htmltest.Validator
 	ImageSrc     htmltest.Validator
-
-	mu                 *sync.Mutex
-	deduplicationIndex map[string]struct{}
 }
 
-func New(r Requirements) *PageValidator {
+func New(loader Loader, r Requirements) PageValidator {
+	if loader == nil {
+		panic("nil loader")
+	}
 	if r.Normalizer == nil {
 		r.Normalizer = PassthroughNormalizer
 	}
@@ -123,7 +124,8 @@ func New(r Requirements) *PageValidator {
 	// 	r.ImageSrc = NewImageSrcValidator(StringConstraints{Normalizer: r.Normalizer})
 	// }
 
-	return &PageValidator{
+	return PageValidator{
+		Loader:                   loader,
 		Title:                    r.TitleDeduplicator.Wrap(r.Title),
 		Description:              r.DescriptionDeduplicator.Wrap(r.Description),
 		OpenGraphCardTitle:       r.OpenGraphCardTitleDeduplicator.Wrap(r.Title),
@@ -137,13 +139,10 @@ func New(r Requirements) *PageValidator {
 		LinkText:     r.LinkText,
 		ImageAltText: r.ImageAltText,
 		ImageSrc:     r.ImageSrc,
-
-		mu:                 &sync.Mutex{},
-		deduplicationIndex: make(map[string]struct{}),
 	}
 }
 
-func NewStrict(r Requirements) *PageValidator {
+func NewStrict(loader Loader, r Requirements) PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = NormalizeTextToNFC
 	}
@@ -159,15 +158,19 @@ func NewStrict(r Requirements) *PageValidator {
 	if r.ImageAltText == nil {
 		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
-	return New(r)
+	return New(loader, r)
 }
 
 func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
+		originURL, err := url.Parse(origin)
+		if err != nil {
+			t.Fatal("invalid URL:", err)
+		}
 		if node.FirstChild == nil {
 			t.Fatal("page contains no HTML nodes")
 		}
-		err := ValidateDoctypeTag(node.FirstChild)
+		err = ValidateDoctypeTag(node.FirstChild)
 		if err != nil {
 			t.Errorf("page has an invalid <DOCTYPE> tag: %v", err)
 		}
@@ -233,7 +236,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				if r.LinkText == htmltest.SkipValidator {
 					continue
 				}
-				t.Run(htmltest.Path(node), r.TestLink(origin, node))
+				t.Run(htmltest.Path(node), r.TestLink(originURL, node))
 			case "img":
 				// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
 				// 	continue
@@ -254,7 +257,6 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 func (v PageValidator) TestReader(
 	origin string,
 	r io.Reader,
-	loader Loader,
 ) func(t *testing.T) {
 	return func(t *testing.T) {
 		tree, err := html.Parse(r)
@@ -268,7 +270,7 @@ func (v PageValidator) TestReader(
 	}
 }
 
-func (v PageValidator) TestFile(p string, loader Loader) func(t *testing.T) {
+func (v PageValidator) TestFile(p string) func(t *testing.T) {
 	return func(t *testing.T) {
 		f, err := os.Open(p)
 		if err != nil {
@@ -279,7 +281,7 @@ func (v PageValidator) TestFile(p string, loader Loader) func(t *testing.T) {
 				t.Errorf("unable to close HTML file %q: %v", p, cerr)
 			}
 		})
-		v.TestReader("file://"+p, f, loader)(t)
+		v.TestReader("file://"+p, f)(t)
 	}
 }
 

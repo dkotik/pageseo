@@ -1,26 +1,24 @@
 package pageseo
 
 import (
-	"embed"
+	"bytes"
 	"os"
 	"testing"
 )
 
-//go:embed testdata/*
-var testData embed.FS
+var testData = NewFS(os.DirFS("testdata"))
 
 func TestMinimalPage(t *testing.T) {
-	f, err := testData.Open("testdata/minimal.html")
+	f, _, err := testData.Load(t.Context(), "minimal.html")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
 
-	NewStrict(Requirements{
+	NewStrict(testData, Requirements{
 		// LinkText: htmltest.SkipValidator,
 		// LinkText: NewLinkTextValidator(StringConstraints{
 		// 	MinimumLength: 1,
 		// 	MaximumLength: 100,
 		// }),
-	}).TestReader(t.Name(), f, NewFS(os.DirFS("testdata")))(t)
+	}).TestReader(t.Name(), bytes.NewReader(f))(t)
 }

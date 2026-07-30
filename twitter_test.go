@@ -1,19 +1,19 @@
 package pageseo
 
 import (
+	"bytes"
 	"testing"
 
 	"golang.org/x/net/html"
 )
 
 func TestTwitterCard(t *testing.T) {
-	f, err := testData.Open("testdata/twitter.html")
+	f, _, err := testData.Load(t.Context(), "twitter.html")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
 
-	tree, err := html.Parse(f)
+	tree, err := html.Parse(bytes.NewReader(f))
 	if err != nil {
 		t.Fatal("unable to parse HTML tree:", err)
 	}
@@ -21,5 +21,5 @@ func TestTwitterCard(t *testing.T) {
 		t.Fatal("html.Parse returned nil")
 	}
 
-	NewStrict(Requirements{}).TestTwitterCard(tree)(t)
+	NewStrict(testData, Requirements{}).TestTwitterCard(tree)(t)
 }
