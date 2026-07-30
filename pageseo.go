@@ -203,7 +203,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				t.Errorf("first child element tag is not a <HEAD> tag: %s", child.Data)
 				break
 			}
-			t.Run(htmltest.Path(child), r.TestHead(child))
+			t.Run(pathPrefixForHTML+htmltest.Path(child), r.TestHead(child))
 			break // found a head tag
 		}
 
@@ -218,7 +218,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			if child.Data != "body" {
 				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
 			}
-			t.Run(htmltest.Path(child), r.TestHeadings(child))
+			t.Run(pathPrefixForHTML+htmltest.Path(child), r.TestHeadings(child))
 			break // found a body tag
 		}
 
@@ -228,13 +228,13 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 		}
 
 		for rc := range r.loadResources(t, originURL, node) {
-			switch node.Data {
+			switch rc.Node.Data {
 			case "a":
-				t.Run(htmltest.Path(rc.Node), r.TestLink(originURL, rc.Node))
+				t.Run(pathPrefixForHTML+htmltest.Path(rc.Node), r.TestLink(originURL, rc.Node))
 			case "img":
-				t.Run(htmltest.Path(rc.Node), r.TestImage(origin, rc.Node))
+				t.Run(pathPrefixForHTML+htmltest.Path(rc.Node), r.TestImage(origin, rc.Node))
 			default:
-				t.Error(htmltest.Path(rc.Node), ": unexpected link node:", node.Data)
+				t.Errorf("%s: unexpected link node: %s", htmltest.Path(rc.Node), rc.Node.Data)
 			}
 		}
 

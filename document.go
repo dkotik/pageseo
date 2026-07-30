@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+const pathPrefixForHTML = "•"
+
 func getAttribute(node *html.Node, name string) (value string, ok bool) {
 	for _, attr := range node.Attr {
 		if attr.Key == name {

@@ -38,7 +38,6 @@ func NewCrawler(
 				t.Fatalf("invalid URL <%s>: %v", origin, err)
 			}
 
-			// t.Parallel()
 			var next []Resource
 			loader := cachedLoader{
 				mu:     mu,
@@ -62,7 +61,7 @@ func NewCrawler(
 			validator.Loader = loader
 			validator.TestReader(origin, bytes.NewReader(content))(t)
 
-			// limit := 100
+			// // limit := 100
 			// next = next[1:] // first item is the page itself
 			// for {
 			// 	if len(next) == 0 {
@@ -71,10 +70,6 @@ func NewCrawler(
 			// 	batch := slices.Clone(next)
 			// 	next = next[:0]
 			// 	for _, next := range batch {
-			// 		limit--
-			// 		if limit == 0 {
-			// 			t.Error("100 attempts ran out")
-			// 		}
 			// 		nextTarget, err := url.Parse(next.URL)
 			// 		if err != nil {
 			// 			t.Errorf("invalid URL <%s>: %v", next.URL, err)

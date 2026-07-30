@@ -5,7 +5,6 @@ import (
 	"iter"
 	"net/url"
 	"path"
-	"runtime"
 	"testing"
 
 	"github.com/dkotik/pageseo/htmltest"
@@ -105,7 +104,7 @@ func (r PageValidator) loadResource(
 	case <-ctx.Done():
 	case promise <- incomplete:
 	}
-	// close(promise)
+	close(promise)
 }
 
 func (r PageValidator) loadResources(
@@ -114,44 +113,30 @@ func (r PageValidator) loadResources(
 	node *html.Node,
 ) <-chan resourceAssociation {
 	results := make(chan resourceAssociation)
-	promises := make(chan chan resourceAssociation, max(4, runtime.NumCPU()))
+	var promises []chan resourceAssociation
 	var promise chan resourceAssociation
-	promisesMade := 0
 
 	ctx := t.Context()
+	for incomplete := range r.enumerateResources(t, origin, node) {
+		promise = make(chan resourceAssociation)
+		promises = append(promises, promise)
+		go r.loadResource(ctx, promise, incomplete)
+	}
+
 	go func() {
 		defer close(results)
-		for promisesMade > 0 {
+		for _, promise := range promises {
 			select {
 			case <-ctx.Done():
 				return
-			case result := <-promises:
+			case rc := <-promise:
 				select {
 				case <-ctx.Done():
 					return
-				case promiseFulfilled := <-result:
-					select {
-					case <-ctx.Done():
-						return
-					case result <- promiseFulfilled:
-					}
+				case results <- rc:
 				}
-				promisesMade--
 			}
 		}
 	}()
-
-	for incomplete := range r.enumerateResources(t, origin, node) {
-		promise = make(chan resourceAssociation, 1)
-		select {
-		case <-ctx.Done():
-			close(results)
-			return results
-		case promises <- promise:
-		}
-		go r.loadResource(ctx, promise, incomplete)
-		promisesMade++
-	}
-
 	return results
 }
