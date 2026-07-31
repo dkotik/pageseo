@@ -183,16 +183,16 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 		}
 
 		if href, ok := attributes["href"]; ok && len(href) > 0 {
-			// TODO: return this as string validator
-			// err = r.URL.Validate(href)
-			// if err != nil {
-			// 	t.Fatalf("dead URL: %v", err)
-			// }
+
 			href, _, ok := strings.Cut(href, "#")
 			if ok {
 				if strings.TrimSpace(href) == "" {
 					return // just a #hash reference
 				}
+			}
+			err := r.URL.Validate(href)
+			if err != nil {
+				t.Errorf("deformed URL: %v", err)
 			}
 			url, err := url.Parse(href)
 			if err != nil {
