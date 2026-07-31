@@ -1,15 +1,8 @@
 package pageseo
 
 import (
-	"context"
 	"testing"
 )
-
-type mockLoader struct{}
-
-func (ml mockLoader) Load(context.Context, string) ([]byte, string, error) {
-	return []byte(`mock`), "text/html", nil
-}
 
 func TestResourceCache(t *testing.T) {
 	called := 0

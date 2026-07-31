@@ -8,10 +8,94 @@ import (
 	"io/fs"
 	"mime"
 	"net/http"
+	"slices"
+	"sync"
+	"time"
 )
 
 type Loader interface {
 	Load(context.Context, string) ([]byte, string, error)
+}
+
+type preloader struct {
+	Loader
+	Mutex        sync.Mutex
+	Cursor       int
+	PendingTasks []string
+	Preloaded    []Resource
+}
+
+func newPreloader(loader Loader) *preloader {
+	if loader == nil {
+		panic("nil loader")
+	}
+	return &preloader{
+		Loader: loader,
+	}
+}
+
+func (p *preloader) Preload(ctx context.Context, URL string) {
+	go func(ctx context.Context) {
+		p.Mutex.Lock()
+		if slices.Index(p.PendingTasks, URL) != -1 {
+			p.Mutex.Unlock()
+			return
+		}
+		p.PendingTasks = append(p.PendingTasks, URL)
+		p.Mutex.Unlock()
+
+		content, contentType, err := p.Loader.Load(ctx, URL)
+
+		p.Mutex.Lock()
+		p.Preloaded = append(
+			p.Preloaded,
+			Resource{
+				URL:         URL,
+				Content:     content,
+				ContentType: contentType,
+				Error:       err,
+			})
+		p.PendingTasks = slices.Delete(p.PendingTasks, slices.Index(p.PendingTasks, URL), 1)
+		p.Mutex.Unlock()
+	}(ctx)
+}
+
+func (p *preloader) Load(ctx context.Context, URL string) ([]byte, string, error) {
+	var i, pending int
+	var r Resource
+	for {
+		p.Mutex.Lock()
+		// search forward from cursor
+		for i = p.Cursor; i < len(p.Preloaded); i++ {
+			r = p.Preloaded[i]
+			if r.URL == URL {
+				p.Cursor = i + 1 // next time begin iteration from same point
+				p.Mutex.Unlock()
+				return r.Content, r.ContentType, nil
+			}
+		}
+		// search backward from cursor
+		for i = p.Cursor - 1; i >= 0; i-- {
+			r = p.Preloaded[i]
+			if r.URL == URL {
+				p.Mutex.Unlock()
+				return r.Content, r.ContentType, nil
+			}
+		}
+		pending = len(p.PendingTasks)
+		p.Mutex.Unlock()
+
+		if pending == 0 {
+			// fallback on slow loader
+			return p.Loader.Load(ctx, URL)
+		}
+
+		select { // try again after a short break
+		case <-ctx.Done():
+			return nil, "", ctx.Err()
+		case <-time.After(time.Millisecond * 300):
+		}
+	}
 }
 
 type fsLoader struct {
