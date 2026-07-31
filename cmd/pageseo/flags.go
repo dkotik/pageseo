@@ -15,6 +15,7 @@ func init() {
 	// running [testing.MainStart]
 	_ = flag.Uint(flagLimit.Name, flagLimit.Value, flagLimit.Usage)
 	_ = flag.Bool(flagFailFast.Name, false, flagFailFast.Usage)
+	_ = flag.Bool(flagStrict.Name, false, flagStrict.Usage)
 	_ = flag.Bool(flagVerbose.Name, false, flagVerbose.Usage)
 	testing.Init()
 	flag.Parse()

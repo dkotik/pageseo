@@ -76,13 +76,8 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 ## Development Road Map
 
 - [x] Provide a command line scanner that can crawl live websites.
-- [x] Make sure `--failfast` works for CLI.
 - [x] Provide a command line scanner that can validate statically generated websites.
-- [x] Provide a command line scanner that can validate URLs.
-- [x] Add open graph validations.
-- [x] Add twitter validations.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
-- [ ] Deprecate `htmltest` package.
 - [ ] Validate image size.
 - [ ] Provide a service that can crawl a target at an interval.
 

@@ -12,10 +12,11 @@ import (
 const (
 	// DefaultMinimumLinkTextLength sets the minimum length of the anchor text.
 	// A pagination link is often a single character.
-	DefaultMinimuLinkLength      = 1
-	DefaultMaximumLinkLength     = 120 // 2048
-	DefaultMinimumLinkTextLength = 1
-	DefaultMaximumLinkTextLength = DefaultMaximumTitleLength * 6
+	DefaultMinimuLinkLength         = 1
+	DefaultMaximumLinkLength        = 120
+	DefaultMaximumImageSourceLength = 2048 // older browser constraint
+	DefaultMinimumLinkTextLength    = 1
+	DefaultMaximumLinkTextLength    = DefaultMaximumTitleLength * 6
 )
 
 // IsLocalHost return true if the host is a common
@@ -87,6 +88,9 @@ func (s urlValidator) Validate(value string) error {
 	case length < s.MinimumLength:
 		return errors.New("URL is too short")
 	case length > s.MaximumLength:
+		if index := strings.IndexByte(normalized, '?'); index != -1 && index < s.MaximumLength {
+			return nil // disregard the query string when weighing length
+		}
 		return errors.New("URL is too long")
 	default:
 		// _, err := url.Parse(normalized)

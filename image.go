@@ -83,8 +83,7 @@ func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testi
 		attributes := getAttributes(t, node)
 		if src, ok := attributes["src"]; ok {
 			if !strings.HasPrefix(src, "data:") {
-				// TODO:? r.ImageSrc
-				if err := r.URL.Validate(src); err != nil {
+				if err := r.ImageSrc.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
 				}
@@ -99,8 +98,7 @@ func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testi
 				t.Fatal("no srcSet tag attribute")
 			}
 			for _, src := range srcSet {
-				// TODO:? r.ImageSrc
-				if err := r.URL.Validate(src); err != nil {
+				if err := r.ImageSrc.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
 				}

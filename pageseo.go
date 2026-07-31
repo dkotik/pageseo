@@ -118,9 +118,11 @@ func New(loader Loader, r Requirements) PageValidator {
 	if r.ImageAltText == nil {
 		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
-	// if r.ImageSrc == nil {
-	// 	r.ImageSrc = NewImageSrcValidator(StringConstraints{Normalizer: r.Normalizer})
-	// }
+	if r.ImageSrc == nil {
+		r.ImageSrc = NewURLValidator(StringConstraints{
+			MaximumLength: DefaultMaximumImageSourceLength,
+		})
+	}
 
 	return PageValidator{
 		Loader:                   loader,
@@ -293,7 +295,7 @@ func (v PageValidator) TestFile(p string) func(t *testing.T) {
 
 func ValidateDoctypeTag(node *html.Node) error {
 	if node == nil {
-		return errors.New("HTML node is nil")
+		return errors.New("!DOCTYPE node is nil")
 	}
 	// TODO: this was glitching out for some reason
 	if node.Type != html.DoctypeNode {
