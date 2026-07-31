@@ -11,6 +11,18 @@ import (
 
 const pathPrefixForHTML = "•"
 
+func findElementNode(node *html.Node, name string) *html.Node {
+	if node.Type == html.ElementNode && strings.ToLower(node.Data) == name {
+		return node
+	}
+	for node = range node.Descendants() {
+		if node.Type == html.ElementNode && strings.ToLower(node.Data) == name {
+			return node
+		}
+	}
+	return nil
+}
+
 func getElementPath(node *html.Node) string {
 	if node == nil {
 		return ""
@@ -23,6 +35,19 @@ func getElementPath(node *html.Node) string {
 	}
 	slices.Reverse(segments)
 	return pathPrefixForHTML + strings.Join(segments, ">")
+}
+
+func getAttributes(t *testing.T, node *html.Node) map[string]string {
+	attrs := make(map[string]string, len(node.Attr))
+	var ok bool
+	for _, attr := range node.Attr {
+		key := strings.ToLower(attr.Key)
+		if _, ok = attrs[key]; ok {
+			t.Errorf("duplicate tag attribute found: %s=%q", attr.Key, attr.Val)
+		}
+		attrs[key] = attr.Val
+	}
+	return attrs
 }
 
 func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {

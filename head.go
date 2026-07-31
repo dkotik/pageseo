@@ -5,9 +5,90 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
+
+type headMeta struct {
+	CharacterSet string
+	Data         map[string]string
+	Properties   map[string]string
+}
+
+func getHeadMeta(t *testing.T, head *html.Node) (result headMeta) {
+	result.Data = make(map[string]string)
+	result.Properties = make(map[string]string)
+	ok := false
+
+nextNode:
+	for node := range head.ChildNodes() {
+		switch node.Type {
+		case html.ElementNode: // fallthrough
+		case html.CommentNode:
+			continue // skip
+		case html.TextNode:
+			if strings.TrimSpace(node.Data) == "" {
+				continue
+			}
+			fallthrough
+		default:
+			t.Error("unexpected node in document <head>:", node.Data)
+		}
+
+		if strings.ToLower(node.Data) != "meta" {
+			continue
+		}
+		name, property, content := "", "", ""
+		for _, attr := range node.Attr {
+			switch strings.ToLower(attr.Key) {
+			case "name":
+				if name != "" {
+					t.Error(getElementPath(node)+":", "duplicate value for", attr.Val)
+				}
+				name = strings.ToLower(attr.Val)
+			case "property":
+				if property != "" {
+					t.Error(getElementPath(node), "duplicate property value for", attr.Val)
+				}
+				property = strings.ToLower(attr.Val)
+			case "content":
+				if content != "" {
+					t.Error(getElementPath(node), "duplicate content value for", attr.Val)
+				}
+				content = attr.Val
+			case "charset":
+				if result.CharacterSet != "" {
+					t.Error(getElementPath(node), "duplicate character set:", attr.Val)
+				}
+				result.CharacterSet = attr.Val
+				continue nextNode
+			}
+		}
+		content = strings.TrimSpace(content)
+		if content == "" {
+			t.Errorf(getElementPath(node), "has no content")
+		} else {
+			if name == "" {
+				if property == "" {
+					t.Error(getElementPath(node), "name attribute absent")
+				} else {
+					if _, ok = result.Properties[property]; ok {
+						t.Error(getElementPath(node), "duplicate meta property", property)
+					}
+					result.Properties[property] = content
+				}
+			} else {
+				if property != "" {
+					t.Error(getElementPath(node), "name and property are both set")
+				}
+				if _, ok = result.Data[name]; ok {
+					t.Error(getElementPath(node), "duplicate meta content", name)
+				}
+				result.Data[name] = content
+			}
+		}
+	}
+	return result
+}
 
 type headRequirements struct {
 	FoundValidViewPort    bool
@@ -57,10 +138,7 @@ func (r PageValidator) TestHead(node *html.Node) func(t *testing.T) {
 				}
 				found.FoundValidTitle = true
 			case "meta":
-				attributes, err := htmltest.ParseAttributes(child)
-				if err != nil {
-					t.Errorf("unable to collect tag attributes: %v", err)
-				}
+				attributes := getAttributes(t, child)
 				name, ok := attributes["name"]
 				if ok {
 					content, ok := attributes["content"]

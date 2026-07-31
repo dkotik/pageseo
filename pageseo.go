@@ -175,10 +175,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			t.Errorf("page has an invalid <DOCTYPE> tag: %v", err)
 		}
 		TestDocumentRootHasExactlyDoctypeAndHTMLNodes(node)(t)
-		attributes, err := htmltest.ParseAttributes(node.FirstChild.NextSibling)
-		if err != nil {
-			t.Errorf("failed to parse <HTML> tag attributes: %v", err)
-		}
+		attributes := getAttributes(t, node.FirstChild.NextSibling)
 		language, ok := attributes["lang"]
 		if !ok {
 			t.Error("HTML tag is missing a lang attribute")

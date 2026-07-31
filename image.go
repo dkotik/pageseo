@@ -52,7 +52,7 @@ func (s ImageAltTextValidator) Validate(value string) error {
 	}
 }
 
-func GetPictureSourceList(node *html.Node) (result []string, err error) {
+func GetPictureSourceList(node *html.Node) (result []string) {
 	if node.Parent.Type != html.ElementNode || node.Parent.Data != "picture" {
 		return
 	}
@@ -60,32 +60,27 @@ func GetPictureSourceList(node *html.Node) (result []string, err error) {
 		if node.Type != html.ElementNode || node.Data != "source" {
 			continue
 		}
-		attributes, err := htmltest.ParseAttributes(node)
-		if err != nil {
-			break
-		}
-		srcSet, ok := attributes["srcSet"]
-		if !ok || srcSet == "" {
-			return result, errors.New("picture source definition source set is missing")
-		}
-		for _, src := range strings.Split(srcSet, ",") {
-			if src == "" {
+		for _, attr := range node.Attr {
+			if strings.ToLower(attr.Key) != "srcset" || attr.Val == "" {
 				continue
 			}
-			src, _, _ = strings.Cut(src, ";") // just the first part
-			result = append(result, src)
+			for _, src := range strings.Split(attr.Val, ",") {
+				src = strings.TrimSpace(src)
+				if src == "" {
+					continue
+				}
+				src, _, _ = strings.Cut(src, ";") // just the first part
+				result = append(result, src)
+			}
 		}
 	}
-	return result, err
+	return result
 }
 
 func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		logAttributes(t, node.Attr)
-		attributes, err := htmltest.ParseAttributes(node)
-		if err != nil {
-			t.Fatal("unable to extract image attributes:", err)
-		}
+		attributes := getAttributes(t, node)
 		if src, ok := attributes["src"]; ok {
 			if !strings.HasPrefix(src, "data:") {
 				src, err := htmltest.JoinURL(origin, src)
@@ -99,12 +94,9 @@ func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing
 				}
 			}
 		} else {
-			srcSet, err := GetPictureSourceList(node.Parent)
-			if err != nil {
-				t.Fatal("unable to extract picture source list:", err)
-			}
+			srcSet := GetPictureSourceList(node.Parent)
 			if len(srcSet) == 0 {
-				t.Fatal("missing src attribute")
+				t.Fatal("no srcSet tag attribute")
 			}
 			for _, src := range srcSet {
 				src, err := htmltest.JoinURL(origin, src)

@@ -1,20 +1,19 @@
 package pageseo
 
 import (
-	"errors"
 	"strings"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
 const (
-	MetaOpenGraphType        = "og:type"
-	MetaOpenGraphTitle       = "og:title"
-	MetaOpenGraphDescription = "og:description"
-	MetaOpenGraphURL         = "og:url"
-	MetaOpenGraphImage       = "og:image"
+	MetaOpenGraphPrefix      = "og:"
+	MetaOpenGraphType        = MetaOpenGraphPrefix + "type"
+	MetaOpenGraphTitle       = MetaOpenGraphPrefix + "title"
+	MetaOpenGraphDescription = MetaOpenGraphPrefix + "description"
+	MetaOpenGraphURL         = MetaOpenGraphPrefix + "url"
+	MetaOpenGraphImage       = MetaOpenGraphPrefix + "image"
 )
 
 type openGraph struct {
@@ -26,54 +25,29 @@ type openGraph struct {
 	Image       string
 }
 
-func loadOpenGraphCard(node *html.Node) (result openGraph, err error) {
-	if node.Type != html.ElementNode || strings.ToLower(node.Data) != "head" {
-		for descendants := range node.Descendants() {
-			result, err = loadOpenGraphCard(descendants)
-			if err == nil {
-				return
+func (r PageValidator) testOpenGraphCard(meta headMeta) func(t *testing.T) {
+	return func(t *testing.T) {
+		card := openGraph{}
+		for property, content := range meta.Properties {
+			switch property {
+			case MetaOpenGraphType:
+				card.Type = content
+			case MetaOpenGraphTitle:
+				card.Title = content
+			case MetaOpenGraphDescription:
+				card.Description = content
+			case MetaOpenGraphURL:
+				card.URL = content
+			case MetaOpenGraphImage:
+				card.Image = content
+			default:
+				if strings.HasPrefix(property, MetaOpenGraphPrefix) {
+					t.Log("unknown Open Graph property:", property, content)
+				}
 			}
 		}
-		return result, errors.New("HTML head node not found")
-	}
-	for meta := range node.ChildNodes() {
-		if meta.Type != html.ElementNode || strings.ToLower(meta.Data) != "meta" {
-			continue
-		}
-		attributes, err := htmltest.ParseAttributes(meta)
-		if err != nil {
-			return result, err
-		}
-		name, ok := attributes["property"]
-		if !ok || name == "" {
-			continue
-		}
-		content, ok := attributes["content"]
-		if !ok || content == "" {
-			continue
-		}
-		switch strings.ToLower(name) {
-		case MetaOpenGraphType:
-			result.Type = content
-		case MetaOpenGraphTitle:
-			result.Title = content
-		case MetaOpenGraphDescription:
-			result.Description = content
-		case MetaOpenGraphURL:
-			result.URL = content
-		case MetaOpenGraphImage:
-			result.Image = content
-		}
-	}
-	return
-}
 
-func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		card, err := loadOpenGraphCard(node)
-		if err != nil {
-			t.Fatal("unable to load openGraph card")
-		}
+		var err error
 		if card.Type == "" {
 			t.Error(MetaOpenGraphType + " not found")
 		}
@@ -93,5 +67,21 @@ func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
 		if card.Image == "" {
 			t.Error(MetaOpenGraphImage + " not found")
 		}
+		for name, _ := range meta.Data {
+			if strings.HasPrefix(name, MetaOpenGraphPrefix) {
+				t.Error("Open Graph meta was set with \"name\" instead of the \"property\" attribute:", name)
+			}
+		}
+	}
+
+}
+
+func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
+	return func(t *testing.T) {
+		head := findElementNode(node, "head")
+		if head == nil {
+			t.Fatal("document <head> node is absent")
+		}
+		r.testOpenGraphCard(getHeadMeta(t, head))(t)
 	}
 }

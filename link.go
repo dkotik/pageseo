@@ -119,12 +119,7 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 			t.Error("anchor is empty of meaningful content")
 		}
 
-		attributes, err := htmltest.ParseAttributes(node)
-		if err != nil {
-			t.Errorf("failed to parse attributes: %v", err)
-			return
-		}
-
+		attributes := getAttributes(t, node)
 		rel := make(map[string]struct{})
 		if relString, ok := attributes["rel"]; ok {
 			for _, directive := range strings.Fields(relString) {

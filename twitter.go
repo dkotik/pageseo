@@ -1,21 +1,20 @@
 package pageseo
 
 import (
-	"errors"
 	"strings"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
 const (
-	MetaTwitterCard        = "twitter:card"
-	MetaTwitterTitle       = "twitter:title"
-	MetaTwitterDescription = "twitter:description"
-	MetaTwitterSite        = "twitter:site"
-	MetaTwitterURL         = "twitter:url"
-	MetaTwitterImage       = "twitter:image"
+	MetaTwitterPrefix      = "twitter:"
+	MetaTwitterCard        = MetaTwitterPrefix + "card"
+	MetaTwitterTitle       = MetaTwitterPrefix + "title"
+	MetaTwitterDescription = MetaTwitterPrefix + "description"
+	MetaTwitterSite        = MetaTwitterPrefix + "site"
+	MetaTwitterURL         = MetaTwitterPrefix + "url"
+	MetaTwitterImage       = MetaTwitterPrefix + "image"
 )
 
 type twitter struct {
@@ -27,56 +26,31 @@ type twitter struct {
 	Image       string
 }
 
-func loadTwitterCard(node *html.Node) (result twitter, err error) {
-	if node.Type != html.ElementNode || strings.ToLower(node.Data) != "head" {
-		for descendants := range node.Descendants() {
-			result, err = loadTwitterCard(descendants)
-			if err == nil {
-				return
+func (r PageValidator) testTwitterCard(meta headMeta) func(t *testing.T) {
+	return func(t *testing.T) {
+		card := twitter{}
+		for name, content := range meta.Data {
+			switch name {
+			case MetaTwitterCard:
+				card.Type = content
+			case MetaTwitterTitle:
+				card.Title = content
+			case MetaTwitterDescription:
+				card.Description = content
+			case MetaTwitterSite:
+				card.Site = content
+			case MetaTwitterURL:
+				card.URL = content
+			case MetaTwitterImage:
+				card.Image = content
+			default:
+				if strings.HasPrefix(name, MetaTwitterPrefix) {
+					t.Log("unknown Twitter property:", name, content)
+				}
 			}
 		}
-		return result, errors.New("HTML head node not found")
-	}
-	for meta := range node.ChildNodes() {
-		if meta.Type != html.ElementNode || strings.ToLower(meta.Data) != "meta" {
-			continue
-		}
-		attributes, err := htmltest.ParseAttributes(meta)
-		if err != nil {
-			return result, err
-		}
-		name, ok := attributes["name"]
-		if !ok || name == "" {
-			continue
-		}
-		content, ok := attributes["content"]
-		if !ok || content == "" {
-			continue
-		}
-		switch strings.ToLower(name) {
-		case MetaTwitterCard:
-			result.Type = content
-		case MetaTwitterTitle:
-			result.Title = content
-		case MetaTwitterDescription:
-			result.Description = content
-		case MetaTwitterSite:
-			result.Site = content
-		case MetaTwitterURL:
-			result.URL = content
-		case MetaTwitterImage:
-			result.Image = content
-		}
-	}
-	return
-}
 
-func (r PageValidator) TestTwitterCard(node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		card, err := loadTwitterCard(node)
-		if err != nil {
-			t.Fatal("unable to load Twitter card")
-		}
+		var err error
 		if card.Type == "" {
 			t.Error(MetaTwitterCard + " not found")
 		}
@@ -99,5 +73,20 @@ func (r PageValidator) TestTwitterCard(node *html.Node) func(t *testing.T) {
 		if card.Image == "" {
 			t.Error(MetaTwitterImage + " not found")
 		}
+		for property, _ := range meta.Data {
+			if strings.HasPrefix(property, MetaOpenGraphPrefix) {
+				t.Error("Twitter meta was set with \"property\" instead of the \"name\" attribute:", property)
+			}
+		}
+	}
+}
+
+func (r PageValidator) TestTwitterCard(node *html.Node) func(t *testing.T) {
+	return func(t *testing.T) {
+		head := findElementNode(node, "head")
+		if head == nil {
+			t.Fatal("document <head> node is absent")
+		}
+		r.testTwitterCard(getHeadMeta(t, head))(t)
 	}
 }
