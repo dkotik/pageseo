@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
+	"math"
 	"testing"
 
 	"github.com/urfave/cli/v3"
@@ -11,13 +13,27 @@ import (
 func init() {
 	// required to make main function compatible with
 	// running [testing.MainStart]
-	_ = flag.Bool("failfast", false, flagFailFast.Usage)
-	_ = flag.Bool("verbose", false, flagVerbose.Usage)
+	_ = flag.Uint(flagLimit.Name, flagLimit.Value, flagLimit.Usage)
+	_ = flag.Bool(flagFailFast.Name, false, flagFailFast.Usage)
+	_ = flag.Bool(flagVerbose.Name, false, flagVerbose.Usage)
 	testing.Init()
 	flag.Parse()
 }
 
 var (
+	flagLimit = &cli.UintFlag{
+		Name:    "limit",
+		Aliases: []string{"l"},
+		Usage:   "the number of pages at which scanning ends",
+		Value:   math.MaxUint16,
+		Action: func(_ context.Context, _ *cli.Command, value uint) error {
+			if value == 0 {
+				return errors.New("limit must be greater than zero")
+			}
+			return nil
+		},
+	}
+
 	flagStrict = &cli.BoolFlag{
 		Name:    "strict",
 		Aliases: []string{"s"},

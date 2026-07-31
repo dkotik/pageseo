@@ -297,6 +297,7 @@ func ValidateDoctypeTag(node *html.Node) error {
 	if node == nil {
 		return errors.New("HTML node is nil")
 	}
+	// TODO: this was glitching out for some reason
 	if node.Type != html.DoctypeNode {
 		return errors.New("HTML node is not a DOCTYPE tag")
 	}

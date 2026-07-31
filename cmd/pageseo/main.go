@@ -20,11 +20,13 @@ func main() {
 		Usage:   "validate HTML page conformity to common search engine optimization practices",
 		Version: version(),
 		Flags: []cli.Flag{
+			flagLimit,
 			flagStrict,
 			flagFailFast,
 			flagVerbose,
 		},
 		Action: cli.ActionFunc(func(ctx context.Context, cmd *cli.Command) (err error) {
+			limit := cmd.Uint(flagLimit.Name)
 			targets := cmd.Args()
 			if !targets.Present() {
 				return cli.ShowRootCommandHelp(cmd) // nothing is happening
@@ -68,9 +70,17 @@ func main() {
 					}
 				}
 			}
-			runTests(tests)
-			tests = tests[:0]
+			if total := len(tests); total > 0 {
+				tests = tests[:min(total, int(limit))]
+				runTests(tests)
+				limit = limit - min(limit, uint(len(tests)))
+				if limit == 0 {
+					return nil
+				}
+				tests = tests[:0]
+			}
 
+			remote = remote[:min(len(remote), int(limit))]
 			if len(remote) > 0 {
 				queue := newResourceQueue(remote...)
 				loader := pageseo.NewCache(queue.Push).WrapLoader(newClientPool(6))
@@ -81,6 +91,7 @@ func main() {
 
 				for {
 					batch := queue.Pull()
+					batch = batch[:min(len(batch), int(limit))]
 					if len(batch) == 0 {
 						return nil // all finished
 					}
@@ -91,6 +102,7 @@ func main() {
 						))
 					}
 					runTests(tests)
+					limit = limit - min(limit, uint(len(tests)))
 				}
 			}
 			return nil
