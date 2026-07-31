@@ -11,6 +11,25 @@ import (
 
 const pathPrefixForHTML = "•"
 
+func GetText(node *html.Node) string {
+	b := strings.Builder{}
+	if node.Type == html.TextNode {
+		_, _ = b.WriteString(strings.TrimSpace(node.Data))
+		_, _ = b.WriteRune(' ')
+	}
+	last := node.LastChild
+	for descendant := range node.Descendants() {
+		if descendant.Type != html.TextNode {
+			continue
+		}
+		_, _ = b.WriteString(strings.TrimSpace(descendant.Data))
+		if descendant != last {
+			_, _ = b.WriteRune(' ')
+		}
+	}
+	return b.String()
+}
+
 func findElementNode(node *html.Node, name string) *html.Node {
 	if node.Type == html.ElementNode && strings.ToLower(node.Data) == name {
 		return node

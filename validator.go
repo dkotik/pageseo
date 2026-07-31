@@ -1,4 +1,4 @@
-package htmltest
+package pageseo
 
 import "fmt"
 
@@ -39,15 +39,15 @@ func NewExactMatch(expected string) Validator {
 	})
 }
 
-type Middleware interface {
+type ValidationMiddleware interface {
 	Wrap(Validator) Validator
 }
 
-type MiddlewareFunc func(Validator) Validator
+type ValidationMiddlewareFunc func(Validator) Validator
 
-func (f MiddlewareFunc) Wrap(v Validator) Validator {
+func (f ValidationMiddlewareFunc) Wrap(v Validator) Validator {
 	return f(v)
 }
 
 // SkipMiddleware is a middleware that does nothing.
-var SkipMiddleware Middleware = skipSingleton
+var SkipMiddleware ValidationMiddleware = skipSingleton

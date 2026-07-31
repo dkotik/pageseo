@@ -2,10 +2,10 @@ package pageseo
 
 import (
 	"errors"
+	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -14,7 +14,7 @@ const (
 	DefaultMaximumImageAltTextLength = DefaultMaximumTitleLength * 12
 )
 
-func NewImageAltTextValidator(s StringConstraints) htmltest.Validator {
+func NewImageAltTextValidator(s StringConstraints) Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = PassthroughNormalizer
 	}
@@ -77,20 +77,20 @@ func GetPictureSourceList(node *html.Node) (result []string) {
 	return result
 }
 
-func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing.T) {
+func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		logAttributes(t, node.Attr)
 		attributes := getAttributes(t, node)
 		if src, ok := attributes["src"]; ok {
 			if !strings.HasPrefix(src, "data:") {
-				src, err := htmltest.JoinURL(origin, src)
-				if err != nil {
-					t.Fatalf("failed to join path: %v", err)
-				}
 				// TODO:? r.ImageSrc
 				if err := r.URL.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
+				}
+				_, err := url.Parse(src)
+				if err != nil {
+					t.Error("invalid URL:", err)
 				}
 			}
 		} else {
@@ -99,20 +99,19 @@ func (r PageValidator) TestImage(origin string, node *html.Node) func(t *testing
 				t.Fatal("no srcSet tag attribute")
 			}
 			for _, src := range srcSet {
-				src, err := htmltest.JoinURL(origin, src)
-				if err != nil {
-					t.Errorf("failed to join path: %v", err)
-					continue
-				}
 				// TODO:? r.ImageSrc
 				if err := r.URL.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
 				}
+				_, err := url.Parse(src)
+				if err != nil {
+					t.Error("invalid URL:", err)
+				}
 			}
 		}
 
-		if r.ImageAltText == htmltest.SkipValidator {
+		if r.ImageAltText == SkipValidator {
 			return
 		}
 		alt, ok := attributes["alt"]

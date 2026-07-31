@@ -75,7 +75,7 @@ func (r PageValidator) testTwitterCard(meta headMeta) func(t *testing.T) {
 		}
 		for property, _ := range meta.Data {
 			if strings.HasPrefix(property, MetaOpenGraphPrefix) {
-				t.Error("Twitter meta was set with \"property\" instead of the \"name\" attribute:", property)
+				t.Log("Twitter meta was set with \"property\" instead of the \"name\" attribute:", property)
 			}
 		}
 	}

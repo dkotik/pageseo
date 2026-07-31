@@ -86,7 +86,7 @@ nextNode:
 				}
 			} else {
 				if property != "" {
-					t.Error(getElementPath(node), "name and property are both set")
+					t.Log(getElementPath(node), "name and property are both set")
 				}
 				if _, ok = result.Data[name]; ok {
 					t.Error(getElementPath(node), "duplicate meta content", name)

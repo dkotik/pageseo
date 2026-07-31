@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -13,7 +12,7 @@ const (
 	DefaultMaximumHeadingLength = 55
 )
 
-func NewHeadingValidator(s StringConstraints) htmltest.Validator {
+func NewHeadingValidator(s StringConstraints) Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = PassthroughNormalizer
 	}
@@ -55,7 +54,7 @@ func (s headingValidator) Validate(value string) error {
 
 func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
-		if r.Heading == htmltest.SkipValidator {
+		if r.Heading == SkipValidator {
 			t.Skip("heading validation is skipped by user request")
 		}
 
@@ -73,7 +72,7 @@ func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 			}
 			switch descendant.Data {
 			case "h1":
-				text := htmltest.ParseTextContent(descendant)
+				text := GetText(descendant)
 				if text == "" {
 					t.Errorf("H1 tag has no text content")
 					continue
@@ -84,7 +83,7 @@ func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
 				}
 				foundValidH1 = true
 			case "h2":
-				text := htmltest.ParseTextContent(descendant)
+				text := GetText(descendant)
 				if text == "" {
 					t.Errorf("heading tag %q has no text content", descendant.Data)
 					continue

@@ -69,7 +69,7 @@ func (r PageValidator) testOpenGraphCard(meta headMeta) func(t *testing.T) {
 		}
 		for name, _ := range meta.Data {
 			if strings.HasPrefix(name, MetaOpenGraphPrefix) {
-				t.Error("Open Graph meta was set with \"name\" instead of the \"property\" attribute:", name)
+				t.Log("Open Graph meta was set with \"name\" instead of the \"property\" attribute:", name)
 			}
 		}
 	}

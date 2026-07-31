@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io"
 	"iter"
-	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -32,39 +30,39 @@ type Requirements struct {
 	Normalizer Normalizer
 
 	DeduplicationNamespace               string
-	TitleDeduplicator                    htmltest.Middleware
-	DescriptionDeduplicator              htmltest.Middleware
-	OpenGraphCardTitleDeduplicator       htmltest.Middleware
-	OpenGraphCardDescriptionDeduplicator htmltest.Middleware
-	TwitterCardTitleDeduplicator         htmltest.Middleware
-	TwitterCardDescriptionDeduplicator   htmltest.Middleware
+	TitleDeduplicator                    ValidationMiddleware
+	DescriptionDeduplicator              ValidationMiddleware
+	OpenGraphCardTitleDeduplicator       ValidationMiddleware
+	OpenGraphCardDescriptionDeduplicator ValidationMiddleware
+	TwitterCardTitleDeduplicator         ValidationMiddleware
+	TwitterCardDescriptionDeduplicator   ValidationMiddleware
 
-	Title       htmltest.Validator
-	Description htmltest.Validator
-	Heading     htmltest.Validator
-	Language    htmltest.Validator
+	Title       Validator
+	Description Validator
+	Heading     Validator
+	Language    Validator
 
-	URL          htmltest.Validator
-	LinkText     htmltest.Validator
-	ImageAltText htmltest.Validator
-	ImageSrc     htmltest.Validator
+	URL          Validator
+	LinkText     Validator
+	ImageAltText Validator
+	ImageSrc     Validator
 }
 
 type PageValidator struct {
 	Loader                   Loader
-	Title                    htmltest.Validator
-	Description              htmltest.Validator
-	OpenGraphCardTitle       htmltest.Validator
-	OpenGraphCardDescription htmltest.Validator
-	TwitterCardTitle         htmltest.Validator
-	TwitterCardDescription   htmltest.Validator
-	Heading                  htmltest.Validator
-	Language                 htmltest.Validator
+	Title                    Validator
+	Description              Validator
+	OpenGraphCardTitle       Validator
+	OpenGraphCardDescription Validator
+	TwitterCardTitle         Validator
+	TwitterCardDescription   Validator
+	Heading                  Validator
+	Language                 Validator
 
-	URL          htmltest.Validator
-	LinkText     htmltest.Validator
-	ImageAltText htmltest.Validator
-	ImageSrc     htmltest.Validator
+	URL          Validator
+	LinkText     Validator
+	ImageAltText Validator
+	ImageSrc     Validator
 }
 
 func New(loader Loader, r Requirements) PageValidator {
@@ -104,7 +102,7 @@ func New(loader Loader, r Requirements) PageValidator {
 		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
 	if r.Language == nil {
-		r.Language = htmltest.ValidatorFunc(func(s string) error {
+		r.Language = ValidatorFunc(func(s string) error {
 			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
 				return errors.New("invalid language code")
 			}
@@ -112,7 +110,7 @@ func New(loader Loader, r Requirements) PageValidator {
 		})
 	}
 	if r.URL == nil {
-		r.URL = htmltest.NewURLValidator(nil, http.StatusOK)
+		r.URL = NewURLValidator(StringConstraints{})
 	}
 	if r.LinkText == nil {
 		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: r.Normalizer})
@@ -229,7 +227,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			case "a":
 				t.Run(getElementPath(rc.Node), r.TestLink(originURL, rc.Node))
 			case "img":
-				t.Run(getElementPath(rc.Node), r.TestImage(origin, rc.Node))
+				t.Run(getElementPath(rc.Node), r.TestImage(originURL, rc.Node))
 			default:
 				t.Errorf("%s: unexpected link node: %s", getElementPath(rc.Node), rc.Node.Data)
 			}
@@ -241,17 +239,17 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 		// 	}
 		// 	switch node.Data {
 		// 	case "a":
-		// 		// if r.LinkText == htmltest.SkipValidator {
+		// 		// if r.LinkText == SkipValidator {
 		// 		// 	continue
 		// 		// }
-		// 		t.Run(htmltest.Path(node), r.TestLink(originURL, node))
+		// 		t.Run(Path(node), r.TestLink(originURL, node))
 		// 	case "img":
-		// 		// if (r.ImageAltText == nil || r.ImageAltText == htmltest.SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == htmltest.SkipValidator) {
+		// 		// if (r.ImageAltText == nil || r.ImageAltText == SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == SkipValidator) {
 		// 		// 	continue
 		// 		// }
-		// 		t.Run(htmltest.Path(node), r.TestImage(origin, node))
+		// 		t.Run(Path(node), r.TestImage(origin, node))
 		// 		// if err = ValidateImage(node); err != nil {
-		// 		// 	t.Errorf("invalid link tag %q: %v", htmltest.Path(node), err)
+		// 		// 	t.Errorf("invalid link tag %q: %v", Path(node), err)
 		// 		// }
 		// 		// case "script":
 		// 		// 	t.Run("script tag has valid attributes", r.TestScript(node))

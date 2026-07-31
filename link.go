@@ -6,13 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dkotik/pageseo/htmltest"
 	"golang.org/x/net/html"
 )
 
 const (
 	// DefaultMinimumLinkTextLength sets the minimum length of the anchor text.
 	// A pagination link is often a single character.
+	DefaultMinimuLinkLength      = 1
+	DefaultMaximumLinkLength     = 120 // 2048
 	DefaultMinimumLinkTextLength = 1
 	DefaultMaximumLinkTextLength = DefaultMaximumTitleLength * 6
 )
@@ -57,7 +58,50 @@ func joinInternalPath(origin, location *url.URL) *url.URL {
 	return origin.JoinPath(location.Path)
 }
 
-func NewLinkTextValidator(s StringConstraints) htmltest.Validator {
+type urlValidator struct {
+	Normalizer    Normalizer
+	MinimumLength int
+	MaximumLength int
+}
+
+func NewURLValidator(s StringConstraints) Validator {
+	if s.Normalizer == nil {
+		s.Normalizer = PassthroughNormalizer
+	}
+	if s.MinimumLength < 1 {
+		s.MinimumLength = DefaultMinimuLinkLength
+	}
+	if s.MaximumLength < 1 {
+		s.MaximumLength = DefaultMaximumLinkLength
+	}
+	return urlValidator(s)
+}
+
+func (s urlValidator) Validate(value string) error {
+	normalized, err := s.Normalizer.Normalize(value)
+	if err != nil {
+		return err
+	}
+
+	switch length := len(normalized); {
+	case length < s.MinimumLength:
+		return errors.New("URL is too short")
+	case length > s.MaximumLength:
+		return errors.New("URL is too long")
+	default:
+		// _, err := url.Parse(normalized)
+		// return err
+		return nil
+	}
+}
+
+type linkTextValidator struct {
+	Normalizer    Normalizer
+	MinimumLength int
+	MaximumLength int
+}
+
+func NewLinkTextValidator(s StringConstraints) Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = PassthroughNormalizer
 	}
@@ -68,12 +112,6 @@ func NewLinkTextValidator(s StringConstraints) htmltest.Validator {
 		s.MaximumLength = DefaultMaximumLinkTextLength
 	}
 	return linkTextValidator(s)
-}
-
-type linkTextValidator struct {
-	Normalizer    Normalizer
-	MinimumLength int
-	MaximumLength int
 }
 
 func (s linkTextValidator) Validate(value string) error {
@@ -104,7 +142,7 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 		for descendant := range node.Descendants() {
 			switch descendant.Type {
 			case html.TextNode:
-				// if err := r.LinkText.Validate(htmltest.ParseTextContent(node)); err != nil {
+				// if err := r.LinkText.Validate(ParseTextContent(node)); err != nil {
 				// 	t.Errorf("invalid anchor text: %v", err)
 				// }
 				isEmpty = false
@@ -162,10 +200,10 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 			// resource is loading
 			if IsExternalLocation(origin, url) {
 				if _, ok = rel["external"]; !ok {
-					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"external\" directive")
+					t.Error("add \"external\" directive to [rel] attribute")
 				}
 				if _, ok = rel["nofollow"]; !ok {
-					t.Error("anchor [href] attribute points to an external URL, but the [rel] attribute does not contain an \"nofollow\" directive")
+					t.Error("add \"nofollow\" directive to [rel] attribute")
 				}
 			} else {
 				url = joinInternalPath(origin, url)
