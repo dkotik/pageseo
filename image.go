@@ -77,7 +77,11 @@ func GetPictureSourceList(node *html.Node) (result []string) {
 	return result
 }
 
-func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testing.T) {
+func (r PageValidator) testImage(
+	origin *url.URL,
+	node *html.Node,
+	loader Loader,
+) func(t *testing.T) {
 	return func(t *testing.T) {
 		logAttributes(t, node.Attr)
 		attributes := getAttributes(t, node)
@@ -86,10 +90,6 @@ func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testi
 				if err := r.ImageSrc.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
-				}
-				_, err := url.Parse(src)
-				if err != nil {
-					t.Error("invalid URL:", err)
 				}
 			}
 		} else {
@@ -101,10 +101,6 @@ func (r PageValidator) TestImage(origin *url.URL, node *html.Node) func(t *testi
 				if err := r.ImageSrc.Validate(src); err != nil {
 					t.Log("Src:", src)
 					t.Errorf("invalid image source: %v", err)
-				}
-				_, err := url.Parse(src)
-				if err != nil {
-					t.Error("invalid URL:", err)
 				}
 			}
 		}

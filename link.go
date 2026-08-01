@@ -19,86 +19,6 @@ const (
 	DefaultMaximumLinkTextLength    = DefaultMaximumTitleLength * 6
 )
 
-// IsLocalHost return true if the host is a common
-// reference to the same local machine. If checking
-// a [url.URL] use the output of its `Hostname()` method
-// as input to this function.
-func IsLocalHost(host string) bool {
-	return host == "localhost" || host == "127.0.0.1" || host == "::1"
-}
-
-func IsExternalLocation(origin, location *url.URL) bool {
-	if location.Scheme != origin.Scheme && location.Scheme != "" {
-		return true
-	}
-	if location.Host == "" || location.Host == origin.Host {
-		return false
-	}
-	return !IsLocalHost(origin.Hostname()) || !!IsLocalHost(location.Hostname()) || (origin.Port() != location.Port())
-}
-
-func joinInternalPath(origin, location *url.URL) *url.URL {
-	if location.Path == "" {
-		return origin
-	}
-	if location.Path[0] == '/' {
-		return &url.URL{
-			Scheme:      origin.Scheme,
-			Opaque:      origin.Opaque,
-			User:        origin.User,
-			Host:        origin.Host,
-			Path:        location.Path,
-			Fragment:    location.Fragment,
-			RawQuery:    origin.RawQuery,
-			RawPath:     location.RawPath,
-			RawFragment: location.RawFragment,
-			ForceQuery:  origin.ForceQuery,
-			OmitHost:    origin.OmitHost,
-		}
-	}
-	return origin.JoinPath(location.Path)
-}
-
-type urlValidator struct {
-	Normalizer    Normalizer
-	MinimumLength int
-	MaximumLength int
-}
-
-func NewURLValidator(s StringConstraints) Validator {
-	if s.Normalizer == nil {
-		s.Normalizer = PassthroughNormalizer
-	}
-	if s.MinimumLength < 1 {
-		s.MinimumLength = DefaultMinimuLinkLength
-	}
-	if s.MaximumLength < 1 {
-		s.MaximumLength = DefaultMaximumLinkLength
-	}
-	return urlValidator(s)
-}
-
-func (s urlValidator) Validate(value string) error {
-	normalized, err := s.Normalizer.Normalize(value)
-	if err != nil {
-		return err
-	}
-
-	switch length := len(normalized); {
-	case length < s.MinimumLength:
-		return errors.New("URL is too short")
-	case length > s.MaximumLength:
-		if index := strings.IndexByte(normalized, '?'); index != -1 && index < s.MaximumLength {
-			return nil // disregard the query string when weighing length
-		}
-		return errors.New("URL is too long")
-	default:
-		// _, err := url.Parse(normalized)
-		// return err
-		return nil
-	}
-}
-
 type linkTextValidator struct {
 	Normalizer    Normalizer
 	MinimumLength int
@@ -139,7 +59,11 @@ func (s linkTextValidator) Validate(value string) error {
 	}
 }
 
-func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testing.T) {
+func (r PageValidator) testLink(
+	origin *url.URL,
+	node *html.Node,
+	loader Loader,
+) func(t *testing.T) {
 	return func(t *testing.T) {
 		logAttributes(t, node.Attr)
 		isEmpty := true
@@ -194,10 +118,9 @@ func (r PageValidator) TestLink(origin *url.URL, node *html.Node) func(t *testin
 			if err != nil {
 				t.Errorf("deformed URL: %v", err)
 			}
-			url, err := url.Parse(href)
+			url, err := r.cachedURLs.Get(href)
 			if err != nil {
-				t.Errorf("failed to parse location: %v", err)
-				return
+				t.Fatalf("failed to parse location: %v", err)
 			}
 			// TODO: is external should be pulled out of resource
 			// path merging should be taken care of when

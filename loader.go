@@ -2,21 +2,71 @@ package pageseo
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
-	"mime"
 	"net/http"
+	"net/url"
 	"slices"
 	"sync"
+	"testing"
 	"time"
+
+	"golang.org/x/net/html"
 )
+
+type Resource struct {
+	URL         string
+	ContentType string
+	Content     []byte
+	Error       error
+}
+
+func (r PageValidator) preloadResources(
+	t *testing.T,
+	origin *url.URL,
+	body *html.Node,
+) Loader {
+	URLs := make([]string, 0, 16)
+	addURL := func(URL string) {
+		relative, _, err := r.cachedURLs.GetRelativeTo(origin, URL)
+		if err == nil {
+			URLs = append(URLs, relative.String())
+		} else {
+			t.Errorf("invalid URL <%s>: %v", URL, err)
+		}
+	}
+
+	for node := range body.Descendants() {
+		if node.Type != html.ElementNode {
+			continue
+		}
+		switch node.Data {
+		case "a":
+			href, ok := getAttribute(node, `href`)
+			if ok {
+				addURL(href)
+			}
+		case "img":
+			for _, src := range GetPictureSourceList(node.Parent) {
+				addURL(src)
+			}
+			fallthrough
+		case "script", "style":
+			src, ok := getAttribute(node, `src`)
+			if ok {
+				addURL(src)
+			}
+		}
+	}
+	return NewHotSwap(t.Context(), r.Loader, URLs)
+}
 
 type Loader interface {
 	Load(context.Context, string) ([]byte, string, error)
 }
 
+// TODO: deprecate in favor of hotSwapLoader
 type preloader struct {
 	Loader
 	Mutex        sync.Mutex
@@ -123,57 +173,6 @@ func (fs fsLoader) Load(_ context.Context, url string) ([]byte, string, error) {
 	return data, http.DetectContentType(data), nil
 }
 
-type loaderHTTP struct {
-	*http.Client
-	Headers http.Header
-}
-
-func NewClient(client *http.Client, headers http.Header) Loader {
-	if client == nil {
-		panic("nil HTTP client")
-	}
-	return loaderHTTP{
-		Client:  client,
-		Headers: headers,
-	}
-}
-
-func (web loaderHTTP) Load(ctx context.Context, url string) (data []byte, contentType string, err error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to open <%s>: %w", url, err)
-	}
-	for key, values := range web.Headers {
-		for _, value := range values {
-			req.Header.Set(key, value)
-		}
-	}
-	resp, err := web.Client.Do(req)
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to load <%s>: %w", url, err)
-	}
-	defer func() {
-		err = errors.Join(err, resp.Body.Close())
-	}()
-
-	data, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to load <%s>: %w", url, err)
-	}
-	contentTypeRaw := resp.Header.Get(`Content-Type`)
-	contentType, _, err = mime.ParseMediaType(contentTypeRaw)
-	if err != nil {
-		return nil, "", fmt.Errorf("unable to parse header <Content-Type> <%s>: %w", contentTypeRaw, err)
-	}
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		err = fmt.Errorf("HTTP %d error: %s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	}
-	// if contentType == "" {
-	// 	contentType = "application/octet-stream"
-	// }
-	return data, contentType, err
-}
-
 type semaphoreLoader struct {
 	Loaders chan Loader
 }
@@ -211,4 +210,59 @@ func (s semaphoreLoader) Load(ctx context.Context, url string) (data []byte, con
 		s.Loaders <- loader
 		return
 	}
+}
+
+type hotSwapLoader struct {
+	Cursor    int
+	Preloaded []Resource
+	Loader    Loader
+}
+
+func NewHotSwap(ctx context.Context, loader Loader, URLs []string) Loader {
+	resources := make([]Resource, len(URLs))
+	wg := sync.WaitGroup{}
+	for i, url := range URLs {
+		wg.Add(1)
+		go func(ctx context.Context, i int, url string) {
+			data, contentType, err := loader.Load(ctx, url)
+			resources[i] = Resource{
+				URL:         url,
+				ContentType: contentType,
+				Content:     data,
+				Error:       err,
+			}
+			wg.Done()
+		}(ctx, i, url)
+	}
+	wg.Wait()
+	return hotSwapLoader{
+		Loader:    loader,
+		Cursor:    0,
+		Preloaded: resources,
+	}
+}
+
+func (h hotSwapLoader) Load(ctx context.Context, URL string) ([]byte, string, error) {
+	var i int
+
+	// search forward from cursor
+	for i = h.Cursor; i < len(h.Preloaded); i++ {
+		r := h.Preloaded[i]
+		if r.URL == URL {
+			h.Cursor = i + 1 // next time begin iteration from same point
+			return r.Content, r.ContentType, r.Error
+		}
+	}
+
+	// search backward from cursor
+	for i = h.Cursor - 1; i >= 0; i-- {
+		r := h.Preloaded[i]
+		if r.URL == URL {
+			return r.Content, r.ContentType, r.Error
+		}
+	}
+
+	// fallback on loader
+	panic("not found in preloaded resources")
+	return h.Loader.Load(ctx, URL)
 }

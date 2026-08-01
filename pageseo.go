@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"iter"
-	"net/url"
 	"os"
 	"regexp"
 	"testing"
@@ -63,6 +62,8 @@ type PageValidator struct {
 	LinkText     Validator
 	ImageAltText Validator
 	ImageSrc     Validator
+
+	cachedURLs *cachedParsedURLs
 }
 
 func New(loader Loader, r Requirements) PageValidator {
@@ -139,6 +140,8 @@ func New(loader Loader, r Requirements) PageValidator {
 		LinkText:     r.LinkText,
 		ImageAltText: r.ImageAltText,
 		ImageSrc:     r.ImageSrc,
+
+		cachedURLs: &cachedParsedURLs{},
 	}
 }
 
@@ -163,7 +166,8 @@ func NewStrict(loader Loader, r Requirements) PageValidator {
 
 func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
-		originURL, err := url.Parse(origin)
+		var ok bool
+		originURL, err := r.cachedURLs.Get(origin)
 		if err != nil {
 			t.Fatal("invalid URL:", err)
 		}
@@ -184,11 +188,12 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			t.Errorf("HTML tag has an invalid lang attribute %q: %v", language, err)
 		}
 
-		children, closer := iter.Pull[*html.Node](node.FirstChild.NextSibling.ChildNodes())
+		nextChild, closer := iter.Pull[*html.Node](node.FirstChild.NextSibling.ChildNodes())
 		defer closer()
+		var child *html.Node
 
 		for {
-			child, ok := children()
+			child, ok = nextChild()
 			if !ok {
 				t.Error("HTML tag is missing a <HEAD> tag at the top")
 				break
@@ -205,7 +210,7 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 		}
 
 		for {
-			child, ok := children()
+			child, ok := nextChild()
 			if !ok {
 				t.Fatal("HTML tag is missing a <BODY> tag")
 			}
@@ -216,23 +221,23 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
 			}
 			t.Run(getElementPath(child), r.TestHeadings(child))
+
+			hotSwap := r.preloadResources(t, originURL, child)
+			for node := range child.Descendants() {
+				switch node.Data {
+				case "a":
+					t.Run(getElementPath(node), r.testLink(originURL, node, hotSwap))
+				case "img":
+					t.Run(getElementPath(node), r.testImage(originURL, node, hotSwap))
+				}
+			}
+
 			break // found a body tag
 		}
 
-		child, ok := children()
+		child, ok = nextChild()
 		if ok {
 			t.Errorf("HTML tag contains more than two children: %s", child.Data)
-		}
-
-		for rc := range r.loadResources(t, originURL, node) {
-			switch rc.Node.Data {
-			case "a":
-				t.Run(getElementPath(rc.Node), r.TestLink(originURL, rc.Node))
-			case "img":
-				t.Run(getElementPath(rc.Node), r.TestImage(originURL, rc.Node))
-			default:
-				t.Errorf("%s: unexpected link node: %s", getElementPath(rc.Node), rc.Node.Data)
-			}
 		}
 
 		// for node := range node.Descendants() {
