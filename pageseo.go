@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"iter"
+	"net/url"
 	"os"
 	"regexp"
+	"slices"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -18,6 +20,112 @@ type StringConstraints struct {
 	Normalizer    Normalizer
 	MinimumLength int
 	MaximumLength int
+}
+
+// NodeTester creates HTML node tests. The descendations
+// of the node should be tested by the returned testing function.
+// Otherwise, they will not be tested at all.
+type NodeTester interface {
+	// Match returns true if the current node should be tested.
+	Match(*html.Node) bool
+
+	// ListResourcesForPreloading returns a list of resource
+	// locations that should be preloaded for the matched node.
+	ListResourcesForPreloading(
+		originPage *url.URL,
+		matchedNode *html.Node,
+	) []string
+
+	// TestNode enforces search engine optimization standards
+	// by testing the matched node and its descendents.
+	//
+	// The resource loader is populated with resources provided by
+	// [NodeTester.ListResourcesForPreloading] in advance.
+	TestNode(
+		originPage *url.URL,
+		matchedNode *html.Node,
+		resourceLoader Loader,
+	) func(*testing.T)
+}
+
+type PageTester interface {
+	TestPage(origin *url.URL, node *html.Node) func(t *testing.T)
+}
+
+type pageSEO struct {
+	loader      Loader
+	nodeTesters []NodeTester
+}
+
+func NewPageTester(
+	loader Loader,
+	nodeTesters ...NodeTester,
+) PageTester {
+	if loader == nil {
+		panic("loader is nil")
+	}
+	for _, tester := range nodeTesters {
+		if tester == nil {
+			panic("node tester is nil")
+		}
+	}
+	if len(nodeTesters) == 0 {
+		nodeTesters = GetDefaultNodeTests()
+	}
+	return pageSEO{
+		loader:      loader,
+		nodeTesters: nodeTesters,
+	}
+}
+
+type nodeWithTester struct {
+	node   *html.Node
+	tester NodeTester
+}
+
+func (p pageSEO) eachChild(
+	t *testing.T,
+	origin *url.URL,
+	node *html.Node,
+) iter.Seq[nodeWithTester] {
+	return func(yield func(nodeWithTester) bool) {
+	nextChild:
+		for child := range node.ChildNodes() {
+			for _, nt := range p.nodeTesters {
+				if nt.Match(child) {
+					if !yield(nodeWithTester{child, nt}) {
+						return
+					}
+					continue nextChild
+				}
+			}
+			for pair := range p.eachChild(t, origin, child) {
+				if !yield(pair) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
+	return func(t *testing.T) {
+		URLs := make([]string, 0, 8)
+		testsToRun := make([]nodeWithTester, 0, 8)
+		for pair := range p.eachChild(t, origin, node) {
+			URLs = slices.Concat(
+				URLs, pair.tester.ListResourcesForPreloading(
+					origin, pair.node,
+				),
+			)
+			testsToRun = append(testsToRun, pair)
+		}
+		hotSwap := NewHotSwap(t.Context(), p.loader, URLs)
+		for _, pair := range testsToRun {
+			t.Run(
+				getElementPath(pair.node), pair.tester.TestNode(origin, pair.node, hotSwap))
+		}
+	}
 }
 
 type Requirements struct {

@@ -71,18 +71,28 @@ func withDefaults() Option {
 	return func(o options) (_ options, err error) {
 		if o.Filter == nil {
 			if len(o.Targets) == 0 {
-				o.Filter = FilterFunc(func(r pageseo.Resource) bool {
+				o, err = WithFilter(FilterFunc(func(r pageseo.Resource) bool {
 					return true
-				})
+				}))(o)
+				if err != nil {
+					return o, err
+				}
 			} else {
-				o.Filter, err = NewTargetFilter(o.Targets...)
+				filter, err := NewTargetFilter(o.Targets...)
+				if err != nil {
+					return o, err
+				}
+				o, err = WithFilter(filter)(o)
 				if err != nil {
 					return o, err
 				}
 			}
 		}
 		if o.Logger == nil {
-			o.Logger = slog.Default()
+			o, err = WithLogger(slog.Default())(o)
+			if err != nil {
+				return o, err
+			}
 		}
 		return o, nil
 	}

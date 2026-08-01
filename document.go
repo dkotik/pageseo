@@ -42,10 +42,7 @@ func findElementNode(node *html.Node, name string) *html.Node {
 	return nil
 }
 
-func getElementPath(node *html.Node) string {
-	if node == nil {
-		return ""
-	}
+func getElementPath(node *html.Node) (p string) {
 	segments := []string{node.Data}
 	for ancestor := range node.Ancestors() {
 		if ancestor.Type == html.ElementNode {
@@ -53,7 +50,14 @@ func getElementPath(node *html.Node) string {
 		}
 	}
 	slices.Reverse(segments)
-	return pathPrefixForHTML + strings.Join(segments, ">")
+	p = pathPrefixForHTML + strings.Join(segments, ">")
+	for _, attr := range node.Attr {
+		if attr.Key == "id" {
+			p += "#" + attr.Val
+			break
+		}
+	}
+	return p
 }
 
 func getAttributes(t *testing.T, node *html.Node) map[string]string {

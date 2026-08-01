@@ -78,7 +78,6 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Provide a command line scanner that can crawl live websites.
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
-- [ ] Replace wait group loader with the new preloader
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.
 - [ ] Add SQLite backend for the service.
 - [ ] Finish image source set.

@@ -15,6 +15,13 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Loader fetches the resource from a given location.
+// Implementations should handle caching and other
+// performance optimizations.
+type Loader interface {
+	Load(context.Context, string) ([]byte, string, error)
+}
+
 type Resource struct {
 	URL         string
 	ContentType string
@@ -60,10 +67,6 @@ func (r PageValidator) preloadResources(
 		}
 	}
 	return NewHotSwap(t.Context(), r.Loader, URLs)
-}
-
-type Loader interface {
-	Load(context.Context, string) ([]byte, string, error)
 }
 
 // TODO: deprecate in favor of hotSwapLoader
@@ -263,6 +266,5 @@ func (h hotSwapLoader) Load(ctx context.Context, URL string) ([]byte, string, er
 	}
 
 	// fallback on loader
-	panic("not found in preloaded resources")
 	return h.Loader.Load(ctx, URL)
 }
