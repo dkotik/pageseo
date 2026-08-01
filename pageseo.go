@@ -2,16 +2,18 @@ package pageseo
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"iter"
 	"net/url"
 	"os"
 	"regexp"
 	"slices"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	"golang.org/x/net/html"
+	"golang.org/x/text/language"
 )
 
 //go:generate go run ./testdata/generate.go
@@ -22,9 +24,10 @@ type StringConstraints struct {
 	MaximumLength int
 }
 
-// NodeTester creates HTML node tests. The descendations
-// of the node should be tested by the returned testing function.
-// Otherwise, they will not be tested at all.
+// NodeTester creates HTML node tests.
+//
+// NodeTester should not issue any warnings or errors
+// if a [Loader] returns a [Skip] sentinel error.
 type NodeTester interface {
 	// Match returns true if the current node should be tested.
 	Match(*html.Node) bool
@@ -78,29 +81,43 @@ func NewPageTester(
 	}
 }
 
-type nodeWithTester struct {
-	node   *html.Node
-	tester NodeTester
+type nodeTests struct {
+	Node  *html.Node
+	Tests []NodeTester
 }
 
 func (p pageSEO) eachChild(
 	t *testing.T,
 	origin *url.URL,
 	node *html.Node,
-) iter.Seq[nodeWithTester] {
-	return func(yield func(nodeWithTester) bool) {
-	nextChild:
+	preload func([]string),
+) iter.Seq[nodeTests] {
+	return func(yield func(nodeTests) bool) {
+		next := make([]NodeTester, 0, len(p.nodeTesters))
 		for child := range node.ChildNodes() {
+			// might want to test text nodes for something
+			// if child.Type != html.ElementNode {
+			// 	continue
+			// }
 			for _, nt := range p.nodeTesters {
 				if nt.Match(child) {
-					if !yield(nodeWithTester{child, nt}) {
-						return
-					}
-					continue nextChild
+					next = append(next, nt)
+					preload(nt.ListResourcesForPreloading(
+						origin, child,
+					))
 				}
 			}
-			for pair := range p.eachChild(t, origin, child) {
-				if !yield(pair) {
+			if len(next) > 0 {
+				if !yield(nodeTests{
+					Node:  child,
+					Tests: slices.Clone(next),
+				}) {
+					return
+				}
+				next = next[:0]
+			}
+			for nodeTests := range p.eachChild(t, origin, child, preload) {
+				if !yield(nodeTests) {
 					return
 				}
 			}
@@ -110,20 +127,127 @@ func (p pageSEO) eachChild(
 
 func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
-		URLs := make([]string, 0, 8)
-		testsToRun := make([]nodeWithTester, 0, 8)
-		for pair := range p.eachChild(t, origin, node) {
-			URLs = slices.Concat(
-				URLs, pair.tester.ListResourcesForPreloading(
-					origin, pair.node,
-				),
-			)
-			testsToRun = append(testsToRun, pair)
+		if origin == nil {
+			t.Fatal("origin is nil")
 		}
-		hotSwap := NewHotSwap(t.Context(), p.loader, URLs)
+		if node == nil || node.FirstChild == nil {
+			t.Fatal("HTML document is empty")
+		}
+		if node.FirstChild.Type != html.DoctypeNode {
+			t.Error("HTML document root is not a <!DOCTYPE html>")
+		} else if node.FirstChild.Data != "html" {
+			t.Error("document type is not a <!DOCTYPE html>")
+		}
+
+		htmlTag := getFirstElementOrSibling(node.FirstChild)
+		if htmlTag == nil {
+			t.Error("HTML document has no root <html> node")
+		} else if htmlTag.Type != html.ElementNode || htmlTag.Data != "html" {
+			t.Error("HTML document root is not an <html> node")
+		} else {
+			foundLanguageAttribute := 0
+			for _, attr := range htmlTag.Attr {
+				if strings.ToLower(attr.Key) == "lang" {
+					foundLanguageAttribute++
+					if _, err := language.Parse(attr.Val); err != nil {
+						t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
+					}
+				}
+			}
+			switch foundLanguageAttribute {
+			case 1: // ok
+			case 0:
+				t.Error("<html> tag has no [lang] attribute")
+			default:
+				t.Errorf("<html> tag has %d extra [lang] attributes", foundLanguageAttribute-1)
+			}
+
+			head := getFirstElementOrSibling(htmlTag.FirstChild)
+			if head == nil || head.Data != "head" {
+				t.Fatal("<html> tag has no <head> node")
+			} else {
+				body := getFirstElementOrSibling(head.NextSibling)
+				if body == nil || body.Data != "body" {
+					t.Fatal("<html> tag has no <body> node")
+				} else {
+					// standard library parser ignores trailing nodes,
+					// but let's try it anyway, for completeness:
+					// are there any extra trailing body nodes?
+					body = body.NextSibling
+					for {
+						if body == nil {
+							break
+						}
+						switch body.Type {
+						case html.CommentNode: // ok
+						case html.ElementNode:
+							t.Error("HTML document has an extra trailing <" + body.Data + "> node")
+						case html.TextNode:
+							t.Error("HTML document has an extra trailing text node")
+						default:
+							t.Error("HTML document has an unexpected extra trailing node")
+						}
+						body = body.NextSibling
+					}
+				}
+			}
+		}
+
+		testsToRun := make([]nodeTests, 0, 8)
+		reploadURLs := make([]string, 0, 8)
+
+		for nodeTests := range p.eachChild(
+			t, origin, node,
+			func(URLs []string) {
+				if len(URLs) == 0 {
+					return
+				}
+				reploadURLs = slices.Concat(reploadURLs, URLs)
+			},
+		) {
+			testsToRun = append(testsToRun, nodeTests)
+		}
+
+		var hotSwap Loader
+		if testing.Short() {
+			t.Log("[SKIP] short tests do not load any page resources")
+			hotSwap = skipAllLoaderSingleton
+		} else if len(reploadURLs) == 0 {
+			hotSwap = p.loader
+		} else {
+			hotSwap = NewHotSwap(t.Context(), p.loader, reploadURLs)
+		}
 		for _, pair := range testsToRun {
 			t.Run(
-				getElementPath(pair.node), pair.tester.TestNode(origin, pair.node, hotSwap))
+				getElementPath(pair.Node),
+				func(t *testing.T) {
+					for _, test := range pair.Tests {
+						test.TestNode(origin, pair.Node, hotSwap)(t)
+					}
+				},
+			)
+		}
+
+		// standard library parser ignores trailing nodes,
+		// but let's try it anyway, for completeness:
+		// are there any extra trailing root nodes?
+		if htmlTag != nil {
+			htmlTag = htmlTag.NextSibling
+			for {
+				if htmlTag == nil {
+					break
+				}
+				switch htmlTag.Type {
+				case html.CommentNode: // ok
+				case html.ElementNode:
+					t.Error("HTML document has an extra trailing <" + htmlTag.Data + "> node")
+				case html.TextNode:
+					t.Error("HTML document has an extra trailing text node")
+				default:
+					t.Error("HTML document has an unexpected extra trailing node")
+				}
+				htmlTag = htmlTag.NextSibling
+			}
 		}
 	}
 }
@@ -406,16 +530,127 @@ func (v PageValidator) TestFile(p string) func(t *testing.T) {
 	}
 }
 
-func ValidateDoctypeTag(node *html.Node) error {
-	if node == nil {
-		return errors.New("!DOCTYPE node is nil")
+type matchCounter struct {
+	NodeTester
+	Count *atomic.Uint32
+}
+
+func (mc matchCounter) Match(node *html.Node) (matched bool) {
+	matched = mc.NodeTester.Match(node)
+	if matched {
+		mc.Count.Add(1)
 	}
-	// TODO: this was glitching out for some reason
-	if node.Type != html.DoctypeNode {
-		return errors.New("HTML node is not a DOCTYPE tag")
+	return matched
+}
+
+// MustMatch fails the test with a message if the
+// NodeTester does not match any nodes during page validation.
+func MustMatch(t *testing.T, nt NodeTester, message string) NodeTester {
+	mc := matchCounter{
+		NodeTester: nt,
+		Count:      new(atomic.Uint32),
 	}
-	if node.Data != "html" {
-		return fmt.Errorf("DOCTYPE tag contains unexpected root element: %s", node.Data)
+	if message == "" {
+		message = "required node tester did not match any nodes"
 	}
+	t.Cleanup(func() {
+		if mc.Count.Load() == 0 {
+			t.Error(message)
+		}
+	})
+	return mc
+}
+
+// MustMatchExactly fails the test with a message if the
+// NodeTester does not match the exact number of nodes during
+// page validation.
+func MustMatchExactly(t *testing.T, nt NodeTester, message string, timesMatched uint32) NodeTester {
+	mc := matchCounter{
+		NodeTester: nt,
+		Count:      new(atomic.Uint32),
+	}
+	if message == "" {
+		message = "required node tester did not match exactly"
+	}
+	t.Cleanup(func() {
+		actuallyMatchedTimes := mc.Count.Load()
+		if actuallyMatchedTimes != timesMatched {
+			t.Logf(
+				"node tester matched %d times instead of %d", actuallyMatchedTimes, timesMatched,
+			)
+			t.Error(message)
+		}
+	})
+	return mc
+}
+
+// MustMatchAtLeast fails the test with a message if the
+// NodeTester does not match at least the specified number
+// of nodes during page validation.
+func MustMatchAtLeast(t *testing.T, nt NodeTester, message string, timesMatched uint32) NodeTester {
+	mc := matchCounter{
+		NodeTester: nt,
+		Count:      new(atomic.Uint32),
+	}
+	if message == "" {
+		message = "required node tester did not match enough times"
+	}
+	t.Cleanup(func() {
+		actuallyMatchedTimes := mc.Count.Load()
+		if actuallyMatchedTimes < timesMatched {
+			t.Logf(
+				"node tester matched %d times instead of %d", actuallyMatchedTimes, timesMatched,
+			)
+			t.Error(message)
+		}
+	})
+	return mc
+}
+
+type elementTester struct {
+	Data   string
+	Tester func(*html.Node) func(*testing.T)
+}
+
+// NewNodeElementTester is a helper function that creates a
+// simplified [NodeTester] for an HTML element type.
+// It will never load resources.
+//
+// Wrap it with [MustMatchExactly] to build fluent page
+// validators.
+func NewNodeElementTester(name string, tester func(*html.Node) func(*testing.T)) NodeTester {
+	if name == "" {
+		panic("empty element name")
+	}
+	if tester == nil {
+		panic("nil element tester")
+	}
+	return elementTester{
+		Data:   strings.ToLower(name),
+		Tester: tester,
+	}
+}
+
+func (e elementTester) Match(
+	possible *html.Node,
+) bool {
+	if possible.Type != html.ElementNode {
+		return false
+	}
+	return possible.Data != strings.ToLower(e.Data)
+}
+
+func (e elementTester) ListResourcesForPreloading(
+	originPage *url.URL,
+	matchedNode *html.Node,
+) []string {
 	return nil
+}
+
+func (e elementTester) TestNode(
+	originPage *url.URL,
+	matchedNode *html.Node,
+	resourceLoader Loader,
+) func(*testing.T) {
+	return e.Tester(matchedNode)
 }

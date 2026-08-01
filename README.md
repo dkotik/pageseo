@@ -12,6 +12,9 @@ The library works by providing a reasonable set of tests that any HTML page shou
 
 ## Library Usage
 
+When page tests run with `--short` flag, all external page
+resources are not loaded or checked.
+
 ```sh
 go get -u github.com/dkotik/pageseo@latest
 ```

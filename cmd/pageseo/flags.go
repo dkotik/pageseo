@@ -16,6 +16,7 @@ func init() {
 	_ = flag.Uint(flagLimit.Name, flagLimit.Value, flagLimit.Usage)
 	_ = flag.Bool(flagFailFast.Name, false, flagFailFast.Usage)
 	_ = flag.Bool(flagStrict.Name, false, flagStrict.Usage)
+	_ = flag.Bool(flagShort.Name, false, flagShort.Usage)
 	_ = flag.Bool(flagVerbose.Name, false, flagVerbose.Usage)
 	testing.Init()
 	flag.Parse()
@@ -56,6 +57,18 @@ var (
 		Action: func(ctx context.Context, cmd *cli.Command, value bool) error {
 			if value {
 				flag.Set("test.failfast", "true")
+			}
+			return nil
+		},
+	}
+
+	flagShort = &cli.BoolFlag{
+		Name:  "short",
+		Usage: "enable short test mode, do not load page resources",
+		Value: false,
+		Action: func(ctx context.Context, cmd *cli.Command, value bool) error {
+			if value {
+				flag.Set("test.short", "true")
 			}
 			return nil
 		},

@@ -1,6 +1,7 @@
 package pageseo
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -40,6 +41,20 @@ func findElementNode(node *html.Node, name string) *html.Node {
 		}
 	}
 	return nil
+}
+
+func getFirstElementOrSibling(node *html.Node) *html.Node {
+	for {
+		if node == nil {
+			return nil
+		}
+		switch node.Type {
+		case html.ElementNode:
+			return node
+		default:
+			node = node.NextSibling
+		}
+	}
 }
 
 func getElementPath(node *html.Node) (p string) {
@@ -112,4 +127,18 @@ func TestDocumentRootHasExactlyDoctypeAndHTMLNodes(root *html.Node) func(t *test
 			t.Fatal("page has an un expected number of root tags: should include only <DOCTYPE> and <HTML> tags")
 		}
 	}
+}
+
+func ValidateDoctypeTag(node *html.Node) error {
+	if node == nil {
+		return errors.New("!DOCTYPE node is nil")
+	}
+	// TODO: this was glitching out for some reason
+	if node.Type != html.DoctypeNode {
+		return errors.New("HTML node is not a DOCTYPE tag")
+	}
+	if node.Data != "html" {
+		return fmt.Errorf("DOCTYPE tag contains unexpected root element: %s", node.Data)
+	}
+	return nil
 }

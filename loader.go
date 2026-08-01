@@ -2,6 +2,7 @@ package pageseo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -15,11 +16,27 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Skip is a sentinel error that indicates a page resource
+// should not be validated.
+var Skip = errors.New("do not validate this resource")
+
 // Loader fetches the resource from a given location.
 // Implementations should handle caching and other
 // performance optimizations.
+//
+// Loader should return [Skip] if a resource
+// should not be validated without raising an error
+// or a warning.
 type Loader interface {
 	Load(context.Context, string) ([]byte, string, error)
+}
+
+type skipAllLoader struct{}
+
+var skipAllLoaderSingleton Loader = skipAllLoader{}
+
+func (skipAllLoader) Load(context.Context, string) ([]byte, string, error) {
+	return nil, "", Skip
 }
 
 type Resource struct {

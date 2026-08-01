@@ -2,8 +2,11 @@ package pageseo
 
 import (
 	"bytes"
+	"net/url"
 	"os"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 var testData = NewFS(os.DirFS("testdata"))
@@ -14,11 +17,11 @@ func TestMinimalPage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	NewStrict(testData, Requirements{
-		// LinkText: htmltest.SkipValidator,
-		// LinkText: NewLinkTextValidator(StringConstraints{
-		// 	MinimumLength: 1,
-		// 	MaximumLength: 100,
-		// }),
-	}).TestReader(t.Name(), bytes.NewReader(f))(t)
+	tree, err := html.Parse(bytes.NewReader(f))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pageSEO := NewPageTester(testData)
+	pageSEO.TestPage(&url.URL{}, tree)(t)
 }
