@@ -3,8 +3,6 @@ package pageseo
 import (
 	"strings"
 	"testing"
-
-	"golang.org/x/net/html"
 )
 
 const (
@@ -16,7 +14,7 @@ const (
 	MetaOpenGraphImage       = MetaOpenGraphPrefix + "image"
 )
 
-type openGraph struct {
+type openGraphMeta struct {
 	Type        string
 	Title       string
 	Description string
@@ -25,61 +23,47 @@ type openGraph struct {
 	Image       string
 }
 
-func (r PageValidator) testOpenGraphCard(meta headMeta) func(t *testing.T) {
-	return func(t *testing.T) {
-		card := openGraph{}
-		for property, content := range meta.Properties {
-			switch property {
-			case MetaOpenGraphType:
-				card.Type = content
-			case MetaOpenGraphTitle:
-				card.Title = content
-			case MetaOpenGraphDescription:
-				card.Description = content
-			case MetaOpenGraphURL:
-				card.URL = content
-			case MetaOpenGraphImage:
-				card.Image = content
-			default:
-				if strings.HasPrefix(property, MetaOpenGraphPrefix) {
-					t.Log("unknown Open Graph property:", property, content)
-				}
-			}
-		}
-
-		var err error
-		if card.Type == "" {
-			t.Error(MetaOpenGraphType + " not found")
-		}
-		if card.Title == "" {
-			t.Error(MetaOpenGraphTitle + " not found")
-		}
-		if card.Description == "" {
-			t.Error(MetaOpenGraphDescription + " not found")
-		} else if err = r.OpenGraphCardDescription.Validate(card.Description); err != nil {
-			t.Error(MetaOpenGraphDescription+" validation failed:", err)
-		}
-		// if card.URL == "" {
-		// 	t.Error(MetaOpenGraphURL + " not found")
-		// }
-		if card.Image == "" {
-			t.Error(MetaOpenGraphImage + " not found")
-		}
-		for name, _ := range meta.Data {
-			if strings.HasPrefix(name, MetaOpenGraphPrefix) {
-				t.Log("Open Graph meta was set with \"name\" instead of the \"property\" attribute:", name)
+func TestOpenGraphMeta(
+	t testing.TB,
+	metaProperties map[string]string,
+	requirements HeadNodeConstraints,
+) {
+	var og openGraphMeta
+	for property, content := range metaProperties {
+		switch property {
+		case MetaOpenGraphType:
+			og.Type = content
+		case MetaOpenGraphTitle:
+			og.Title = content
+		case MetaOpenGraphDescription:
+			og.Description = content
+		case MetaOpenGraphURL:
+			og.URL = content
+		case MetaOpenGraphImage:
+			og.Image = content
+		default:
+			if strings.HasPrefix(property, MetaOpenGraphPrefix) {
+				t.Log("unknown Open Graph property:", property, content)
 			}
 		}
 	}
 
-}
-
-func (r PageValidator) TestOpenGraphCard(node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		head := findElementNode(node, "head")
-		if head == nil {
-			t.Fatal("document <head> node is absent")
-		}
-		r.testOpenGraphCard(getHeadMeta(t, head))(t)
+	if og.Type == "" {
+		t.Error(MetaOpenGraphType + " not found")
+	}
+	if og.Title == "" {
+		t.Error(MetaOpenGraphTitle + " not found")
+	}
+	// TODO: apply head node constraints
+	// if og.Description == "" {
+	// 	t.Error(MetaOpenGraphDescription + " not found")
+	// } else if err = requirements.Validate(og.Description); err != nil {
+	// 	t.Error(MetaOpenGraphDescription+" validation failed:", err)
+	// }
+	// if og.URL == "" {
+	// 	t.Error(MetaOpenGraphURL + " not found")
+	// }
+	if og.Image == "" {
+		t.Error(MetaOpenGraphImage + " not found")
 	}
 }

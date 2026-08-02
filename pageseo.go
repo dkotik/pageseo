@@ -411,23 +411,6 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 		var child *html.Node
 
 		for {
-			child, ok = nextChild()
-			if !ok {
-				t.Error("HTML tag is missing a <HEAD> tag at the top")
-				break
-			}
-			if child.Type != html.ElementNode {
-				continue
-			}
-			if child.Data != "head" {
-				t.Errorf("first child element tag is not a <HEAD> tag: %s", child.Data)
-				break
-			}
-			t.Run(getElementPath(child), r.TestHead(child))
-			break // found a head tag
-		}
-
-		for {
 			child, ok := nextChild()
 			if !ok {
 				t.Fatal("HTML tag is missing a <BODY> tag")

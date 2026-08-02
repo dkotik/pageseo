@@ -22,6 +22,33 @@ type head struct {
 }
 
 func NewHeadNodeTester(constraints HeadNodeConstraints) NodeTester {
+	if constraints.Title.Normalizer == nil {
+		constraints.Title.Normalizer = NormalizeTextToNFC
+	}
+	if constraints.Title.MinimumLength < 1 {
+		constraints.Title.MinimumLength = DefaultMinimumTitleLength
+	}
+	if constraints.Title.MaximumLength < 1 {
+		constraints.Title.MaximumLength = DefaultMaximumTitleLength
+	}
+
+	if constraints.Description.Normalizer == nil {
+		constraints.Description.Normalizer = NormalizeTextToNFC
+	}
+	if constraints.Description.MinimumLength < 1 {
+		constraints.Description.MinimumLength = DefaultMinimumDescriptionLength
+	}
+	if constraints.Description.MaximumLength < 1 {
+		constraints.Description.MaximumLength = DefaultMaximumDescriptionLength
+	}
+
+	if constraints.Keywords.Normalizer == nil {
+		constraints.Keywords.Normalizer = NormalizeTextToNFC
+	}
+	if constraints.Keywords.MaximumLength < 1 {
+		constraints.Keywords.MaximumLength = DefaultMaximumKeywordsLength
+	}
+
 	return &head{
 		Title:       constraints.Title,
 		Description: constraints.Description,
@@ -60,22 +87,14 @@ func (h *head) ListResourcesForPreloading(origin *url.URL, node *html.Node) []st
 }
 
 func (h *head) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	// t.Fatal("validate head")
-}
-
-type headMeta struct {
-	CharacterSet string
-	Data         map[string]string
-	Properties   map[string]string
-}
-
-func getHeadMeta(t *testing.T, head *html.Node) (result headMeta) {
-	result.Data = make(map[string]string)
-	result.Properties = make(map[string]string)
-	ok := false
+	title := ""
+	characterSet := ""
+	metaData := make(map[string]string)
+	metaProperties := make(map[string]string)
+	ok, hasTwitter := false, false
 
 nextNode:
-	for node := range head.ChildNodes() {
+	for node := range node.ChildNodes() {
 		switch node.Type {
 		case html.ElementNode: // fallthrough
 		case html.CommentNode:
@@ -89,7 +108,15 @@ nextNode:
 			t.Error("unexpected node in document <head>:", node.Data)
 		}
 
-		if node.Data != "meta" {
+		switch node.Data {
+		case "meta": // fallthrough
+		case "title":
+			if title != "" {
+				t.Error("duplicate <title>:", GetText(node))
+			}
+			title = GetText(node)
+			continue
+		default:
 			continue
 		}
 		name, property, content := "", "", ""
@@ -111,12 +138,12 @@ nextNode:
 				}
 				content = attr.Val
 			case "charset":
-				if result.CharacterSet != "" {
+				if characterSet != "" {
 					t.Error(getElementPath(node), "duplicate character set:", attr.Val)
 				}
-				result.CharacterSet = attr.Val
-				if strings.ToLower(result.CharacterSet) != "utf-8" {
-					t.Error("document character set is not UTF-8:", result.CharacterSet)
+				characterSet = attr.Val
+				if strings.ToLower(characterSet) != "utf-8" {
+					t.Error("document character set is not UTF-8:", characterSet)
 				}
 				continue nextNode
 			case "http-equiv":
@@ -134,126 +161,141 @@ nextNode:
 				if property == "" {
 					t.Error(getElementPath(node), "name attribute absent:", content)
 				} else {
-					if _, ok = result.Properties[property]; ok {
+					if _, ok = metaProperties[property]; ok {
 						t.Error(getElementPath(node), "duplicate meta property", property)
 					}
-					result.Properties[property] = content
+					if strings.HasPrefix(property, MetaTwitterPrefix) {
+						t.Log("<meta[property]> must be <meta[content]> for OpenGraph data")
+					}
+					// if strings.HasPrefix(property, MetaOpenGraphPrefix) {
+					// 	hasOpenGraph = true
+					// }
+					metaProperties[property] = content
 				}
 			} else {
 				if property != "" {
 					t.Log(getElementPath(node), "name and property are both set")
 				}
-				if _, ok = result.Data[name]; ok {
+				if _, ok = metaData[name]; ok {
 					t.Error(getElementPath(node), "duplicate meta content", name)
 				}
-				result.Data[name] = content
+				if strings.HasPrefix(name, MetaTwitterPrefix) {
+					hasTwitter = true
+				}
+				if strings.HasPrefix(property, MetaOpenGraphPrefix) {
+					t.Log("<meta[content]> must be <meta[property]> for OpenGraph data")
+				}
+				metaData[name] = content
 			}
 		}
 	}
-	return result
-}
 
-type headRequirements struct {
-	FoundValidCharset     bool
-	FoundValidTitle       bool
-	FoundValidDescription bool
-}
+	if characterSet == "" {
+		t.Error("<head> meta charset tag is absent")
+	}
+	viewport, ok := metaData["viewport"]
+	if ok {
+		TestViewPort(t, viewport)
+	} else {
+		t.Error("<head> meta viewport definition is absent")
+	}
 
-func (r PageValidator) TestViewPort(content string) func(t *testing.T) {
-	return func(t *testing.T) {
-		if content == "" {
-			t.Fatal("meta viewport is empty")
-		}
-		csv, err := ParseCommaSeparatedKeyedValues(content)
+	if title == "" {
+		t.Error("head <title> is absent")
+	} else {
+		normalized, err := h.Title.Normalizer.Normalize(title)
 		if err != nil {
-			t.Fatalf("meta tag content for viewport %q is not valid: %v", content, err)
+			t.Log(warningPrefix, "head <title> normalization error:", err)
 		}
-		width, ok := csv["width"]
-		// if !ok {
-		// 	t.Error("meta tag content for viewport %q is missing width attribute", content)
-		// } else if width == "" {
-		// 	t.Error("meta tag content for viewport %q has empty width attribute", content)
-		// }
-		if ok && width == "" {
-			t.Errorf("meta tag content for viewport %q has empty width attribute", content)
+		if title != normalized {
+			t.Log(warningPrefix, "title text is not normalized")
 		}
-		scale, ok := csv["initial-scale"]
-		if !ok {
-			t.Errorf("meta tag content for viewport %q is missing initial scale attribute", content)
-		} else if scale == "" {
-			t.Errorf("meta tag content for viewport %q has empty initial scale attribute", content)
+		length := len(title)
+		if length == 0 {
+			t.Error("head <title> text is empty")
+		} else if length > h.Title.MaximumLength {
+			t.Error("head <title> text is too long:", length, "vs", h.Title.MaximumLength)
+		} else if length < h.Title.MinimumLength {
+			t.Error("head <title> text is too short:", length, "vs", h.Title.MinimumLength)
 		}
-		if _, err = strconv.ParseFloat(scale, 32); err != nil {
-			t.Errorf("meta tag content for viewport scale %q has invalid initial scale attribute: %v", scale, err)
+	}
+
+	description, ok := metaData["description"]
+	if !ok {
+		t.Error("head <description> is absent")
+	} else {
+		normalized, err := h.Description.Normalizer.Normalize(description)
+		if err != nil {
+			t.Log(warningPrefix, "head <description> normalization error:", err)
 		}
+		if description != normalized {
+			t.Log(warningPrefix, "description text is not normalized")
+		}
+		length := len(description)
+		if length == 0 {
+			t.Error("head <description> text is empty")
+		} else if length > h.Description.MaximumLength {
+			t.Error("head <description> text is too long:", length, "vs", h.Description.MaximumLength)
+		} else if length < h.Description.MinimumLength {
+			t.Error("head <description> text is too short:", length, "vs", h.Description.MinimumLength)
+		}
+	}
+
+	keywords, ok := metaData["keywords"]
+	if ok {
+		normalized, err := h.Keywords.Normalizer.Normalize(keywords)
+		if err != nil {
+			t.Log(warningPrefix, "head <keywords> normalization error:", err)
+		}
+		if keywords != normalized {
+			t.Log(warningPrefix, "keywords text is not normalized")
+		}
+		length := len(keywords)
+		if length == 0 {
+			t.Log("head <keywords> text is empty")
+		} else if length > h.Keywords.MaximumLength {
+			t.Log("head <keywords> text is too long:", length, "vs", h.Keywords.MaximumLength)
+		} else if length < h.Keywords.MinimumLength {
+			t.Log("head <keywords> text is too short:", length, "vs", h.Keywords.MinimumLength)
+		}
+	}
+
+	// if hasOpenGraph {
+	TestOpenGraphMeta(t, metaProperties, HeadNodeConstraints(*h))
+	// } else {
+	// 	t.Error("there is no open graph <head> meta data")
+	// }
+	if hasTwitter {
+		TestTwitterMeta(t, metaData, HeadNodeConstraints(*h))
+	} else {
+		t.Log(warningPrefix, "there is no Twitter (or `X`) <head> meta data")
 	}
 }
 
-type headDeprecate struct {
-	Title       string
-	Description string
-	Meta        headMeta
-}
-
-func getHead(t *testing.T, node *html.Node) (h headDeprecate) {
-	for child := range node.ChildNodes() {
-		if child.Type != html.ElementNode {
-			continue
-		}
-		if child.Data == "title" {
-			if h.Title != "" {
-				t.Error(getElementPath(node), "duplicate title tag")
-			}
-			for child := range child.ChildNodes() {
-				if child.Type != html.TextNode {
-					t.Error(getElementPath(node), "unexpected child node:", child.Data)
-					continue
-				}
-				if h.Title != "" {
-					t.Error(getElementPath(node), "duplicate title:", child.Data)
-				}
-				h.Title = child.Data
-			}
-		}
+func TestViewPort(t testing.TB, content string) {
+	if content == "" {
+		t.Fatal("meta viewport is empty")
 	}
-	if h.Title == "" {
-		t.Error("valid title tag was not found")
+	csv, err := ParseCommaSeparatedKeyedValues(content)
+	if err != nil {
+		t.Fatalf("meta tag content for viewport %q is not valid: %v", content, err)
 	}
-	h.Meta = getHeadMeta(t, node)
-	h.Description, _ = h.Meta.Data["description"]
-	if h.Description == "" {
-		t.Error("valid meta description was not found")
+	width, ok := csv["width"]
+	// if !ok {
+	// 	t.Error("meta tag content for viewport %q is missing width attribute", content)
+	// } else if width == "" {
+	// 	t.Error("meta tag content for viewport %q has empty width attribute", content)
+	// }
+	if ok && width == "" {
+		t.Errorf("meta tag content for viewport %q has empty width attribute", content)
 	}
-	return h
-}
-
-func (r PageValidator) TestHead(node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		// TODO: implement UniqueConstraint(Validator) Validator
-		// on title and description
-		head := getHead(t, node)
-		if head.Meta.CharacterSet == "" {
-			t.Error("valid meta charset tag not found")
-		}
-		viewport, ok := head.Meta.Data["viewport"]
-		if ok {
-			r.TestViewPort(viewport)(t)
-		} else {
-			t.Error("head meta viewport definition is absent")
-		}
-
-		// TODO: if strict, OpenGraph and Twitter must both run
-		for name, _ := range head.Meta.Data {
-			if strings.HasPrefix(name, MetaTwitterPrefix) {
-				t.Run("twitter:card", r.testTwitterCard(head.Meta))
-				break
-			}
-		}
-		for property, _ := range head.Meta.Properties {
-			if strings.HasPrefix(property, MetaTwitterPrefix) {
-				t.Run("og:card", r.testOpenGraphCard(head.Meta))
-				break
-			}
-		}
+	scale, ok := csv["initial-scale"]
+	if !ok {
+		t.Errorf("meta tag content for viewport %q is missing initial scale attribute", content)
+	} else if scale == "" {
+		t.Errorf("meta tag content for viewport %q has empty initial scale attribute", content)
+	}
+	if _, err = strconv.ParseFloat(scale, 32); err != nil {
+		t.Errorf("meta tag content for viewport scale %q has invalid initial scale attribute: %v", scale, err)
 	}
 }
