@@ -33,7 +33,7 @@ type Loader interface {
 
 type skipAllLoader struct{}
 
-var skipAllLoaderSingleton Loader = skipAllLoader{}
+var skipAllLoadingSingleton Loader = skipAllLoader{}
 
 func (skipAllLoader) Load(context.Context, string) ([]byte, string, error) {
 	return nil, "", Skip

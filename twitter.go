@@ -56,8 +56,6 @@ func (r PageValidator) testTwitterCard(meta headMeta) func(t *testing.T) {
 		}
 		if card.Title == "" {
 			t.Error(MetaTwitterTitle + " not found")
-		} else if err = r.TwitterCardTitle.Validate(card.Title); err != nil {
-			t.Error(MetaTwitterTitle+" validation failed:", err)
 		}
 		if card.Description == "" {
 			t.Error(MetaTwitterDescription + " not found")

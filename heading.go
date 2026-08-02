@@ -7,11 +7,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-const (
-	DefaultMinimumHeadingLength = 4
-	DefaultMaximumHeadingLength = 55
-)
-
 func NewHeadingValidator(s StringConstraints) Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = PassthroughNormalizer

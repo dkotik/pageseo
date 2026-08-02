@@ -1,5 +1,7 @@
 # HTML Page Search Engine Optimization Test Suite
 
+[![Go Reference](https://camo.githubusercontent.com/f3bee28c74a644e266e819bedf0150b80af8a7d46292a8fa2837e42aff739ccc/68747470733a2f2f706b672e676f2e6465762f62616467652f6769746875622e636f6d2f5468726565446f74734c6162732f77617465726d696c6c2e737667)](https://pkg.go.dev/github.com/dkotik/pageseo)
+
 HTML page search engine optimization test and utility Golang test suite. Aims to prevent the following common page degradation scenarios, which lead to loss of page ranking:
 
 1. Losing relevant metadata when changing HTML view templates or database models.

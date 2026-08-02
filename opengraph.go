@@ -53,8 +53,6 @@ func (r PageValidator) testOpenGraphCard(meta headMeta) func(t *testing.T) {
 		}
 		if card.Title == "" {
 			t.Error(MetaOpenGraphTitle + " not found")
-		} else if err = r.OpenGraphCardTitle.Validate(card.Title); err != nil {
-			t.Error(MetaOpenGraphTitle+" validation failed:", err)
 		}
 		if card.Description == "" {
 			t.Error(MetaOpenGraphDescription + " not found")

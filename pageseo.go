@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"sync/atomic"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -30,7 +29,7 @@ type StringConstraints struct {
 // if a [Loader] returns a [Skip] sentinel error.
 type NodeTester interface {
 	// Match returns true if the current node should be tested.
-	Match(*html.Node) bool
+	Match(testing.TB, *html.Node) bool
 
 	// ListResourcesForPreloading returns a list of resource
 	// locations that should be preloaded for the matched node.
@@ -45,10 +44,11 @@ type NodeTester interface {
 	// The resource loader is populated with resources provided by
 	// [NodeTester.ListResourcesForPreloading] in advance.
 	TestNode(
+		t testing.TB,
 		originPage *url.URL,
 		matchedNode *html.Node,
 		resourceLoader Loader,
-	) func(*testing.T)
+	)
 }
 
 type PageTester interface {
@@ -65,7 +65,7 @@ func NewPageTester(
 	nodeTesters ...NodeTester,
 ) PageTester {
 	if loader == nil {
-		panic("loader is nil")
+		loader = skipAllLoadingSingleton
 	}
 	for _, tester := range nodeTesters {
 		if tester == nil {
@@ -100,7 +100,7 @@ func (p pageSEO) eachChild(
 			// 	continue
 			// }
 			for _, nt := range p.nodeTesters {
-				if nt.Match(child) {
+				if nt.Match(t, child) {
 					next = append(next, nt)
 					preload(nt.ListResourcesForPreloading(
 						origin, child,
@@ -211,7 +211,7 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 		var hotSwap Loader
 		if testing.Short() {
 			t.Log("[SKIP] short tests do not load any page resources")
-			hotSwap = skipAllLoaderSingleton
+			hotSwap = skipAllLoadingSingleton
 		} else if len(reploadURLs) == 0 {
 			hotSwap = p.loader
 		} else {
@@ -222,7 +222,7 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 				getElementPath(pair.Node),
 				func(t *testing.T) {
 					for _, test := range pair.Tests {
-						test.TestNode(origin, pair.Node, hotSwap)(t)
+						test.TestNode(t, origin, pair.Node, hotSwap)
 					}
 				},
 			)
@@ -268,7 +268,6 @@ type Requirements struct {
 	TwitterCardTitleDeduplicator         ValidationMiddleware
 	TwitterCardDescriptionDeduplicator   ValidationMiddleware
 
-	Title       Validator
 	Description Validator
 	Heading     Validator
 	Language    Validator
@@ -281,11 +280,8 @@ type Requirements struct {
 
 type PageValidator struct {
 	Loader                   Loader
-	Title                    Validator
 	Description              Validator
-	OpenGraphCardTitle       Validator
 	OpenGraphCardDescription Validator
-	TwitterCardTitle         Validator
 	TwitterCardDescription   Validator
 	Heading                  Validator
 	Language                 Validator
@@ -325,9 +321,6 @@ func New(loader Loader, r Requirements) PageValidator {
 		r.TwitterCardDescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
 	}
 
-	if r.Title == nil {
-		r.Title = NewTitleValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
 	if r.Description == nil {
 		r.Description = NewDescriptionValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
@@ -359,11 +352,8 @@ func New(loader Loader, r Requirements) PageValidator {
 
 	return PageValidator{
 		Loader:                   loader,
-		Title:                    r.TitleDeduplicator.Wrap(r.Title),
 		Description:              r.DescriptionDeduplicator.Wrap(r.Description),
-		OpenGraphCardTitle:       r.OpenGraphCardTitleDeduplicator.Wrap(r.Title),
 		OpenGraphCardDescription: r.OpenGraphCardDescriptionDeduplicator.Wrap(r.Description),
-		TwitterCardTitle:         r.TwitterCardTitleDeduplicator.Wrap(r.Title),
 		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
 		Heading:                  r.Heading,
 		Language:                 r.Language,
@@ -380,9 +370,6 @@ func New(loader Loader, r Requirements) PageValidator {
 func NewStrict(loader Loader, r Requirements) PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = NormalizeTextToNFC
-	}
-	if r.Title == nil {
-		r.Title = NewTitleValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
 	if r.Heading == nil {
 		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
@@ -532,32 +519,47 @@ func (v PageValidator) TestFile(p string) func(t *testing.T) {
 
 type matchCounter struct {
 	NodeTester
-	Count *atomic.Uint32
+	ValidateCount func(testing.TB, uint32)
 }
 
-func (mc matchCounter) Match(node *html.Node) (matched bool) {
-	matched = mc.NodeTester.Match(node)
-	if matched {
-		mc.Count.Add(1)
+func (mc matchCounter) Match(t testing.TB, node *html.Node) (matched bool) {
+	if node.Type == html.DocumentNode {
+		t.Cleanup(func() {
+			// at the end of the test walk the tree
+			// and validate the count
+			var matchedCount uint32
+			if mc.NodeTester.Match(t, node) {
+				matchedCount++
+			}
+			for descendant := range node.Descendants() {
+				if mc.NodeTester.Match(t, descendant) {
+					matchedCount++
+				}
+			}
+			mc.ValidateCount(t, matchedCount)
+		})
 	}
-	return matched
+	return mc.NodeTester.Match(t, node)
 }
 
 // MustMatch fails the test with a message if the
 // NodeTester does not match any nodes during page validation.
-func MustMatch(t *testing.T, nt NodeTester, message string) NodeTester {
-	mc := matchCounter{
-		NodeTester: nt,
-		Count:      new(atomic.Uint32),
+func MustMatch(nt NodeTester, message string) NodeTester {
+	if nt == nil {
+		panic("nil node tester")
 	}
 	if message == "" {
-		message = "required node tester did not match any nodes"
+		panic("empty message")
 	}
-	t.Cleanup(func() {
-		if mc.Count.Load() == 0 {
-			t.Error(message)
-		}
-	})
+	// message = strconv.Quote(message)
+	mc := matchCounter{
+		NodeTester: nt,
+		ValidateCount: func(t testing.TB, matchedCount uint32) {
+			if matchedCount == 0 {
+				t.Error(message)
+			}
+		},
+	}
 	return mc
 }
 
@@ -565,22 +567,24 @@ func MustMatch(t *testing.T, nt NodeTester, message string) NodeTester {
 // NodeTester does not match the exact number of nodes during
 // page validation.
 func MustMatchExactly(t *testing.T, nt NodeTester, message string, timesMatched uint32) NodeTester {
-	mc := matchCounter{
-		NodeTester: nt,
-		Count:      new(atomic.Uint32),
+	if nt == nil {
+		panic("nil node tester")
 	}
 	if message == "" {
-		message = "required node tester did not match exactly"
+		panic("empty message")
 	}
-	t.Cleanup(func() {
-		actuallyMatchedTimes := mc.Count.Load()
-		if actuallyMatchedTimes != timesMatched {
-			t.Logf(
-				"node tester matched %d times instead of %d", actuallyMatchedTimes, timesMatched,
-			)
-			t.Error(message)
-		}
-	})
+	// message = strconv.Quote(message)
+	mc := matchCounter{
+		NodeTester: nt,
+		ValidateCount: func(t testing.TB, matchedCount uint32) {
+			if matchedCount != timesMatched {
+				t.Logf(
+					"node tester matched %d times instead of expected %d", matchedCount, timesMatched,
+				)
+				t.Error(message)
+			}
+		},
+	}
 	return mc
 }
 
@@ -588,28 +592,54 @@ func MustMatchExactly(t *testing.T, nt NodeTester, message string, timesMatched 
 // NodeTester does not match at least the specified number
 // of nodes during page validation.
 func MustMatchAtLeast(t *testing.T, nt NodeTester, message string, timesMatched uint32) NodeTester {
-	mc := matchCounter{
-		NodeTester: nt,
-		Count:      new(atomic.Uint32),
+	if nt == nil {
+		panic("nil node tester")
 	}
 	if message == "" {
-		message = "required node tester did not match enough times"
+		panic("empty message")
 	}
-	t.Cleanup(func() {
-		actuallyMatchedTimes := mc.Count.Load()
-		if actuallyMatchedTimes < timesMatched {
-			t.Logf(
-				"node tester matched %d times instead of %d", actuallyMatchedTimes, timesMatched,
-			)
-			t.Error(message)
-		}
-	})
+	// message = strconv.Quote(message)
+	mc := matchCounter{
+		NodeTester: nt,
+		ValidateCount: func(t testing.TB, matchedCount uint32) {
+			if matchedCount < timesMatched {
+				t.Logf(
+					"node tester matched %d times instead of expected %d", matchedCount, timesMatched,
+				)
+				t.Error(message)
+			}
+		},
+	}
+	return mc
+}
+
+// MustMatchAtMost fails the test with a message if the
+// NodeTester does not match at most the specified number
+// of nodes during page validation.
+func MustMatchAtMost(t *testing.T, nt NodeTester, message string, timesMatched uint32) NodeTester {
+	if nt == nil {
+		panic("nil node tester")
+	}
+	if message == "" {
+		panic("empty message")
+	}
+	mc := matchCounter{
+		NodeTester: nt,
+		ValidateCount: func(t testing.TB, matchedCount uint32) {
+			if matchedCount > timesMatched {
+				t.Logf(
+					"node tester matched %d times instead of expected %d", matchedCount, timesMatched,
+				)
+				t.Error(message)
+			}
+		},
+	}
 	return mc
 }
 
 type elementTester struct {
 	Data   string
-	Tester func(*html.Node) func(*testing.T)
+	Tester func(testing.TB, *html.Node)
 }
 
 // NewNodeElementTester is a helper function that creates a
@@ -618,7 +648,7 @@ type elementTester struct {
 //
 // Wrap it with [MustMatchExactly] to build fluent page
 // validators.
-func NewNodeElementTester(name string, tester func(*html.Node) func(*testing.T)) NodeTester {
+func NewNodeElementTester(name string, tester func(testing.TB, *html.Node)) NodeTester {
 	if name == "" {
 		panic("empty element name")
 	}
@@ -631,9 +661,7 @@ func NewNodeElementTester(name string, tester func(*html.Node) func(*testing.T))
 	}
 }
 
-func (e elementTester) Match(
-	possible *html.Node,
-) bool {
+func (e elementTester) Match(t testing.TB, possible *html.Node) bool {
 	if possible.Type != html.ElementNode {
 		return false
 	}
@@ -648,9 +676,10 @@ func (e elementTester) ListResourcesForPreloading(
 }
 
 func (e elementTester) TestNode(
+	t testing.TB,
 	originPage *url.URL,
 	matchedNode *html.Node,
 	resourceLoader Loader,
-) func(*testing.T) {
-	return e.Tester(matchedNode)
+) {
+	e.Tester(t, matchedNode)
 }

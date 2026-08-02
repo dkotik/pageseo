@@ -4,11 +4,6 @@ import (
 	"errors"
 )
 
-const (
-	DefaultMinimumDescriptionLength = 4
-	DefaultMaximumDescriptionLength = 150
-)
-
 func NewDescriptionValidator(s StringConstraints) Validator {
 	if s.Normalizer == nil {
 		s.Normalizer = NormalizeTextToNFC
