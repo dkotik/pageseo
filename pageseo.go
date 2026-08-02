@@ -88,19 +88,35 @@ type nodeTests struct {
 	Tests []NodeTester
 }
 
-func (p pageSEO) eachChild(
+func (p pageSEO) walkNodeTree(
 	t *testing.T,
 	origin *url.URL,
 	node *html.Node,
 	preload func([]string),
 ) iter.Seq[nodeTests] {
 	return func(yield func(nodeTests) bool) {
+		// the root
 		next := make([]NodeTester, 0, len(p.nodeTesters))
+		for _, nt := range p.nodeTesters {
+			if nt.Match(t, node) {
+				next = append(next, nt)
+				preload(nt.ListResourcesForPreloading(
+					origin, node,
+				))
+			}
+		}
+		if len(next) > 0 {
+			if !yield(nodeTests{
+				Node:  node,
+				Tests: slices.Clone(next),
+			}) {
+				return
+			}
+			next = next[:0]
+		}
+
+		// the children of the root
 		for child := range node.ChildNodes() {
-			// might want to test text nodes for something
-			// if child.Type != html.ElementNode {
-			// 	continue
-			// }
 			for _, nt := range p.nodeTesters {
 				if nt.Match(t, child) {
 					next = append(next, nt)
@@ -118,7 +134,7 @@ func (p pageSEO) eachChild(
 				}
 				next = next[:0]
 			}
-			for nodeTests := range p.eachChild(t, origin, child, preload) {
+			for nodeTests := range p.walkNodeTree(t, origin, child, preload) {
 				if !yield(nodeTests) {
 					return
 				}
@@ -198,7 +214,7 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 		testsToRun := make([]nodeTests, 0, 8)
 		reploadURLs := make([]string, 0, 8)
 
-		for nodeTests := range p.eachChild(
+		for nodeTests := range p.walkNodeTree(
 			t, origin, node,
 			func(URLs []string) {
 				if len(URLs) == 0 {
@@ -290,10 +306,9 @@ type PageValidator struct {
 	Heading                  Validator
 	Language                 Validator
 
-	URL          Validator
-	LinkText     Validator
-	ImageAltText Validator
-	ImageSrc     Validator
+	URL      Validator
+	LinkText Validator
+	ImageSrc Validator
 
 	cachedURLs *cachedParsedURLs
 }
@@ -343,9 +358,6 @@ func New(loader Loader, r Requirements) PageValidator {
 	if r.LinkText == nil {
 		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
-	if r.ImageAltText == nil {
-		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
 	if r.ImageSrc == nil {
 		r.ImageSrc = NewURLValidator(StringConstraints{
 			MaximumLength: DefaultMaximumImageSourceLength,
@@ -359,10 +371,9 @@ func New(loader Loader, r Requirements) PageValidator {
 		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
 		Language:                 r.Language,
 
-		URL:          r.URL,
-		LinkText:     r.LinkText,
-		ImageAltText: r.ImageAltText,
-		ImageSrc:     r.ImageSrc,
+		URL:      r.URL,
+		LinkText: r.LinkText,
+		ImageSrc: r.ImageSrc,
 
 		cachedURLs: &cachedParsedURLs{},
 	}
@@ -375,9 +386,6 @@ func NewStrict(loader Loader, r Requirements) PageValidator {
 
 	if r.LinkText == nil {
 		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
-	}
-	if r.ImageAltText == nil {
-		r.ImageAltText = NewImageAltTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
 	return New(loader, r)
 }
@@ -408,7 +416,6 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 
 		nextChild, closer := iter.Pull[*html.Node](node.FirstChild.NextSibling.ChildNodes())
 		defer closer()
-		var child *html.Node
 
 		for {
 			child, ok := nextChild()
@@ -427,43 +434,11 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 				switch node.Data {
 				case "a":
 					t.Run(getElementPath(node), r.testLink(originURL, node, hotSwap))
-				case "img":
-					t.Run(getElementPath(node), r.testImage(originURL, node, hotSwap))
 				}
 			}
 
 			break // found a body tag
 		}
-
-		child, ok = nextChild()
-		if ok {
-			t.Errorf("HTML tag contains more than two children: %s", child.Data)
-		}
-
-		// for node := range node.Descendants() {
-		// 	if node.Type != html.ElementNode {
-		// 		continue
-		// 	}
-		// 	switch node.Data {
-		// 	case "a":
-		// 		// if r.LinkText == SkipValidator {
-		// 		// 	continue
-		// 		// }
-		// 		t.Run(Path(node), r.TestLink(originURL, node))
-		// 	case "img":
-		// 		// if (r.ImageAltText == nil || r.ImageAltText == SkipValidator) && (r.ImageSrc == nil || r.ImageSrc == SkipValidator) {
-		// 		// 	continue
-		// 		// }
-		// 		t.Run(Path(node), r.TestImage(origin, node))
-		// 		// if err = ValidateImage(node); err != nil {
-		// 		// 	t.Errorf("invalid link tag %q: %v", Path(node), err)
-		// 		// }
-		// 		// case "script":
-		// 		// 	t.Run("script tag has valid attributes", r.TestScript(node))
-		// 		// case "style":
-		// 		// 	t.Run("style tag has valid attributes", r.TestStyle(node))
-		// 	}
-		// }
 	}
 }
 

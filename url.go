@@ -3,6 +3,7 @@ package pageseo
 import (
 	"errors"
 	"net/url"
+	"path"
 	"strings"
 	"sync"
 )
@@ -60,6 +61,18 @@ func JoinPath(origin, location *url.URL) (result *url.URL, isExternal bool) {
 	return joinInternalPath(origin, location), false
 }
 
+func joinRelativePath(origin *url.URL, location string) string {
+	parsed, err := url.Parse(location)
+	if err != nil {
+		return location // unparseable
+	}
+	if IsExternalLocation(origin, parsed) {
+		parsed.Path = path.Clean(parsed.Path)
+		return parsed.String()
+	}
+	return joinInternalPath(origin, parsed).String()
+}
+
 func joinInternalPath(origin, location *url.URL) *url.URL {
 	if location.Path == "" {
 		return origin
@@ -70,7 +83,7 @@ func joinInternalPath(origin, location *url.URL) *url.URL {
 			Opaque:      origin.Opaque,
 			User:        origin.User,
 			Host:        origin.Host,
-			Path:        location.Path,
+			Path:        path.Clean(location.Path),
 			Fragment:    location.Fragment,
 			RawQuery:    origin.RawQuery,
 			RawPath:     location.RawPath,

@@ -9,14 +9,9 @@ import (
 	"golang.org/x/net/html"
 )
 
-const (
-	DefaultMinimumImageAltTextLength = 0
-	DefaultMaximumImageAltTextLength = DefaultMaximumTitleLength * 12
-)
-
-func NewImageAltTextValidator(s StringConstraints) Validator {
+func NewImageNodeTester(s StringConstraints) NodeTester {
 	if s.Normalizer == nil {
-		s.Normalizer = PassthroughNormalizer
+		s.Normalizer = NormalizeLineToNFC
 	}
 	if s.MinimumLength < 1 {
 		s.MinimumLength = DefaultMinimumImageAltTextLength
@@ -24,31 +19,89 @@ func NewImageAltTextValidator(s StringConstraints) Validator {
 	if s.MaximumLength < 1 {
 		s.MaximumLength = DefaultMaximumImageAltTextLength
 	}
-	return ImageAltTextValidator(s)
+	return image{
+		Normalizer:    s.Normalizer,
+		MinimumLength: s.MaximumLength,
+		MaximumLength: s.MaximumLength,
+	}
 }
 
-type ImageAltTextValidator struct {
+type image struct {
 	Normalizer    Normalizer
 	MinimumLength int
 	MaximumLength int
 }
 
-func (s ImageAltTextValidator) Validate(value string) error {
-	normalized, err := s.Normalizer.Normalize(value)
-	if err != nil {
-		return err
+func (i image) Match(t testing.TB, node *html.Node) bool {
+	return node.Type == html.ElementNode && node.Data == "img"
+}
+
+func (i image) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
+	for _, attr := range node.Attr {
+		if attr.Key != "src" || strings.HasPrefix(attr.Val, "data:") {
+			continue
+		}
+		URLs = append(URLs, joinRelativePath(origin, attr.Val))
 	}
-	if normalized != value {
-		return errors.New("anchor text is not UTF normalized")
+	for _, src := range GetPictureSourceList(node) {
+		if strings.HasPrefix(src, "data:") {
+			continue
+		}
+		URLs = append(URLs, joinRelativePath(origin, src))
+	}
+	return URLs
+}
+
+func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	source, alt, title := "", "", ""
+
+	for _, attr := range node.Attr {
+		switch attr.Key {
+		case "src":
+			if source != "" {
+				t.Error("duplicate <img[src]> attribute:", source)
+			}
+			source = attr.Val
+		case "alt":
+			if alt != "" {
+				t.Error("duplicate <img[alt]> attribute:", alt)
+			}
+			alt = attr.Val
+		case "title":
+			if title != "" {
+				t.Log("duplicate <img[title]> attribute:", title)
+			}
+			title = attr.Val
+		}
 	}
 
-	switch length := len(normalized); {
-	case length < s.MinimumLength:
-		return errors.New("anchor text is too short")
-	case length > s.MaximumLength:
-		return errors.New("anchor text is too long")
+	normalized, err := i.Normalizer.Normalize(alt)
+	if err == nil {
+		alt = normalized
+	} else {
+		t.Log(warningPrefix, "<img[alt]> text is not normalized")
+	}
+	length := len(alt)
+	if length < i.MinimumLength {
+		t.Error("<img[alt]> is too short")
+	} else if length > i.MaximumLength {
+		t.Error("<img[alt]> is too long")
+	}
+
+	switch title {
+	case "":
 	default:
-		return nil
+		switch length = len(title); {
+		case length < i.MinimumLength:
+			t.Log("<img[title]> is too short")
+		case length > i.MaximumLength:
+			t.Log("<img[title]> is too long")
+		}
+	}
+
+	validateImage(t, origin, source, loader)
+	for _, source = range GetPictureSourceList(node) {
+		validateImage(t, origin, source, loader)
 	}
 }
 
@@ -77,43 +130,46 @@ func GetPictureSourceList(node *html.Node) (result []string) {
 	return result
 }
 
-func (r PageValidator) testImage(
+func validateImage(
+	t testing.TB,
 	origin *url.URL,
-	node *html.Node,
+	URL string,
 	loader Loader,
-) func(t *testing.T) {
-	return func(t *testing.T) {
-		logAttributes(t, node.Attr)
-		attributes := getAttributes(t, node)
-		if src, ok := attributes["src"]; ok {
-			if !strings.HasPrefix(src, "data:") {
-				if err := r.ImageSrc.Validate(src); err != nil {
-					t.Log("Src:", src)
-					t.Errorf("invalid image source: %v", err)
-				}
-			}
-		} else {
-			srcSet := GetPictureSourceList(node.Parent)
-			if len(srcSet) == 0 {
-				t.Fatal("no srcSet tag attribute")
-			}
-			for _, src := range srcSet {
-				if err := r.ImageSrc.Validate(src); err != nil {
-					t.Log("Src:", src)
-					t.Errorf("invalid image source: %v", err)
-				}
-			}
-		}
+) {
+	if URL == "" {
+		t.Error("empty <image> source")
+		return
+	}
+	if strings.HasPrefix(URL, "data:") {
+		// TODO: decode the base64 data and fallthrough
+		return // skip embedded image
+	}
 
-		if r.ImageAltText == SkipValidator {
+	image, contentType, err := loader.Load(
+		t.Context(),
+		joinRelativePath(origin, URL),
+	)
+	if err != nil {
+		if errors.Is(err, Skip) {
 			return
 		}
-		alt, ok := attributes["alt"]
-		if !ok {
-			t.Fatal("missing alt attribute")
-		} else if err := r.ImageAltText.Validate(alt); err != nil {
-			t.Log("Alt:", alt)
-			t.Errorf("invalid alternative text: %v", err)
-		}
+		t.Errorf("unable to load image %q: %v", URL, err)
+	}
+
+	switch contentType {
+	case "":
+		t.Error("empty Content-Type for the image file")
+	case "image/jpeg":
+	case "image/png":
+	case "image/webp":
+	case "image/gif":
+	case "image/svg+xml":
+	case "image/avif":
+	default:
+		t.Log("strange image Content-Type:", contentType)
+	}
+
+	if len(image) == 0 {
+		t.Error("empty image data:", contentType)
 	}
 }

@@ -88,9 +88,8 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.
 - [ ] Add SQLite backend for the service.
-- [ ] Finish image source set.
-- [ ] Validate script tags.
 - [ ] Validate image sizes.
+- [ ] Validate dependencies in style sheets.
 
 ## Similar Projects
 

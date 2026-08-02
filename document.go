@@ -116,19 +116,6 @@ func writeElementPath(w io.Writer, node *html.Node) {
 	}
 }
 
-func getAttributes(t *testing.T, node *html.Node) map[string]string {
-	attrs := make(map[string]string, len(node.Attr))
-	var ok bool
-	for _, attr := range node.Attr {
-		key := attr.Key
-		if _, ok = attrs[key]; ok {
-			t.Errorf("duplicate tag attribute found: %s=%q", attr.Key, attr.Val)
-		}
-		attrs[key] = attr.Val
-	}
-	return attrs
-}
-
 func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
 	values := make(map[string]string)
 	var ok bool
@@ -144,15 +131,6 @@ func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
 		values[key] = strings.TrimSpace(value)
 	}
 	return values, nil
-}
-
-func getAttribute(node *html.Node, name string) (value string, ok bool) {
-	for _, attr := range node.Attr {
-		if attr.Key == name {
-			return attr.Val, true
-		}
-	}
-	return "", false
 }
 
 func TestDocumentRootHasExactlyDoctypeAndHTMLNodes(root *html.Node) func(t *testing.T) {
@@ -182,4 +160,69 @@ func ValidateDoctypeTag(node *html.Node) error {
 		return fmt.Errorf("DOCTYPE tag contains unexpected root element: %s", node.Data)
 	}
 	return nil
+}
+
+func getAttribute(node *html.Node, name string) (value string, ok bool) {
+	for _, attr := range node.Attr {
+		if attr.Key == name {
+			return attr.Val, true
+		}
+	}
+	return "", false
+}
+
+func getAttributes(t *testing.T, node *html.Node) map[string]string {
+	attrs := make(map[string]string, len(node.Attr))
+	var ok bool
+	for _, attr := range node.Attr {
+		key := attr.Key
+		if _, ok = attrs[key]; ok {
+			t.Errorf("duplicate tag attribute found: %s=%q", attr.Key, attr.Val)
+		}
+		attrs[key] = attr.Val
+	}
+	return attrs
+}
+
+func logAttributes(t *testing.T, attrs []html.Attribute) {
+	t.Helper()
+	maximumLength := 0
+	length := 0
+	filtered := make([]html.Attribute, 0, len(attrs))
+	for _, attr := range attrs {
+		if strings.HasPrefix(attr.Key, "data-") {
+			continue
+		}
+		length = len(attr.Key)
+		if length > maximumLength {
+			maximumLength = length
+		}
+		filtered = append(filtered, attr)
+	}
+	for _, attr := range filtered {
+		if len(attr.Val) < 48 {
+			t.Logf("%*s = %s", maximumLength, attr.Key, attr.Val)
+		} else {
+			t.Logf("%*s = %s", maximumLength, attr.Key, truncateMiddle(attr.Val, 48))
+		}
+	}
+}
+
+func truncateMiddle(s string, maxLen int) string {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
+		return s
+	}
+
+	if maxLen <= 3 {
+		return s[:maxLen] + "…"
+	}
+
+	remaining := maxLen - 1
+	leftCount := remaining / 2
+	rightCount := remaining - leftCount
+	leftSide := string(runes[:leftCount])
+	rightSide := string(runes[len(runes)-rightCount:])
+
+	return leftSide + "…" + rightSide
 }

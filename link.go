@@ -9,16 +9,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-const (
-	// DefaultMinimumLinkTextLength sets the minimum length of the anchor text.
-	// A pagination link is often a single character.
-	DefaultMinimuLinkLength         = 1
-	DefaultMaximumLinkLength        = 120
-	DefaultMaximumImageSourceLength = 2048 // older browser constraint
-	DefaultMinimumLinkTextLength    = 1
-	DefaultMaximumLinkTextLength    = DefaultMaximumTitleLength * 6
-)
-
 type linkTextValidator struct {
 	Normalizer    Normalizer
 	MinimumLength int
@@ -39,6 +29,28 @@ func NewLinkTextValidator(s StringConstraints) Validator {
 }
 
 func (s linkTextValidator) Validate(value string) error {
+	// containsAnElementNode := false
+	// for child := range node.Descendants() {
+	// 	if child.Type == html.ElementNode {
+	// 		containsAnElementNode = true
+	// 		break
+	// 	}
+	// }
+	// if !containsAnElementNode {
+	// 	text := GetText(node)
+	// 	normalized, err = i.Normalizer.Normalize(text)
+	// 	if err == nil {
+	// 		text = normalized
+	// 	} else {
+	// 		t.Log(warningPrefix, "<img> text is not normalized")
+	// 	}
+	// 	length := len(text)
+	// 	if length < i.MinimumLength {
+	// 		t.Error("<img[alt]> is too short")
+	// 	} else if length > i.MaximumLength {
+	// 		t.Error("<img[alt]> is too long")
+	// 	}
+	// }
 	normalized, err := s.Normalizer.Normalize(value)
 	if err != nil {
 		return err
