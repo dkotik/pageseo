@@ -1,14 +1,22 @@
 package pageseo
 
+import "slices"
+
 const (
 	DefaultMinimumTitleLength       = 4
 	DefaultMaximumTitleLength       = 55
 	DefaultMinimumHeadingLength     = DefaultMinimumTitleLength
-	DefaultMaximumHeadingLength     = DefaultMaximumTitleLength
+	DefaultMaximumHeadingLength     = 70
 	DefaultMinimumDescriptionLength = 4
 	DefaultMaximumDescriptionLength = 150
 )
 
-func GetDefaultNodeTests() []NodeTester {
-	return []NodeTester{}
+func DefaultNodeTests() []NodeTester {
+	return []NodeTester{
+		NewHeadingNodeTester(StringConstraints{}),
+	}
+}
+
+func DefaultNodeTestsWith(extensions ...NodeTester) []NodeTester {
+	return slices.Concat(DefaultNodeTests(), extensions)
 }

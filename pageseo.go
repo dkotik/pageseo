@@ -15,6 +15,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+const warningPrefix = "<WARNING>"
+
 //go:generate go run ./testdata/generate.go
 
 type StringConstraints struct {
@@ -73,7 +75,7 @@ func NewPageTester(
 		}
 	}
 	if len(nodeTesters) == 0 {
-		nodeTesters = GetDefaultNodeTests()
+		nodeTesters = DefaultNodeTests()
 	}
 	return pageSEO{
 		loader:      loader,
@@ -324,9 +326,7 @@ func New(loader Loader, r Requirements) PageValidator {
 	if r.Description == nil {
 		r.Description = NewDescriptionValidator(StringConstraints{Normalizer: r.Normalizer})
 	}
-	if r.Heading == nil {
-		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
+
 	if r.Language == nil {
 		r.Language = ValidatorFunc(func(s string) error {
 			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
@@ -355,7 +355,6 @@ func New(loader Loader, r Requirements) PageValidator {
 		Description:              r.DescriptionDeduplicator.Wrap(r.Description),
 		OpenGraphCardDescription: r.OpenGraphCardDescriptionDeduplicator.Wrap(r.Description),
 		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
-		Heading:                  r.Heading,
 		Language:                 r.Language,
 
 		URL:          r.URL,
@@ -371,9 +370,7 @@ func NewStrict(loader Loader, r Requirements) PageValidator {
 	if r.Normalizer == nil {
 		r.Normalizer = NormalizeTextToNFC
 	}
-	if r.Heading == nil {
-		r.Heading = NewHeadingValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
+
 	if r.LinkText == nil {
 		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
 	}
@@ -439,7 +436,6 @@ func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 			if child.Data != "body" {
 				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
 			}
-			t.Run(getElementPath(child), r.TestHeadings(child))
 
 			hotSwap := r.preloadResources(t, originURL, child)
 			for node := range child.Descendants() {

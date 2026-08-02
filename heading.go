@@ -1,15 +1,15 @@
 package pageseo
 
 import (
-	"errors"
+	"net/url"
 	"testing"
 
 	"golang.org/x/net/html"
 )
 
-func NewHeadingValidator(s StringConstraints) Validator {
+func NewHeadingNodeTester(s StringConstraints) NodeTester {
 	if s.Normalizer == nil {
-		s.Normalizer = PassthroughNormalizer
+		s.Normalizer = NormalizeLineToNFC
 	}
 	if s.MinimumLength < 1 {
 		s.MinimumLength = DefaultMinimumHeadingLength
@@ -17,79 +17,72 @@ func NewHeadingValidator(s StringConstraints) Validator {
 	if s.MaximumLength < 1 {
 		s.MaximumLength = DefaultMaximumHeadingLength
 	}
-	return headingValidator(s)
+	return heading(s)
 }
 
-type headingValidator struct {
+type heading struct {
 	Normalizer    Normalizer
 	MinimumLength int
 	MaximumLength int
 }
 
-func (s headingValidator) Validate(value string) error {
-	normalized, err := s.Normalizer.Normalize(value)
-	if err != nil {
-		return err
+func (h heading) Match(t testing.TB, node *html.Node) bool {
+	switch node.Type {
+	case html.ElementNode:
+		switch node.Data {
+		case "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10":
+			return true
+		default:
+			return false
+		}
+	case html.DocumentNode:
+		t.Cleanup(func() {
+			var countOfTopHeadings uint32
+			for child := range node.Descendants() {
+				if child.Type == html.ElementNode && child.Data == "h1" {
+					countOfTopHeadings++
+				}
+			}
+			switch countOfTopHeadings {
+			case 0:
+				t.Error("document has no H1 headings")
+			default:
+				t.Logf(warningPrefix+" document has %d extra H1 headings", countOfTopHeadings-1)
+			}
+		})
+		return false
+	default:
+		return false
 	}
-	if normalized != value {
-		return errors.New("page heading is not normalized")
+}
+
+func (h heading) ListResourcesForPreloading(*url.URL, *html.Node) []string {
+	return nil
+}
+
+func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	textContent := GetText(node)
+	normalized, err := h.Normalizer.Normalize(textContent)
+	if err != nil {
+		t.Error(warningPrefix, "normalization failed:", err)
+	} else if normalized != textContent {
+		t.Error(warningPrefix, "text content is not normalized")
 	}
 
 	switch length := len(normalized); {
 	case length == 0:
-		return errors.New("page heading is empty")
-	case length < s.MinimumLength:
-		return errors.New("page heading is too short")
-	case length > s.MaximumLength:
-		return errors.New("page heading is too long")
-	default:
-		return nil
-	}
-}
-
-func (r PageValidator) TestHeadings(node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		if r.Heading == SkipValidator {
-			t.Skip("heading validation is skipped by user request")
+		t.Error("heading is empty")
+	case length < h.MinimumLength:
+		if node.Data == "h1" {
+			t.Error("top heading text content is too short:", length, "vs", h.MinimumLength, "characters")
+		} else {
+			t.Log(warningPrefix, "text content is too short:", length, "vs", h.MinimumLength, "characters")
 		}
-
-		foundValidH1 := false
-		t.Cleanup(func() {
-			if !foundValidH1 {
-				t.Errorf("H1 tag not found under %q tag", node.Data)
-			}
-		})
-
-		var err error
-		for descendant := range node.Descendants() {
-			if descendant.Type != html.ElementNode {
-				continue
-			}
-			switch descendant.Data {
-			case "h1":
-				text := GetText(descendant)
-				if text == "" {
-					t.Errorf("H1 tag has no text content")
-					continue
-				}
-				if err = r.Heading.Validate(text); err != nil {
-					t.Errorf("H1 tag text content is not valid: %v", err)
-					continue
-				}
-				foundValidH1 = true
-			case "h2":
-				text := GetText(descendant)
-				if text == "" {
-					t.Errorf("heading tag %q has no text content", descendant.Data)
-					continue
-				}
-				if err = r.Heading.Validate(text); err != nil {
-					t.Errorf("heading tag %q text content is not valid: %v", descendant.Data, err)
-					continue
-				}
-			case "h3", "h4", "h5", "h6":
-				// TODO: examine only in strict mode
-			}
+	case length > h.MaximumLength:
+		if node.Data == "h1" {
+			t.Error("top heading text content is too long:", length, "vs", h.MaximumLength, "characters")
+		} else {
+			t.Log(warningPrefix, "text content is too long:", length, "vs", h.MaximumLength, "characters")
 		}
 	}
 }

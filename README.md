@@ -2,7 +2,8 @@
 
 [![Go Reference](https://camo.githubusercontent.com/f3bee28c74a644e266e819bedf0150b80af8a7d46292a8fa2837e42aff739ccc/68747470733a2f2f706b672e676f2e6465762f62616467652f6769746875622e636f6d2f5468726565446f74734c6162732f77617465726d696c6c2e737667)](https://pkg.go.dev/github.com/dkotik/pageseo)
 
-HTML page search engine optimization test and utility Golang test suite. Aims to prevent the following common page degradation scenarios, which lead to loss of page ranking:
+Page prevents common page degradation scenarios, which lead to
+gradual loss of page ranking:
 
 1. Losing relevant metadata when changing HTML view templates or database models.
 2. Duplicating metadata fields on the same page.
@@ -10,7 +11,9 @@ HTML page search engine optimization test and utility Golang test suite. Aims to
 4. Forgetting to enforce minimum and recommended metadata field sizes.
 5. Forgetting to enforce UTF normalization on page content.
 
-The library works by providing a reasonable set of tests that any HTML page should pass in order to fit current search engine optimization expectations. Almost none of the top website fit the "best practice." This indicates that almost nobody is testing search engine optimization in between hiring consultants. The library aims to be minimal and flexible to your use case.
+The library works by providing a reasonable Goland test suite and a command line tool that any HTML page should pass in order to fit current search engine optimization expectations.
+
+None of the top website fit the "best practice." This indicates that companies are not regularly testing search engine optimization in between hiring consultants.
 
 ## Library Usage
 
@@ -86,7 +89,7 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.
 - [ ] Add SQLite backend for the service.
 - [ ] Finish image source set.
-- [ ] Validate script tags in strict mode.
+- [ ] Validate script tags.
 - [ ] Validate image sizes.
 
 ## Similar Projects
