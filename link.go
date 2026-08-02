@@ -75,7 +75,7 @@ func (r PageValidator) testLink(
 				// }
 				isEmpty = false
 			case html.ElementNode:
-				switch strings.ToLower(descendant.Data) {
+				switch descendant.Data {
 				case "a", "svg": // contains an image
 				}
 				isEmpty = false

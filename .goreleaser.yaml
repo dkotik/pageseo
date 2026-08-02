@@ -37,7 +37,7 @@ homebrew_casks:
       name: homebrew-tap
       branch: main
     homepage: "https://github.com/dkotik/pageseo"
-    description: "Send markdown files as electronic mail. Maintain mailing lists as templated text files."
+    description: "HTML page search engine optimization test and utility suite."
     license: "MIT"
     hooks:
       post:

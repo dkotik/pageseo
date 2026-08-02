@@ -45,9 +45,10 @@ func (h heading) Match(t testing.TB, node *html.Node) bool {
 			}
 			switch countOfTopHeadings {
 			case 0:
-				t.Error("document has no H1 headings")
+				t.Error("document has no <h1> headings")
+			case 1: // as required
 			default:
-				t.Logf(warningPrefix+" document has %d extra H1 headings", countOfTopHeadings-1)
+				t.Logf(warningPrefix+" document has %d extra <h1> headings", countOfTopHeadings-1)
 			}
 		})
 		return false

@@ -61,7 +61,7 @@ func GetPictureSourceList(node *html.Node) (result []string) {
 			continue
 		}
 		for _, attr := range node.Attr {
-			if strings.ToLower(attr.Key) != "srcset" || attr.Val == "" {
+			if attr.Key != "srcset" || attr.Val == "" {
 				continue
 			}
 			for _, src := range strings.Split(attr.Val, ",") {

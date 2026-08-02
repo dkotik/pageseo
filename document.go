@@ -3,14 +3,13 @@ package pageseo
 import (
 	"errors"
 	"fmt"
+	"io"
 	"slices"
 	"strings"
 	"testing"
 
 	"golang.org/x/net/html"
 )
-
-const pathPrefixForHTML = "•"
 
 func GetText(node *html.Node) string {
 	b := strings.Builder{}
@@ -32,11 +31,11 @@ func GetText(node *html.Node) string {
 }
 
 func findElementNode(node *html.Node, name string) *html.Node {
-	if node.Type == html.ElementNode && strings.ToLower(node.Data) == name {
+	if node.Type == html.ElementNode && node.Data == name {
 		return node
 	}
 	for node = range node.Descendants() {
-		if node.Type == html.ElementNode && strings.ToLower(node.Data) == name {
+		if node.Type == html.ElementNode && node.Data == name {
 			return node
 		}
 	}
@@ -57,6 +56,7 @@ func getFirstElementOrSibling(node *html.Node) *html.Node {
 	}
 }
 
+// todo: deprecate?
 func getElementPath(node *html.Node) (p string) {
 	segments := []string{node.Data}
 	for ancestor := range node.Ancestors() {
@@ -65,7 +65,7 @@ func getElementPath(node *html.Node) (p string) {
 		}
 	}
 	slices.Reverse(segments)
-	p = pathPrefixForHTML + strings.Join(segments, ">")
+	p = strings.Join(segments, "›")
 	for _, attr := range node.Attr {
 		if attr.Key == "id" {
 			p += "#" + attr.Val
@@ -75,11 +75,52 @@ func getElementPath(node *html.Node) (p string) {
 	return p
 }
 
+func getTestName(node *html.Node) string {
+	switch node.Type {
+	case html.TextNode:
+		return ":text:"
+	case html.CommentNode:
+		return ":comment:"
+	default:
+		return "·<" + node.Data + ">"
+	}
+}
+
+func writeElementPath(w io.Writer, node *html.Node) {
+	segments := []string{node.Data}
+	for ancestor := range node.Ancestors() {
+		if ancestor.Type == html.ElementNode {
+			segments = append(segments, ancestor.Data)
+		}
+	}
+	count := len(segments)
+	if count < 3 {
+		return
+	}
+	if segments[count-1] == "html" {
+		count--
+	}
+	_, _ = w.Write([]byte(`└■ `))
+	for i := count - 1; i >= 0; i-- {
+		_, _ = w.Write([]byte(segments[i]))
+		if i > 0 {
+			_, _ = w.Write([]byte(`›`))
+		}
+	}
+	for _, attr := range node.Attr {
+		if attr.Key == "id" {
+			_, _ = w.Write([]byte(`#`))
+			_, _ = w.Write([]byte(attr.Val))
+			break
+		}
+	}
+}
+
 func getAttributes(t *testing.T, node *html.Node) map[string]string {
 	attrs := make(map[string]string, len(node.Attr))
 	var ok bool
 	for _, attr := range node.Attr {
-		key := strings.ToLower(attr.Key)
+		key := attr.Key
 		if _, ok = attrs[key]; ok {
 			t.Errorf("duplicate tag attribute found: %s=%q", attr.Key, attr.Val)
 		}

@@ -149,7 +149,7 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 		} else {
 			foundLanguageAttribute := 0
 			for _, attr := range htmlTag.Attr {
-				if strings.ToLower(attr.Key) == "lang" {
+				if attr.Key == "lang" {
 					foundLanguageAttribute++
 					if _, err := language.Parse(attr.Val); err != nil {
 						t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
@@ -219,12 +219,14 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 		} else {
 			hotSwap = NewHotSwap(t.Context(), p.loader, reploadURLs)
 		}
-		for _, pair := range testsToRun {
+		for _, nodeTest := range testsToRun {
 			t.Run(
-				getElementPath(pair.Node),
+				getTestName(nodeTest.Node),
 				func(t *testing.T) {
-					for _, test := range pair.Tests {
-						test.TestNode(t, origin, pair.Node, hotSwap)
+					writeElementPath(t.Output(), nodeTest.Node)
+					logAttributes(t, nodeTest.Node.Attr)
+					for _, test := range nodeTest.Tests {
+						test.TestNode(t, origin, nodeTest.Node, hotSwap)
 					}
 				},
 			)
@@ -661,7 +663,7 @@ func (e elementTester) Match(t testing.TB, possible *html.Node) bool {
 	if possible.Type != html.ElementNode {
 		return false
 	}
-	return possible.Data != strings.ToLower(e.Data)
+	return possible.Data != e.Data
 }
 
 func (e elementTester) ListResourcesForPreloading(

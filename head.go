@@ -1,12 +1,67 @@
 package pageseo
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
 
 	"golang.org/x/net/html"
 )
+
+type HeadNodeConstraints struct {
+	Title       StringConstraints
+	Description StringConstraints
+	Keywords    StringConstraints
+}
+
+type head struct {
+	Title       StringConstraints
+	Description StringConstraints
+	Keywords    StringConstraints
+}
+
+func NewHeadNodeTester(constraints HeadNodeConstraints) NodeTester {
+	return &head{
+		Title:       constraints.Title,
+		Description: constraints.Description,
+		Keywords:    constraints.Keywords,
+	}
+}
+
+func (h *head) Match(t testing.TB, node *html.Node) bool {
+	switch node.Type {
+	case html.ElementNode:
+		return node.Data == "head"
+	case html.DocumentNode:
+		t.Cleanup(func() {
+			var countOfHeadTags uint32
+			for child := range node.Descendants() {
+				if child.Type == html.ElementNode && child.Data == "head" {
+					countOfHeadTags++
+				}
+			}
+			switch countOfHeadTags {
+			case 0:
+				t.Fatal("document has no <head> node")
+			case 1: // as required
+			default:
+				t.Logf(warningPrefix+" document has %d extra <head> nodes", countOfHeadTags-1)
+			}
+		})
+		return false
+	default:
+		return false
+	}
+}
+
+func (h *head) ListResourcesForPreloading(origin *url.URL, node *html.Node) []string {
+	return nil
+}
+
+func (h *head) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	// t.Fatal("validate head")
+}
 
 type headMeta struct {
 	CharacterSet string
@@ -34,12 +89,12 @@ nextNode:
 			t.Error("unexpected node in document <head>:", node.Data)
 		}
 
-		if strings.ToLower(node.Data) != "meta" {
+		if node.Data != "meta" {
 			continue
 		}
 		name, property, content := "", "", ""
 		for _, attr := range node.Attr {
-			switch strings.ToLower(attr.Key) {
+			switch attr.Key {
 			case "name":
 				if name != "" {
 					t.Error(getElementPath(node)+":", "duplicate value for", attr.Val)
@@ -134,18 +189,18 @@ func (r PageValidator) TestViewPort(content string) func(t *testing.T) {
 	}
 }
 
-type head struct {
+type headDeprecate struct {
 	Title       string
 	Description string
 	Meta        headMeta
 }
 
-func getHead(t *testing.T, node *html.Node) (h head) {
+func getHead(t *testing.T, node *html.Node) (h headDeprecate) {
 	for child := range node.ChildNodes() {
 		if child.Type != html.ElementNode {
 			continue
 		}
-		if strings.ToLower(child.Data) == "title" {
+		if child.Data == "title" {
 			if h.Title != "" {
 				t.Error(getElementPath(node), "duplicate title tag")
 			}
