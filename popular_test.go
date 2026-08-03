@@ -1,34 +1,35 @@
-//go:build popular
+//go:build golden
 
 package pageseo
 
 import (
+	"bytes"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestPopularPages(t *testing.T) {
-	sub, err := fs.Sub(testData, "testdata/popular")
-	if err != nil {
-		t.Fatal("unable to load popular pages directory", err)
-	}
-	reqs := Requirements{}.WithDefaults()
-
-	err = fs.WalkDir(sub, ".", fs.WalkDirFunc(func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			f, err := sub.Open(path)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			t.Run(path, reqs.TestReader(f))
-		}
-		return nil
-	}))
+	popular := os.DirFS(filepath.Join("testdata", "popular"))
+	files, err := fs.ReadDir(popular, ".")
+	pageSEO := New(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		contents, err := fs.ReadFile(popular, file.Name())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(contents) == 0 {
+			t.Fatalf("file %s is empty", file.Name())
+		}
+		t.Run(file.Name(), pageSEO.TestPage(file.Name(), bytes.NewReader(contents)))
+	}
+	// t.Fail()
 }

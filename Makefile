@@ -9,6 +9,10 @@ short:
 	@clear
 	@output=$$(go test -short ./...) || echo "$$output" | grep -Ev "^(ok|\\?)"
 	@date +"[ %T ]"
+generate:
+	@clear
+	@output=$$(go generate ./...) || echo "$$output"
+	@date +"[ %T ]"
 build:
 	goreleaser release --snapshot --rm-dist
 install:

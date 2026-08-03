@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
 	"os/exec"
 	"reflect"
+	"regexp"
 	"testing"
 	"time"
 
@@ -109,13 +111,21 @@ func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
 	// 	flag.Set("test.short", "false")
 	// 	defer flag.Set("test.short", "true")
 	// }
-	cmd := exec.Command("go", "test", "-timeout", "5s", "-v", "-run", "^"+testName+"$", ".")
+	cmd := exec.Command(
+		"go",
+		"test",
+		"-tags", "golden",
+		"-timeout", "5s",
+		"-v",
+		"-run", "^"+testName+"$",
+		".",
+	)
 	// joinedOutput := captureStdout(func() {
 	// 	_ = RunTests(set)
 	// })
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatal("failed to run test:", testName, err)
+		t.Log("failed to run test:", testName, err)
 	}
 	if len(output) < 4 {
 		t.Fatal(testName, "output is too short:", string(output))
@@ -129,27 +139,28 @@ func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
 	// because the result is dynamic and cannot be predicted.
 	//
 	// It might contain `(cached)` tag or test duration.
-	goldie.New(t).Assert(t, goldenFileName, removeLastTwoLines(output))
+	goldie.New(t).Assert(t, goldenFileName, stripVerboseAnnotations(output))
 }
 
-func removeLastTwoLines(b []byte) []byte {
-	if len(b) == 0 {
-		return nil
-	}
+func stripVerboseAnnotations(b []byte) []byte {
+	reTestResult := regexp.MustCompile(`^(\s*--- (PASS|FAIL): \S+) (\([^\)]+\))?$`)
+	reTestSummary := regexp.MustCompile(`^(ok|FAIL)\s+github\.com\/dkotik\/pageseo\s+`)
 
-	// Find the last newline character
-	idx := bytes.LastIndexByte(b[:len(b)-1], '\n')
-	if idx == -1 {
-		return nil // Less than one line exists
+	scanner := bufio.NewScanner(bytes.NewReader(b))
+	filtered := bytes.NewBuffer(nil)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		locs := reTestResult.FindSubmatchIndex(line)
+		if locs == nil {
+			if reTestSummary.Match(line) {
+				continue
+			}
+			_, _ = filtered.Write(line)
+			_ = filtered.WriteByte('\n')
+		} else {
+			_, _ = filtered.Write(line[:locs[6]])
+			_ = filtered.WriteByte('\n')
+		}
 	}
-
-	// Strip the last line to find the second-to-last newline
-	sWithoutLast := b[:idx]
-	idx = bytes.LastIndexByte(sWithoutLast, '\n')
-	if idx == -1 {
-		return nil // Only one line existed originally
-	}
-
-	// Return everything up to the second-to-last newline
-	return b[:idx+1]
+	return filtered.Bytes()
 }

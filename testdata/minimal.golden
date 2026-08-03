@@ -6,7 +6,8 @@
     └■ body›p›a
      │ href: #top
      └───────────────
---- PASS: TestMinimalPage (0.00s)
-    --- PASS: TestMinimalPage/<head> (0.00s)
-    --- PASS: TestMinimalPage/<h1> (0.00s)
-    --- PASS: TestMinimalPage/<a> (0.00s)
+--- PASS: TestMinimalPage 
+    --- PASS: TestMinimalPage/<head> 
+    --- PASS: TestMinimalPage/<h1> 
+    --- PASS: TestMinimalPage/<a> 
+PASS
