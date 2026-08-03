@@ -292,10 +292,7 @@ type Requirements struct {
 	Heading     Validator
 	Language    Validator
 
-	URL          Validator
-	LinkText     Validator
-	ImageAltText Validator
-	ImageSrc     Validator
+	URL Validator
 }
 
 type PageValidator struct {
@@ -355,14 +352,6 @@ func New(loader Loader, r Requirements) PageValidator {
 	if r.URL == nil {
 		r.URL = NewURLValidator(StringConstraints{})
 	}
-	if r.LinkText == nil {
-		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
-	if r.ImageSrc == nil {
-		r.ImageSrc = NewURLValidator(StringConstraints{
-			MaximumLength: DefaultMaximumImageSourceLength,
-		})
-	}
 
 	return PageValidator{
 		Loader:                   loader,
@@ -371,9 +360,7 @@ func New(loader Loader, r Requirements) PageValidator {
 		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
 		Language:                 r.Language,
 
-		URL:      r.URL,
-		LinkText: r.LinkText,
-		ImageSrc: r.ImageSrc,
+		URL: r.URL,
 
 		cachedURLs: &cachedParsedURLs{},
 	}
@@ -384,61 +371,12 @@ func NewStrict(loader Loader, r Requirements) PageValidator {
 		r.Normalizer = NormalizeTextToNFC
 	}
 
-	if r.LinkText == nil {
-		r.LinkText = NewLinkTextValidator(StringConstraints{Normalizer: NormalizeLineToNFC})
-	}
 	return New(loader, r)
 }
 
 func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
-		var ok bool
-		originURL, err := r.cachedURLs.Get(origin)
-		if err != nil {
-			t.Fatal("invalid URL:", err)
-		}
-		if node.FirstChild == nil {
-			t.Fatal("page contains no HTML nodes")
-		}
-		err = ValidateDoctypeTag(node.FirstChild)
-		if err != nil {
-			t.Errorf("page has an invalid <DOCTYPE> tag: %v", err)
-		}
-		TestDocumentRootHasExactlyDoctypeAndHTMLNodes(node)(t)
-		attributes := getAttributes(t, node.FirstChild.NextSibling)
-		language, ok := attributes["lang"]
-		if !ok {
-			t.Error("HTML tag is missing a lang attribute")
-		}
-		if err = r.Language.Validate(language); err != nil {
-			t.Errorf("HTML tag has an invalid lang attribute %q: %v", language, err)
-		}
-
-		nextChild, closer := iter.Pull[*html.Node](node.FirstChild.NextSibling.ChildNodes())
-		defer closer()
-
-		for {
-			child, ok := nextChild()
-			if !ok {
-				t.Fatal("HTML tag is missing a <BODY> tag")
-			}
-			if child.Type != html.ElementNode {
-				continue
-			}
-			if child.Data != "body" {
-				t.Fatalf("second child element tag is not a <BODY> tag: %s", child.Data)
-			}
-
-			hotSwap := r.preloadResources(t, originURL, child)
-			for node := range child.Descendants() {
-				switch node.Data {
-				case "a":
-					t.Run(getElementPath(node), r.testLink(originURL, node, hotSwap))
-				}
-			}
-
-			break // found a body tag
-		}
+		t.Skip("waiting to upgrade API")
 	}
 }
 

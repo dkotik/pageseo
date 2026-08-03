@@ -12,9 +12,15 @@ import (
 
 var testData = NewFS(os.DirFS("testdata"))
 
-const rootWarning = "the root element must be a html.DocumenatNode; if this assumption does not hold, library will not function properly, especially in cases where Matching is triggered at root node; neither there must be multiple html.DocumenatNode nodes"
+func TestGoldenExecCapture(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping golden test in short mode")
+	}
+	internal.RunGoldenTest(t, "minimal", "TestMinimalPage")
+}
 
 func TestMinimalPage(t *testing.T) {
+	const rootWarning = "the root element must be a html.DocumenatNode; if this assumption does not hold, library will not function properly, especially in cases where Matching is triggered at root node; neither there must be multiple html.DocumenatNode nodes"
 	f, _, err := testData.Load(t.Context(), "minimal.html")
 	if err != nil {
 		t.Fatal(err)
@@ -72,20 +78,8 @@ func TestMinimalPage(t *testing.T) {
 	}
 
 	pageSEO := NewPageTester(testData)
-	internal.RunGoldenTest(t, "minimal", []testing.InternalTest{
-		internal.NewTest(t.Name(), pageSEO.TestPage(&url.URL{}, tree)),
-	})
-
-	// result := captureOut(func() {
-	// 	// fmt.Println("sdfsdf")
-	// 	pageSEO := NewPageTester(testData)
-	// 	// pageSEO.TestPage(&url.URL{}, tree)(t)
-	// 	t.Run("name string", func(t *testing.T) {
-	// 		pageSEO.TestPage(&url.URL{}, tree)(t)
-	// 		t.Fail()
-	// 	})
-	// 	t.Log("args ...any")
+	pageSEO.TestPage(&url.URL{}, tree)(t)
+	// internal.RunGoldenTest(t, "minimal", []testing.InternalTest{
+	// 	internal.NewTest(t.Name(), pageSEO.TestPage(&url.URL{}, tree)),
 	// })
-
-	// goldie.New(t).Assert(t, "minimal", []byte(result))
 }

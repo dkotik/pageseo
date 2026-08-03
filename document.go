@@ -184,7 +184,7 @@ func getAttributes(t *testing.T, node *html.Node) map[string]string {
 	return attrs
 }
 
-func logAttributes(t *testing.T, attrs []html.Attribute) {
+func logAttributes(t testing.TB, attrs []html.Attribute) {
 	t.Helper()
 	maximumLength := 0
 	length := 0

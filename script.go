@@ -15,11 +15,11 @@ func NewScriptNodeTester() NodeTester {
 
 type script struct{}
 
-func (i script) Match(t testing.TB, node *html.Node) bool {
-	return node.Type == html.ElementNode && node.Data == "img"
+func (s script) Match(t testing.TB, node *html.Node) bool {
+	return node.Type == html.ElementNode && node.Data == "script"
 }
 
-func (i script) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
+func (s script) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
 	for _, attr := range node.Attr {
 		if attr.Key == "src" && strings.TrimSpace(attr.Val) != "" {
 			URLs = append(URLs, joinRelativePath(origin, attr.Val))
@@ -28,7 +28,7 @@ func (i script) ListResourcesForPreloading(origin *url.URL, node *html.Node) (UR
 	return URLs
 }
 
-func (i script) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+func (s script) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
 	source := ""
 
 	for _, attr := range node.Attr {

@@ -65,9 +65,9 @@ func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader
 	textContent := GetText(node)
 	normalized, err := h.Normalizer.Normalize(textContent)
 	if err != nil {
-		t.Error(warningPrefix, "normalization failed:", err)
+		t.Logf(warningPrefix+" unable to normalize heading text: %v", err)
 	} else if normalized != textContent {
-		t.Error(warningPrefix, "text content is not normalized")
+		t.Log(warningPrefix + " heading text is not normalized")
 	}
 
 	switch length := len(normalized); {

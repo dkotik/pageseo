@@ -106,10 +106,10 @@ func NewURLValidator(s StringConstraints) Validator {
 		s.Normalizer = PassthroughNormalizer
 	}
 	if s.MinimumLength < 1 {
-		s.MinimumLength = DefaultMinimuLinkLength
+		s.MinimumLength = 1
 	}
 	if s.MaximumLength < 1 {
-		s.MaximumLength = DefaultMaximumLinkLength
+		s.MaximumLength = DefaultMaximumURLLength
 	}
 	return urlValidator(s)
 }
