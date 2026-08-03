@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -39,7 +40,7 @@ func (s script) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 			}
 			source = attr.Val
 		case "language":
-			t.Log(warningPrefix, "<script[language]> attribute is deprecated:", attr.Val)
+			t.Log(internal.WP, "<script[language]> attribute is deprecated:", attr.Val)
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -73,7 +74,7 @@ func (h *head) Match(t testing.TB, node *html.Node) bool {
 				t.Fatal("document has no <head> node")
 			case 1: // as required
 			default:
-				t.Logf(warningPrefix+" document has %d extra <head> nodes", countOfHeadTags-1)
+				t.Logf(internal.WP+" document has %d extra <head> nodes", countOfHeadTags-1)
 			}
 		})
 		return false
@@ -112,73 +113,74 @@ nextNode:
 		case "meta": // fallthrough
 		case "title":
 			if title != "" {
-				t.Error("duplicate <title>:", GetText(node))
+				t.Error("duplicate <title>:", internal.GetText(node))
 			}
-			title = GetText(node)
+			title = internal.GetText(node)
 			continue
 		default:
 			continue
 		}
+
 		name, property, content := "", "", ""
 		for _, attr := range node.Attr {
 			switch attr.Key {
 			case "name":
 				if name != "" {
-					t.Error(getElementPath(node)+":", "duplicate value for", attr.Val)
+					t.Error("<meta[name]>: duplicate value for", attr.Val)
 				}
 				name = strings.ToLower(attr.Val)
 			case "property":
 				if property != "" {
-					t.Error(getElementPath(node), "duplicate property value for", attr.Val)
+					t.Error("<meta[property]>: duplicate property value for", attr.Val)
 				}
 				property = strings.ToLower(attr.Val)
 			case "content":
 				if content != "" {
-					t.Error(getElementPath(node), "duplicate content value for", attr.Val)
+					t.Error("<meta[content]>: duplicate content value for", attr.Val)
 				}
 				content = attr.Val
 			case "charset":
 				if characterSet != "" {
-					t.Error(getElementPath(node), "duplicate character set:", attr.Val)
+					t.Error("<meta[charset]>: duplicate character set:", attr.Val)
 				}
 				characterSet = attr.Val
 				if strings.ToLower(characterSet) != "utf-8" {
-					t.Error("document character set is not UTF-8:", characterSet)
+					t.Error("<meta[charset]>: document character set is not UTF-8:", characterSet)
 				}
 				continue nextNode
 			case "http-equiv":
 				if name != "" {
-					t.Error(getElementPath(node)+":", "duplicate value for", attr.Val)
+					t.Error("<meta[http-equiv]>: duplicate value for", attr.Val)
 				}
 				name = "http-equiv:" + strings.ToLower(attr.Val)
 			}
 		}
 		content = strings.TrimSpace(content)
 		if content == "" {
-			t.Error(getElementPath(node), "has no content")
+			t.Errorf("<meta[name=%q]>: has no content", name)
 		} else {
 			if name == "" {
 				if property == "" {
-					t.Error(getElementPath(node), "name attribute absent:", content)
+					t.Errorf("<meta[content=%q]>: name attribute absent", content)
 				} else {
 					if strings.HasPrefix(property, MetaTwitterPrefix) {
 						t.Log("<meta[property]> must be <meta[content]> for OpenGraph data")
 					}
 					if _, ok = metaProperties[property]; ok {
-						t.Error(getElementPath(node), "duplicate meta property", property)
+						t.Error("duplicate <meta[property]>:", property)
 					}
 					metaProperties[property] = content
 				}
 			} else {
 				if property != "" {
-					t.Log(getElementPath(node), "name and property are both set")
+					t.Logf("<meta[name=%q]>: name and property are both set", name)
 					if _, ok = metaProperties[property]; ok {
-						t.Error(getElementPath(node), "duplicate meta property", property)
+						t.Errorf("<meta[property=%q]>: duplicate meta property", property)
 					}
 					metaProperties[property] = content
 				}
 				if _, ok = metaData[name]; ok {
-					t.Error(getElementPath(node), "duplicate meta content", name)
+					t.Errorf("<meta[name=%q]>: duplicate meta content", name)
 				}
 				if strings.HasPrefix(name, MetaTwitterPrefix) {
 					hasTwitter = true
@@ -206,10 +208,10 @@ nextNode:
 	} else {
 		normalized, err := h.Title.Normalizer.Normalize(title)
 		if err != nil {
-			t.Log(warningPrefix, "head <title> normalization error:", err)
+			t.Log(internal.WP, "head <title> normalization error:", err)
 		}
 		if title != normalized {
-			t.Log(warningPrefix, "title text is not normalized")
+			t.Log(internal.WP, "title text is not normalized")
 		}
 		length := len(title)
 		if length == 0 {
@@ -227,10 +229,10 @@ nextNode:
 	} else {
 		normalized, err := h.Description.Normalizer.Normalize(description)
 		if err != nil {
-			t.Log(warningPrefix, "head <description> normalization error:", err)
+			t.Log(internal.WP, "head <description> normalization error:", err)
 		}
 		if description != normalized {
-			t.Log(warningPrefix, "description text is not normalized")
+			t.Log(internal.WP, "description text is not normalized")
 		}
 		length := len(description)
 		if length == 0 {
@@ -246,10 +248,10 @@ nextNode:
 	if ok {
 		normalized, err := h.Keywords.Normalizer.Normalize(keywords)
 		if err != nil {
-			t.Log(warningPrefix, "head <keywords> normalization error:", err)
+			t.Log(internal.WP, "head <keywords> normalization error:", err)
 		}
 		if keywords != normalized {
-			t.Log(warningPrefix, "keywords text is not normalized")
+			t.Log(internal.WP, "keywords text is not normalized")
 		}
 		length := len(keywords)
 		if length == 0 {
@@ -269,7 +271,7 @@ nextNode:
 	if hasTwitter {
 		TestTwitterMeta(t, metaData, HeadNodeConstraints(*h))
 	} else {
-		t.Log(warningPrefix, "there is no Twitter (or `X`) <head> meta data")
+		t.Log(internal.WP, "there is no Twitter (or `X`) <head> meta data")
 	}
 }
 
@@ -277,7 +279,7 @@ func TestViewPort(t testing.TB, content string) {
 	if content == "" {
 		t.Fatal("meta viewport is empty")
 	}
-	csv, err := ParseCommaSeparatedKeyedValues(content)
+	csv, err := internal.ParseCommaSeparatedKeyedValues(content)
 	if err != nil {
 		t.Fatalf("meta tag content for viewport %q is not valid: %v", content, err)
 	}

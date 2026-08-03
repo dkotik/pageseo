@@ -92,7 +92,7 @@ func RunTests(set []testing.InternalTest) error {
 	}
 }
 
-func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
+func RunGoldenTest(t *testing.T, goldenFileName, testName string, extraArgs ...string) {
 	// injectedWithFailure := make([]testing.InternalTest, len(set))
 	// for i, t := range set {
 	// 	runTest := t.F
@@ -111,15 +111,15 @@ func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
 	// 	flag.Set("test.short", "false")
 	// 	defer flag.Set("test.short", "true")
 	// }
-	cmd := exec.Command(
-		"go",
+	args := []string{
 		"test",
 		"-tags", "golden",
 		"-timeout", "5s",
-		"-v",
-		"-run", "^"+testName+"$",
-		".",
-	)
+		"-run", "^" + testName + "$",
+	}
+	args = append(args, extraArgs...)
+	args = append(args, ".")
+	cmd := exec.Command("go", args...)
 	// joinedOutput := captureStdout(func() {
 	// 	_ = RunTests(set)
 	// })
@@ -144,11 +144,13 @@ func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
 
 func stripVerboseAnnotations(b []byte) []byte {
 	reTestResult := regexp.MustCompile(`^(\s*--- (PASS|FAIL): \S+) (\([^\)]+\))?$`)
-	reTestSummary := regexp.MustCompile(`^(ok|FAIL)\s+github\.com\/dkotik\/pageseo\s+`)
+	reTestSummary := regexp.MustCompile(`^(ok|FAIL)(\s+github\.com\/dkotik\/pageseo\s+)?`)
 
 	scanner := bufio.NewScanner(bytes.NewReader(b))
 	filtered := bytes.NewBuffer(nil)
+	lineCount := 0
 	for scanner.Scan() {
+		lineCount++
 		line := scanner.Bytes()
 		locs := reTestResult.FindSubmatchIndex(line)
 		if locs == nil {

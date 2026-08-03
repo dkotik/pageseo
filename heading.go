@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -48,7 +49,7 @@ func (h heading) Match(t testing.TB, node *html.Node) bool {
 				t.Error("document has no <h1> headings")
 			case 1: // as required
 			default:
-				t.Logf(warningPrefix+" document has %d extra <h1> headings", countOfTopHeadings-1)
+				t.Logf(internal.WP+" document has %d extra <h1> headings", countOfTopHeadings-1)
 			}
 		})
 		return false
@@ -62,12 +63,12 @@ func (h heading) ListResourcesForPreloading(*url.URL, *html.Node) []string {
 }
 
 func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	textContent := GetText(node)
+	textContent := internal.GetText(node)
 	normalized, err := h.Normalizer.Normalize(textContent)
 	if err != nil {
-		t.Logf(warningPrefix+" unable to normalize heading text: %v", err)
+		t.Logf(internal.WP+" unable to normalize heading text: %v", err)
 	} else if normalized != textContent {
-		t.Log(warningPrefix + " heading text is not normalized")
+		t.Log(internal.WP + " heading text is not normalized")
 	}
 
 	switch length := len(normalized); {
@@ -77,13 +78,13 @@ func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader
 		if node.Data == "h1" {
 			t.Error("top heading text content is too short:", length, "vs", h.MinimumLength, "characters")
 		} else {
-			t.Log(warningPrefix, "text content is too short:", length, "vs", h.MinimumLength, "characters")
+			t.Log(internal.WP, "text content is too short:", length, "vs", h.MinimumLength, "characters")
 		}
 	case length > h.MaximumLength:
 		if node.Data == "h1" {
 			t.Error("top heading text content is too long:", length, "vs", h.MaximumLength, "characters")
 		} else {
-			t.Log(warningPrefix, "text content is too long:", length, "vs", h.MaximumLength, "characters")
+			t.Log(internal.WP, "text content is too long:", length, "vs", h.MaximumLength, "characters")
 		}
 	}
 }

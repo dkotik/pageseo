@@ -10,11 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 	"golang.org/x/text/language"
 )
-
-const warningPrefix = "|WARNING|"
 
 //go:generate go run ./testdata/generate.go
 
@@ -180,10 +179,10 @@ func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 		if node.FirstChild.Type != html.DoctypeNode {
 			t.Error("HTML document root is not a <!DOCTYPE html>")
 		} else if node.FirstChild.Data != "html" {
-			t.Error("document type is not a <!DOCTYPE html>")
+			t.Error("document type is not a <!DOCTYPE html>:", node.FirstChild.Data)
 		}
 
-		htmlTag := getFirstElementOrSibling(node.FirstChild)
+		htmlTag := internal.GetFirstElementOrSibling(node.FirstChild)
 		if htmlTag == nil {
 			t.Error("HTML document has no root <html> node")
 		} else if htmlTag.Type != html.ElementNode || htmlTag.Data != "html" {
@@ -209,11 +208,11 @@ func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 				t.Errorf("<html> tag has %d extra [lang] attributes", foundLanguageAttribute-1)
 			}
 
-			head := getFirstElementOrSibling(htmlTag.FirstChild)
+			head := internal.GetFirstElementOrSibling(htmlTag.FirstChild)
 			if head == nil || head.Data != "head" {
 				t.Fatal("<html> tag has no <head> node")
 			} else {
-				body := getFirstElementOrSibling(head.NextSibling)
+				body := internal.GetFirstElementOrSibling(head.NextSibling)
 				if body == nil || body.Data != "body" {
 					t.Fatal("<html> tag has no <body> node")
 				} else {
@@ -266,10 +265,10 @@ func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 		}
 		for _, nodeTest := range testsToRun {
 			t.Run(
-				getTestName(nodeTest.Node),
+				internal.GetTestName(nodeTest.Node),
 				func(t *testing.T) {
-					writeElementPath(t.Output(), nodeTest.Node)
-					logAttributes(t, nodeTest.Node.Attr)
+					internal.WriteElementPath(t.Output(), nodeTest.Node)
+					internal.LogAttributes(t, nodeTest.Node.Attr)
 					for _, test := range nodeTest.Tests {
 						test.TestNode(t, origin, nodeTest.Node, hotSwap)
 					}

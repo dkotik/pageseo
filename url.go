@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 	"path"
+	"strings"
 	"sync"
 )
 
@@ -51,6 +52,18 @@ func IsExternalLocation(origin, location *url.URL) bool {
 		return false
 	}
 	return !IsLocalHost(origin.Hostname()) || !!IsLocalHost(location.Hostname()) || (origin.Port() != location.Port())
+}
+
+func IsSubdomainOfOrigin(origin, location *url.URL) bool {
+	root := strings.SplitN(origin.Hostname(), ".", 6)
+	switch len(root) {
+	case 0:
+		return false
+	case 1:
+		return strings.HasSuffix(location.Host, "."+root[0])
+	default:
+		return strings.HasSuffix(location.Host, "."+strings.Join(root[1:], "."))
+	}
 }
 
 func JoinPath(origin, location *url.URL) (result *url.URL, isExternal bool) {

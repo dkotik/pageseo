@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -77,9 +78,9 @@ func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader L
 
 	normalized, err := i.Normalizer.Normalize(alt)
 	if err != nil {
-		t.Logf(warningPrefix+" unable to normalize <img[alt]> text: %v", err)
+		t.Logf(internal.WP+" unable to normalize <img[alt]> text: %v", err)
 	} else if normalized != alt {
-		t.Log(warningPrefix + " <img[alt]> is not normalized")
+		t.Log(internal.WP + " <img[alt]> is not normalized")
 	}
 	length := len(alt)
 	if length < i.MinimumLength {

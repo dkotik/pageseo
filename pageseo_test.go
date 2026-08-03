@@ -16,7 +16,7 @@ func TestGoldenExecCapture(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping golden test in short mode")
 	}
-	internal.RunGoldenTest(t, "minimal", "TestMinimalPage")
+	internal.RunGoldenTest(t, "minimal", "TestMinimalPage", "-v")
 	internal.RunGoldenTest(t, "popular", "TestPopularPages")
 }
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -52,60 +53,66 @@ func (a anchor) ListResourcesForPreloading(origin *url.URL, node *html.Node) (UR
 }
 
 func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	href, title, rel, target := "", "", []string{}, ""
-
-	for _, attr := range node.Attr {
-		switch attr.Key {
-		case "href":
-			if href != "" {
-				t.Error("duplicate <a[href]> attribute:", href)
-			} else if attr.Val == "" {
-				t.Log(warningPrefix, "<a[href]> attribute is empty")
+	attributes := internal.GetAttributes(t, node)
+	rel := []string{}
+	relString, ok := attributes["rel"]
+	if ok {
+		for _, field := range strings.Fields(relString) {
+			if slices.Index(rel, field) == -1 {
+				rel = append(rel, field)
+			} else {
+				t.Log(internal.WP, "duplicate <a[rel]> field:", field)
 			}
-			href = attr.Val
-		case "rel":
-			if len(rel) > 0 {
-				t.Error("duplicate <a[rel]> attribute:", rel)
-			} else if attr.Val == "" {
-				t.Log(warningPrefix, "<a[rel]> attribute is empty")
-			}
-			for _, field := range strings.Fields(attr.Val) {
-				if slices.Index(rel, field) == -1 {
-					rel = append(rel, field)
-				} else {
-					t.Log(warningPrefix, "duplicate <a[rel]> field:", field)
-				}
-			}
-		case "target":
-			if target != "" {
-				t.Error("duplicate <a[target]> attribute:", target)
-			} else if target == "" {
-				t.Log(warningPrefix, "<a[target]> attribute is empty")
-			}
-			target = attr.Val
-		case "title":
-			if title != "" {
-				t.Log("duplicate <a[title]> attribute:", title)
-			} else if title == "" {
-				t.Log(warningPrefix, "<a[title]> attribute is empty")
-			}
-			title = attr.Val
 		}
 	}
 
-	if href == "" {
-		t.Error("add <a[href]> link attribute")
+	target, ok := attributes["target"]
+	if ok {
+		if strings.ToLower(target) == "_blank" {
+			if slices.Index(rel, "noopener") == -1 {
+				t.Error("add rel=\"noopener\" attribute to prevent tab nabbing")
+				t.Log("older versions of Firefox require rel=\"noopener noreferrer\"")
+			}
+		}
+	}
+
+	title, ok := attributes["title"]
+	if !ok {
+		t.Log(internal.WP, "<a[title]> attribute is empty")
+	} else {
+		normalized, err := a.Normalizer.Normalize(title)
+		if err != nil {
+			t.Logf(internal.WP+" unable to normalize <a[title]>: %v", err)
+		} else if normalized != title {
+			t.Log(internal.WP + " <a[title]> is not normalized")
+		}
+
+		length := len(title)
+		if length < a.MinimumLength {
+			t.Log("<a[title]> is too short")
+		} else if length > a.MaximumLength {
+			t.Log("<a[title]> is too long")
+		}
+	}
+
+	href, ok := attributes["href"]
+	if !ok {
+		if _, ok = attributes["onclick"]; !ok {
+			t.Error("add <a[href]> link attribute")
+		}
 	} else if href, _, _ = strings.Cut(href, "#"); href != "" {
 		url, err := a.Cache.Get(href)
 		if err != nil {
-			t.Logf("%s failed to parse location: %v", warningPrefix, err)
+			t.Logf("%s failed to parse location: %v", internal.WP, err)
 		} else {
 			if IsExternalLocation(origin, url) {
-				if slices.Index(rel, "external") == -1 {
-					t.Log("add \"external\" directive to [rel] attribute")
-				}
-				if slices.Index(rel, "nofollow") == -1 {
-					t.Log(warningPrefix, "add \"nofollow\" directive to [rel] attribute")
+				if !IsSubdomainOfOrigin(origin, url) {
+					if slices.Index(rel, "external") == -1 {
+						t.Log(internal.WP, "add \"external\" directive to [rel] attribute")
+					}
+					if slices.Index(rel, "nofollow") == -1 {
+						t.Log(internal.WP, "add \"nofollow\" directive to [rel] attribute")
+					}
 				}
 			} else {
 				url = joinInternalPath(origin, url)
@@ -144,22 +151,6 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 		}
 	}
 
-	if title != "" {
-		normalized, err := a.Normalizer.Normalize(title)
-		if err != nil {
-			t.Logf(warningPrefix+" unable to normalize <a[title]>: %v", err)
-		} else if normalized != title {
-			t.Log(warningPrefix + " <a[title]> is not normalized")
-		}
-
-		length := len(title)
-		if length < a.MinimumLength {
-			t.Log("<a[title]> is too short")
-		} else if length > a.MaximumLength {
-			t.Log("<a[title]> is too long")
-		}
-	}
-
 	isEmpty := true
 	for descendant := range node.Descendants() {
 		switch descendant.Type {
@@ -176,25 +167,18 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 	if isEmpty {
 		t.Error("anchor is empty of meaningful content")
 	} else {
-		text := GetText(node)
+		text := internal.GetText(node)
 		normalized, err := a.Normalizer.Normalize(text)
 		if err != nil {
-			t.Logf(warningPrefix+" unable to normalize anchor text: %v", err)
+			t.Logf(internal.WP+" unable to normalize anchor text: %v", err)
 		} else if normalized != text {
-			t.Log(warningPrefix + " anchor text is not normalized")
+			t.Log(internal.WP + " anchor text is not normalized")
 		}
 		length := len(text)
 		if length < a.MinimumLength {
 			t.Error("anchor text is too short")
 		} else if length > a.MaximumLength {
 			t.Error("anchor text is too long")
-		}
-	}
-
-	if strings.ToLower(target) == "_blank" {
-		if slices.Index(rel, "noopener") == -1 {
-			t.Error("add rel=\"noopener\" attribute to prevent tab nabbing")
-			t.Log("older versions of Firefox require rel=\"noopener noreferrer\"")
 		}
 	}
 }
