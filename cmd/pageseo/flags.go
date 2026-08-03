@@ -15,7 +15,7 @@ func init() {
 	// running [testing.MainStart]
 	_ = flag.Uint(flagLimit.Name, flagLimit.Value, flagLimit.Usage)
 	_ = flag.Bool(flagFailFast.Name, false, flagFailFast.Usage)
-	_ = flag.Bool(flagStrict.Name, false, flagStrict.Usage)
+	// _ = flag.Bool(flagStrict.Name, false, flagStrict.Usage)
 	_ = flag.Bool(flagShort.Name, false, flagShort.Usage)
 	_ = flag.Bool(flagVerbose.Name, false, flagVerbose.Usage)
 	testing.Init()
@@ -36,12 +36,12 @@ var (
 		},
 	}
 
-	flagStrict = &cli.BoolFlag{
-		Name:    "strict",
-		Aliases: []string{"s"},
-		Usage:   "enable strict mode",
-		Value:   false,
-	}
+	// flagStrict = &cli.BoolFlag{
+	// 	Name:    "strict",
+	// 	Aliases: []string{"s"},
+	// 	Usage:   "enable strict mode",
+	// 	Value:   false,
+	// }
 
 	//	flagNameSpace =			&cli.StringFlag{
 	//					Name:    "namespace",

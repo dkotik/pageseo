@@ -7,13 +7,9 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"slices"
 	"sync"
-	"testing"
 	"time"
-
-	"golang.org/x/net/html"
 )
 
 // Skip is a sentinel error that indicates a page resource
@@ -44,46 +40,6 @@ type Resource struct {
 	ContentType string
 	Content     []byte
 	Error       error
-}
-
-func (r PageValidator) preloadResources(
-	t *testing.T,
-	origin *url.URL,
-	body *html.Node,
-) Loader {
-	URLs := make([]string, 0, 16)
-	addURL := func(URL string) {
-		relative, _, err := r.cachedURLs.GetRelativeTo(origin, URL)
-		if err == nil {
-			URLs = append(URLs, relative.String())
-		} else {
-			t.Errorf("invalid URL <%s>: %v", URL, err)
-		}
-	}
-
-	for node := range body.Descendants() {
-		if node.Type != html.ElementNode {
-			continue
-		}
-		switch node.Data {
-		case "a":
-			href, ok := getAttribute(node, `href`)
-			if ok {
-				addURL(href)
-			}
-		case "img":
-			for _, src := range GetPictureSourceList(node.Parent) {
-				addURL(src)
-			}
-			fallthrough
-		case "script", "style":
-			src, ok := getAttribute(node, `src`)
-			if ok {
-				addURL(src)
-			}
-		}
-	}
-	return NewHotSwap(t.Context(), r.Loader, URLs)
 }
 
 // TODO: deprecate in favor of hotSwapLoader

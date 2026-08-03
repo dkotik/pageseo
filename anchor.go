@@ -52,7 +52,6 @@ func (a anchor) ListResourcesForPreloading(origin *url.URL, node *html.Node) (UR
 }
 
 func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	logAttributes(t, node.Attr)
 	href, title, rel, target := "", "", []string{}, ""
 
 	for _, attr := range node.Attr {
@@ -181,7 +180,7 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 		normalized, err := a.Normalizer.Normalize(text)
 		if err != nil {
 			t.Logf(warningPrefix+" unable to normalize anchor text: %v", err)
-		} else if normalized != title {
+		} else if normalized != text {
 			t.Log(warningPrefix + " anchor text is not normalized")
 		}
 		length := len(text)

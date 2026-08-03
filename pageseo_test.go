@@ -77,8 +77,8 @@ func TestMinimalPage(t *testing.T) {
 		}
 	}
 
-	pageSEO := NewPageTester(testData)
-	pageSEO.TestPage(&url.URL{}, tree)(t)
+	pageSEO := New(testData).(pageSEO)
+	pageSEO.TestTree(&url.URL{}, tree)(t)
 	// internal.RunGoldenTest(t, "minimal", []testing.InternalTest{
 	// 	internal.NewTest(t.Name(), pageSEO.TestPage(&url.URL{}, tree)),
 	// })

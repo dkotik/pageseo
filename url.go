@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/url"
 	"path"
-	"strings"
 	"sync"
 )
 
@@ -93,44 +92,4 @@ func joinInternalPath(origin, location *url.URL) *url.URL {
 		}
 	}
 	return origin.JoinPath(location.Path)
-}
-
-type urlValidator struct {
-	Normalizer    Normalizer
-	MinimumLength int
-	MaximumLength int
-}
-
-func NewURLValidator(s StringConstraints) Validator {
-	if s.Normalizer == nil {
-		s.Normalizer = PassthroughNormalizer
-	}
-	if s.MinimumLength < 1 {
-		s.MinimumLength = 1
-	}
-	if s.MaximumLength < 1 {
-		s.MaximumLength = DefaultMaximumURLLength
-	}
-	return urlValidator(s)
-}
-
-func (s urlValidator) Validate(value string) error {
-	normalized, err := s.Normalizer.Normalize(value)
-	if err != nil {
-		return err
-	}
-
-	switch length := len(normalized); {
-	case length < s.MinimumLength:
-		return errors.New("URL is too short")
-	case length > s.MaximumLength:
-		if index := strings.IndexByte(normalized, '?'); index != -1 && index < s.MaximumLength {
-			return nil // disregard the query string when weighing length
-		}
-		return errors.New("URL is too long")
-	default:
-		// _, err := url.Parse(normalized)
-		// return err
-		return nil
-	}
 }

@@ -1,25 +1,12 @@
 === RUN   TestMinimalPage
-=== RUN   TestMinimalPage/·<head>
-=== RUN   TestMinimalPage/·<head>#01
-=== RUN   TestMinimalPage/·<h1>
+=== RUN   TestMinimalPage/<head>
+=== RUN   TestMinimalPage/<h1>
     └■ body›h1
-=== RUN   TestMinimalPage/·<h1>#01
-    └■ body›h1
-=== RUN   TestMinimalPage/·<a>
+=== RUN   TestMinimalPage/<a>
     └■ body›p›a
-    pageseo.go:243: href = #top
-    anchor.go:55: href = #top
-    anchor.go:185: <WARNING> anchor text is not normalized
-=== RUN   TestMinimalPage/·<a>#01
-    └■ body›p›a
-    pageseo.go:243: href = #top
-    anchor.go:55: href = #top
-    anchor.go:185: <WARNING> anchor text is not normalized
+     │ href: #top
+     └───────────────
 --- PASS: TestMinimalPage (0.00s)
-    --- PASS: TestMinimalPage/·<head> (0.00s)
-    --- PASS: TestMinimalPage/·<head>#01 (0.00s)
-    --- PASS: TestMinimalPage/·<h1> (0.00s)
-    --- PASS: TestMinimalPage/·<h1>#01 (0.00s)
-    --- PASS: TestMinimalPage/·<a> (0.00s)
-    --- PASS: TestMinimalPage/·<a>#01 (0.00s)
-PASS
+    --- PASS: TestMinimalPage/<head> (0.00s)
+    --- PASS: TestMinimalPage/<h1> (0.00s)
+    --- PASS: TestMinimalPage/<a> (0.00s)

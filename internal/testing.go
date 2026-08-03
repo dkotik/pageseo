@@ -120,11 +120,36 @@ func RunGoldenTest(t *testing.T, goldenFileName, testName string) {
 	if len(output) < 4 {
 		t.Fatal(testName, "output is too short:", string(output))
 	}
-	// Last line will contain the result, so we trim it off
+
+	// Strip the final line to find the second-to-last newline.
+	//
+	// One line is just a "PASS" or "FAIL" line.
+	//
+	// Final line will contain the result, so we trim it off
 	// because the result is dynamic and cannot be predicted.
 	//
 	// It might contain `(cached)` tag or test duration.
-	lastLine := bytes.LastIndex(output[:len(output)-1], []byte("\n"))
-	output = output[:lastLine]
-	goldie.New(t).Assert(t, goldenFileName, output)
+	goldie.New(t).Assert(t, goldenFileName, removeLastTwoLines(output))
+}
+
+func removeLastTwoLines(b []byte) []byte {
+	if len(b) == 0 {
+		return nil
+	}
+
+	// Find the last newline character
+	idx := bytes.LastIndexByte(b[:len(b)-1], '\n')
+	if idx == -1 {
+		return nil // Less than one line exists
+	}
+
+	// Strip the last line to find the second-to-last newline
+	sWithoutLast := b[:idx]
+	idx = bytes.LastIndexByte(sWithoutLast, '\n')
+	if idx == -1 {
+		return nil // Only one line existed originally
+	}
+
+	// Return everything up to the second-to-last newline
+	return b[:idx+1]
 }

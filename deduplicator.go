@@ -1,53 +1,34 @@
 package pageseo
 
-import (
-	"errors"
-	"sync"
-)
+import "testing"
 
-var (
-	ErrDuplicateValue = errors.New("duplicate value")
-)
-
-type deduplicator struct {
-	nameSpace string
-	next      Validator
-	mu        *sync.Mutex
-	known     map[string]struct{}
+type PageLocation struct {
+	URL         string
+	ElementPath string
 }
 
-func (d *deduplicator) Validate(key string) error {
-	key = d.nameSpace + key
-	d.mu.Lock()
-	defer d.mu.Unlock()
+type DuplicateContentError struct {
+	Content   string
+	Original  PageLocation
+	Duplicate PageLocation
+}
 
-	_, ok := d.known[key]
-	if !ok {
-		d.known[key] = struct{}{}
-		return d.next.Validate(key)
+func (d DuplicateContentError) Error() string {
+	return "duplicate content: " + d.Content
+}
+
+func (d DuplicateContentError) TestLog(t testing.TB) {
+	if d.Original.URL == d.Duplicate.URL {
+		t.Log("same page:", d.Original.URL)
+		t.Log("    ", d.Original.ElementPath)
+		t.Log("    ", d.Duplicate.ElementPath)
+	} else {
+		t.Log("first seen:", d.Original.URL)
+		t.Log("    ", d.Original.ElementPath)
+		t.Log(" duplicate:", d.Duplicate.URL)
+		t.Log("    ", d.Duplicate.ElementPath)
 	}
-	return ErrDuplicateValue
+	t.Errorf("duplicate content: %s", d.Content)
 }
 
-type deduplicatorMiddleware struct {
-	nameSpace string
-	mu        *sync.Mutex
-	known     map[string]struct{}
-}
-
-func (d *deduplicatorMiddleware) Wrap(next Validator) Validator {
-	return &deduplicator{
-		nameSpace: d.nameSpace,
-		next:      next,
-		mu:        &sync.Mutex{},
-		known:     make(map[string]struct{}),
-	}
-}
-
-func NewDeduplicator(nameSpace string) ValidationMiddleware {
-	return &deduplicatorMiddleware{
-		nameSpace: nameSpace,
-		mu:        &sync.Mutex{},
-		known:     make(map[string]struct{}),
-	}
-}
+// TODO: implement content deduplicator NodeTester

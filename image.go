@@ -21,7 +21,7 @@ func NewImageNodeTester(s StringConstraints) NodeTester {
 	}
 	return image{
 		Normalizer:    s.Normalizer,
-		MinimumLength: s.MaximumLength,
+		MinimumLength: s.MinimumLength,
 		MaximumLength: s.MaximumLength,
 	}
 }
@@ -78,7 +78,7 @@ func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader L
 	normalized, err := i.Normalizer.Normalize(alt)
 	if err != nil {
 		t.Logf(warningPrefix+" unable to normalize <img[alt]> text: %v", err)
-	} else if normalized != title {
+	} else if normalized != alt {
 		t.Log(warningPrefix + " <img[alt]> is not normalized")
 	}
 	length := len(alt)

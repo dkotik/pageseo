@@ -161,20 +161,21 @@ nextNode:
 				if property == "" {
 					t.Error(getElementPath(node), "name attribute absent:", content)
 				} else {
-					if _, ok = metaProperties[property]; ok {
-						t.Error(getElementPath(node), "duplicate meta property", property)
-					}
 					if strings.HasPrefix(property, MetaTwitterPrefix) {
 						t.Log("<meta[property]> must be <meta[content]> for OpenGraph data")
 					}
-					// if strings.HasPrefix(property, MetaOpenGraphPrefix) {
-					// 	hasOpenGraph = true
-					// }
+					if _, ok = metaProperties[property]; ok {
+						t.Error(getElementPath(node), "duplicate meta property", property)
+					}
 					metaProperties[property] = content
 				}
 			} else {
 				if property != "" {
 					t.Log(getElementPath(node), "name and property are both set")
+					if _, ok = metaProperties[property]; ok {
+						t.Error(getElementPath(node), "duplicate meta property", property)
+					}
+					metaProperties[property] = content
 				}
 				if _, ok = metaData[name]; ok {
 					t.Error(getElementPath(node), "duplicate meta content", name)

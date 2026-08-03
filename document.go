@@ -82,7 +82,7 @@ func getTestName(node *html.Node) string {
 	case html.CommentNode:
 		return ":comment:"
 	default:
-		return "·<" + node.Data + ">"
+		return "<" + node.Data + ">"
 	}
 }
 
@@ -114,6 +114,7 @@ func writeElementPath(w io.Writer, node *html.Node) {
 			break
 		}
 	}
+	_, _ = w.Write([]byte{'\n'})
 }
 
 func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
@@ -199,13 +200,18 @@ func logAttributes(t testing.TB, attrs []html.Attribute) {
 		}
 		filtered = append(filtered, attr)
 	}
+	if len(filtered) == 0 {
+		return
+	}
+	w := t.Output()
 	for _, attr := range filtered {
 		if len(attr.Val) < 48 {
-			t.Logf("%*s = %s", maximumLength, attr.Key, attr.Val)
+			_, _ = fmt.Fprintf(w, " │ %*s: %s\n", maximumLength, attr.Key, attr.Val)
 		} else {
-			t.Logf("%*s = %s", maximumLength, attr.Key, truncateMiddle(attr.Val, 48))
+			_, _ = fmt.Fprintf(w, " │ %*s: %s\n", maximumLength, attr.Key, truncateMiddle(attr.Val, 48))
 		}
 	}
+	_, _ = w.Write([]byte(" └───────────────\n"))
 }
 
 func truncateMiddle(s string, maxLen int) string {

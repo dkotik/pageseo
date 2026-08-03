@@ -10,10 +10,12 @@ require github.com/alexsergivan/transliterator v1.0.1
 
 require github.com/urfave/cli/v3 v3.10.1
 
-require mvdan.cc/xurls/v2 v2.6.0
+require (
+	github.com/sebdah/goldie/v2 v2.8.0
+	mvdan.cc/xurls/v2 v2.6.0
+)
 
 require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sebdah/goldie/v2 v2.8.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 )

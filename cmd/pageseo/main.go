@@ -27,6 +27,7 @@ func runTests(set []testing.InternalTest) {
 	}
 	if errors.Is(err, internal.ErrAtLeastOneInternalTestFailed) {
 		atLeastOneInternalTestFailed = true
+		return
 	}
 	panic(err)
 }
@@ -38,7 +39,7 @@ func main() {
 		Version: version(),
 		Flags: []cli.Flag{
 			flagLimit,
-			flagStrict,
+			// flagStrict,
 			flagFailFast,
 			flagVerbose,
 		},
@@ -50,18 +51,11 @@ func main() {
 			}
 			// failfast := cmd.Bool(flagFailFast.Name)
 
-			var v pageseo.PageValidator
+			var v pageseo.PageTester
 			fsys := os.DirFS(".")
 			loader := pageseo.NewFS(fsys)
-			if cmd.Bool("strict") {
-				v = pageseo.NewStrict(loader, pageseo.Requirements{
-					DeduplicationNamespace: cmd.String("namespace"),
-				})
-			} else {
-				v = pageseo.New(loader, pageseo.Requirements{
-					DeduplicationNamespace: cmd.String("namespace"),
-				})
-			}
+
+			v = pageseo.New(loader)
 			tests := make([]testing.InternalTest, 0, targets.Len())
 			local, remote := separateLocalFromRemoteTargets(targets.Slice())
 			if len(local) > 0 {
@@ -101,7 +95,7 @@ func main() {
 			if len(remote) > 0 {
 				queue := newResourceQueue(remote...)
 				loader := pageseo.NewCache(queue.Push).WrapLoader(newClientPool(6))
-				v.Loader = loader
+				v = pageseo.New(loader)
 				for _, target := range remote {
 					_, _, _ = loader.Load(ctx, target)
 				}
@@ -115,7 +109,7 @@ func main() {
 					for _, target := range batch {
 						tests = append(tests, internal.NewParallelTest(
 							target.URL,
-							v.TestReader(target.URL, bytes.NewReader(target.Content)),
+							v.TestPage(target.URL, bytes.NewReader(target.Content)),
 						))
 					}
 					runTests(tests)

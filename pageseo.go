@@ -1,7 +1,6 @@
 package pageseo
 
 import (
-	"errors"
 	"io"
 	"iter"
 	"net/url"
@@ -15,9 +14,11 @@ import (
 	"golang.org/x/text/language"
 )
 
-const warningPrefix = "<WARNING>"
+const warningPrefix = "|WARNING|"
 
 //go:generate go run ./testdata/generate.go
+
+var reValidLanguageCode = regexp.MustCompile(`^\w\w(\-\w\w)?$`)
 
 type StringConstraints struct {
 	Normalizer    Normalizer
@@ -54,7 +55,8 @@ type NodeTester interface {
 }
 
 type PageTester interface {
-	TestPage(origin *url.URL, node *html.Node) func(t *testing.T)
+	TestPage(string, io.Reader) func(t *testing.T)
+	TestFile(string) func(t *testing.T)
 }
 
 type pageSEO struct {
@@ -62,7 +64,7 @@ type pageSEO struct {
 	nodeTesters []NodeTester
 }
 
-func NewPageTester(
+func New(
 	loader Loader,
 	nodeTesters ...NodeTester,
 ) PageTester {
@@ -83,6 +85,37 @@ func NewPageTester(
 	}
 }
 
+func (p pageSEO) TestPage(URL string, r io.Reader) func(t *testing.T) {
+	return func(t *testing.T) {
+		origin, err := url.Parse(URL)
+		if err != nil {
+			t.Fatalf("unable to parse URL for file %q: %v", URL, err)
+		}
+		tree, err := html.Parse(r)
+		if err != nil {
+			t.Fatalf("unable to parse HTML file %q: %v", URL, err)
+		}
+		p.TestTree(origin, tree)(t)
+	}
+}
+
+func (p pageSEO) TestFile(path string) func(t *testing.T) {
+	return func(t *testing.T) {
+		f, err := os.Open(path)
+		if err != nil {
+			t.Fatalf("unable to open file %q: %v", path, err)
+		}
+		tree, err := html.Parse(f)
+		if err != nil {
+			t.Fatalf("unable to parse HTML file %q: %v", path, err)
+		}
+		if cerr := f.Close(); cerr != nil {
+			t.Errorf("unable to close HTML file %q: %v", path, cerr)
+		}
+		p.TestTree(&url.URL{Scheme: "file", Path: path}, tree)(t)
+	}
+}
+
 type nodeTests struct {
 	Node  *html.Node
 	Tests []NodeTester
@@ -91,23 +124,22 @@ type nodeTests struct {
 func (p pageSEO) walkNodeTree(
 	t *testing.T,
 	origin *url.URL,
-	node *html.Node,
+	root *html.Node,
 	preload func([]string),
 ) iter.Seq[nodeTests] {
 	return func(yield func(nodeTests) bool) {
-		// the root
 		next := make([]NodeTester, 0, len(p.nodeTesters))
 		for _, nt := range p.nodeTesters {
-			if nt.Match(t, node) {
+			if nt.Match(t, root) {
 				next = append(next, nt)
 				preload(nt.ListResourcesForPreloading(
-					origin, node,
+					origin, root,
 				))
 			}
 		}
 		if len(next) > 0 {
 			if !yield(nodeTests{
-				Node:  node,
+				Node:  root,
 				Tests: slices.Clone(next),
 			}) {
 				return
@@ -115,8 +147,7 @@ func (p pageSEO) walkNodeTree(
 			next = next[:0]
 		}
 
-		// the children of the root
-		for child := range node.ChildNodes() {
+		for child := range root.Descendants() {
 			for _, nt := range p.nodeTesters {
 				if nt.Match(t, child) {
 					next = append(next, nt)
@@ -134,16 +165,11 @@ func (p pageSEO) walkNodeTree(
 				}
 				next = next[:0]
 			}
-			for nodeTests := range p.walkNodeTree(t, origin, child, preload) {
-				if !yield(nodeTests) {
-					return
-				}
-			}
 		}
 	}
 }
 
-func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
+func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if origin == nil {
 			t.Fatal("origin is nil")
@@ -169,6 +195,9 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 					foundLanguageAttribute++
 					if _, err := language.Parse(attr.Val); err != nil {
 						t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
+					}
+					if !reValidLanguageCode.MatchString(attr.Val) {
+						t.Errorf("<html> BCP47 [lang] attribute %q is not a valid language code", attr.Val)
 					}
 				}
 			}
@@ -246,6 +275,7 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 					}
 				},
 			)
+			// fmt.Print("=================")
 		}
 
 		// standard library parser ignores trailing nodes,
@@ -269,145 +299,6 @@ func (p pageSEO) TestPage(origin *url.URL, node *html.Node) func(t *testing.T) {
 				htmlTag = htmlTag.NextSibling
 			}
 		}
-	}
-}
-
-type Requirements struct {
-	// Normalizer is passed to all default validator constructors.
-	// If you are using custom validators, you should pass your
-	// own normalizer to each constructor manually.
-	//
-	// Default value is [PassthroughNormalizer] that does not do anything.
-	Normalizer Normalizer
-
-	DeduplicationNamespace               string
-	TitleDeduplicator                    ValidationMiddleware
-	DescriptionDeduplicator              ValidationMiddleware
-	OpenGraphCardTitleDeduplicator       ValidationMiddleware
-	OpenGraphCardDescriptionDeduplicator ValidationMiddleware
-	TwitterCardTitleDeduplicator         ValidationMiddleware
-	TwitterCardDescriptionDeduplicator   ValidationMiddleware
-
-	Description Validator
-	Heading     Validator
-	Language    Validator
-
-	URL Validator
-}
-
-type PageValidator struct {
-	Loader                   Loader
-	Description              Validator
-	OpenGraphCardDescription Validator
-	TwitterCardDescription   Validator
-	Heading                  Validator
-	Language                 Validator
-
-	URL      Validator
-	LinkText Validator
-	ImageSrc Validator
-
-	cachedURLs *cachedParsedURLs
-}
-
-func New(loader Loader, r Requirements) PageValidator {
-	if loader == nil {
-		panic("nil loader")
-	}
-	if r.Normalizer == nil {
-		r.Normalizer = PassthroughNormalizer
-	}
-
-	if r.TitleDeduplicator == nil {
-		r.TitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-	if r.DescriptionDeduplicator == nil {
-		r.DescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-	if r.OpenGraphCardTitleDeduplicator == nil {
-		r.OpenGraphCardTitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-	if r.OpenGraphCardDescriptionDeduplicator == nil {
-		r.OpenGraphCardDescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-	if r.TwitterCardTitleDeduplicator == nil {
-		r.TwitterCardTitleDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-	if r.TwitterCardDescriptionDeduplicator == nil {
-		r.TwitterCardDescriptionDeduplicator = NewDeduplicator(r.DeduplicationNamespace)
-	}
-
-	if r.Description == nil {
-		r.Description = NewDescriptionValidator(StringConstraints{Normalizer: r.Normalizer})
-	}
-
-	if r.Language == nil {
-		r.Language = ValidatorFunc(func(s string) error {
-			if !regexp.MustCompile(`^\w\w(\-\w\w)?$`).MatchString(s) {
-				return errors.New("invalid language code")
-			}
-			return nil
-		})
-	}
-	if r.URL == nil {
-		r.URL = NewURLValidator(StringConstraints{})
-	}
-
-	return PageValidator{
-		Loader:                   loader,
-		Description:              r.DescriptionDeduplicator.Wrap(r.Description),
-		OpenGraphCardDescription: r.OpenGraphCardDescriptionDeduplicator.Wrap(r.Description),
-		TwitterCardDescription:   r.TwitterCardDescriptionDeduplicator.Wrap(r.Description),
-		Language:                 r.Language,
-
-		URL: r.URL,
-
-		cachedURLs: &cachedParsedURLs{},
-	}
-}
-
-func NewStrict(loader Loader, r Requirements) PageValidator {
-	if r.Normalizer == nil {
-		r.Normalizer = NormalizeTextToNFC
-	}
-
-	return New(loader, r)
-}
-
-func (r PageValidator) Test(origin string, node *html.Node) func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Skip("waiting to upgrade API")
-	}
-}
-
-func (v PageValidator) TestReader(
-	origin string,
-	r io.Reader,
-) func(t *testing.T) {
-	return func(t *testing.T) {
-		tree, err := html.Parse(r)
-		if err != nil {
-			t.Fatalf("unable to parse the HTML page: %v", err)
-		}
-		if tree == nil {
-			t.Fatal("no HTML tree found in the reader")
-		}
-		v.Test(origin, tree)(t)
-	}
-}
-
-func (v PageValidator) TestFile(p string) func(t *testing.T) {
-	return func(t *testing.T) {
-		f, err := os.Open(p)
-		if err != nil {
-			t.Fatalf("unable to open file %q: %v", p, err)
-		}
-		t.Cleanup(func() {
-			if cerr := f.Close(); cerr != nil {
-				t.Errorf("unable to close HTML file %q: %v", p, cerr)
-			}
-		})
-		v.TestReader("file://"+p, f)(t)
 	}
 }
 
