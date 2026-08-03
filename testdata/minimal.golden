@@ -1,0 +1,13 @@
+=== RUN   TestMinimalPage
+=== RUN   TestMinimalPage/·<head>
+=== RUN   TestMinimalPage/·<head>#01
+=== RUN   TestMinimalPage/·<h1>
+    └■ body›h1
+=== RUN   TestMinimalPage/·<h1>#01
+    └■ body›h1
+--- PASS: TestMinimalPage (0.00s)
+    --- PASS: TestMinimalPage/·<head> (0.00s)
+    --- PASS: TestMinimalPage/·<head>#01 (0.00s)
+    --- PASS: TestMinimalPage/·<h1> (0.00s)
+    --- PASS: TestMinimalPage/·<h1>#01 (0.00s)
+PASS

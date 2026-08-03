@@ -3,16 +3,33 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
 	"testing"
 
 	"github.com/dkotik/pageseo"
+	"github.com/dkotik/pageseo/internal"
 	"github.com/urfave/cli/v3"
+	"mvdan.cc/xurls/v2"
 )
+
+var atLeastOneInternalTestFailed = false
+
+func runTests(set []testing.InternalTest) {
+	err := internal.RunTests(set)
+	if err == nil {
+		return
+	}
+	if errors.Is(err, internal.ErrAtLeastOneInternalTestFailed) {
+		atLeastOneInternalTestFailed = true
+	}
+	panic(err)
+}
 
 func main() {
 	cmd := &cli.Command{
@@ -56,14 +73,14 @@ func main() {
 						}
 						for _, target = range matches {
 							if info, err := fs.Stat(fsys, target); err == nil && !info.IsDir() {
-								tests = append(tests, newTest(
+								tests = append(tests, internal.NewParallelTest(
 									target,
 									v.TestFile(target),
 								))
 							}
 						}
 					} else {
-						tests = append(tests, newTest(
+						tests = append(tests, internal.NewParallelTest(
 							target,
 							v.TestFile(target),
 						))
@@ -96,7 +113,7 @@ func main() {
 						return nil // all finished
 					}
 					for _, target := range batch {
-						tests = append(tests, newTest(
+						tests = append(tests, internal.NewParallelTest(
 							target.URL,
 							v.TestReader(target.URL, bytes.NewReader(target.Content)),
 						))
@@ -111,7 +128,7 @@ func main() {
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Printf(" [🚫] Unable to analyze pages: %v.\n", err.Error())
-	} else if allTestsArePassing {
+	} else if !atLeastOneInternalTestFailed {
 		fmt.Println(" [🟢] Scanned pages are optimized for search engines.")
 	}
 }
@@ -128,4 +145,38 @@ func version() string {
 		}
 	}
 	return v
+}
+
+func separateLocalFromRemoteTargets(targets []string) (local, remote []string) {
+nextTarget:
+	for _, target := range targets {
+		target = strings.TrimSpace(target)
+		if target == "" {
+			continue nextTarget
+		}
+		url, err := url.Parse(target)
+		if err == nil {
+			switch strings.ToLower(url.Scheme) {
+			case "http", "https":
+				remote = append(remote, url.String())
+				continue nextTarget
+			case "":
+				if pageseo.IsLocalHost(url.Hostname()) {
+					remote = append(remote, "http://"+target)
+					continue nextTarget
+				}
+				if _, err = os.Stat(target); err != nil {
+					if errors.Is(err, os.ErrNotExist) {
+						if xurls.Relaxed().MatchString(target) {
+							// likely a URL like <truthonly.com> or <www.something...>
+							remote = append(remote, "https://"+target)
+							continue nextTarget
+						}
+					}
+				}
+			}
+		}
+		local = append(local, url.Path)
+	}
+	return
 }

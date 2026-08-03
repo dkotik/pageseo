@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
 )
 
@@ -71,5 +72,20 @@ func TestMinimalPage(t *testing.T) {
 	}
 
 	pageSEO := NewPageTester(testData)
-	pageSEO.TestPage(&url.URL{}, tree)(t)
+	internal.RunGoldenTest(t, "minimal", []testing.InternalTest{
+		internal.NewTest(t.Name(), pageSEO.TestPage(&url.URL{}, tree)),
+	})
+
+	// result := captureOut(func() {
+	// 	// fmt.Println("sdfsdf")
+	// 	pageSEO := NewPageTester(testData)
+	// 	// pageSEO.TestPage(&url.URL{}, tree)(t)
+	// 	t.Run("name string", func(t *testing.T) {
+	// 		pageSEO.TestPage(&url.URL{}, tree)(t)
+	// 		t.Fail()
+	// 	})
+	// 	t.Log("args ...any")
+	// })
+
+	// goldie.New(t).Assert(t, "minimal", []byte(result))
 }
