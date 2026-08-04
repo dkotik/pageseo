@@ -86,7 +86,9 @@ func TestMinimalPage(t *testing.T) {
 }
 
 func TestValidateDocumentTypeElement(t *testing.T) {
-	tree, err := html.Parse(bytes.NewReader([]byte("<!DOCTYPE html><html></html>")))
+	// parser skips all the white space
+	tree, err := html.Parse(bytes.NewReader([]byte(`
+		<!DOCTYPE html><html></html>`)))
 	if err != nil {
 		t.Fatal(err)
 	}

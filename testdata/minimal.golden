@@ -6,7 +6,7 @@
     └■ body›p›a
      │ href: #top |WARNING| DUPLICATE 
      └───────────────
-    anchor.go:81: |WARNING| <a[title]> attribute is empty
+    anchor.go:82: |WARNING| <a[title]> attribute is empty
 --- PASS: TestMinimalPage 
     --- PASS: TestMinimalPage/<head> 
     --- PASS: TestMinimalPage/<h1> 

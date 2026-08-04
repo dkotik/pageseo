@@ -22,8 +22,11 @@ func (s script) Match(t testing.TB, node *html.Node) bool {
 
 func (s script) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
 	for _, attr := range node.Attr {
-		if attr.Key == "src" && strings.TrimSpace(attr.Val) != "" {
-			URLs = append(URLs, joinRelativePath(origin, attr.Val))
+		if attr.Key == "src" {
+			if strings.TrimSpace(attr.Val) != "" {
+				URLs = append(URLs, joinRelativePath(origin, attr.Val))
+			}
+			break // only take the first attribute
 		}
 	}
 	return URLs

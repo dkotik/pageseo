@@ -3,6 +3,7 @@ package pageseo
 import (
 	"errors"
 	"net/url"
+	"slices"
 	"strings"
 	"testing"
 
@@ -39,10 +40,13 @@ func (i image) Match(t testing.TB, node *html.Node) bool {
 
 func (i image) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
 	for _, attr := range node.Attr {
-		if attr.Key != "src" || strings.HasPrefix(attr.Val, "data:") {
+		if attr.Key != "src" {
 			continue
 		}
-		URLs = append(URLs, joinRelativePath(origin, attr.Val))
+		if strings.HasPrefix(attr.Val, "data:") {
+			URLs = append(URLs, joinRelativePath(origin, attr.Val))
+		}
+		break // only take the first attribute
 	}
 	for _, src := range GetPictureSourceList(node) {
 		if strings.HasPrefix(src, "data:") {
@@ -53,46 +57,48 @@ func (i image) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URL
 	return URLs
 }
 
-func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	source, alt, title := "", "", ""
+// isImageAvailable checks for a common scenario where images
+// with a missing alt attribute are marked as unavailable
+// via aria-label="image unavailable".
+func isImageAvailable(attributes map[string]string) bool {
+	ariaLabel, ok := attributes["aria-label"]
+	if !ok {
+		return true
+	}
+	fields := strings.Fields(ariaLabel)
+	if slices.Index(fields, "image") == -1 {
+		return true
+	}
+	return slices.Index(fields, "unavailable") == -1
+}
 
-	for _, attr := range node.Attr {
-		switch attr.Key {
-		case "src":
-			if source != "" {
-				t.Error("duplicate <img[src]> attribute:", source)
-			}
-			source = attr.Val
-		case "alt":
-			if alt != "" {
-				t.Error("duplicate <img[alt]> attribute:", alt)
-			}
-			alt = attr.Val
-		case "title":
-			if title != "" {
-				t.Log("duplicate <img[title]> attribute:", title)
-			}
-			title = attr.Val
+func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	attributes := internal.GetAttributes(t, node)
+	ok := false
+
+	alt, ok := attributes["alt"]
+	if !ok {
+		if isImageAvailable(attributes) {
+			t.Error("missing <img[alt]> attribute")
+		}
+	} else {
+		normalized, err := i.Normalizer.Normalize(alt)
+		if err != nil {
+			t.Logf(internal.WP+" unable to normalize <img[alt]> text: %v", err)
+		} else if normalized != alt {
+			t.Log(internal.WP + " <img[alt]> is not normalized")
+		}
+		length := len(alt)
+		if length < i.MinimumLength {
+			t.Error("<img[alt]> is too short")
+		} else if length > i.MaximumLength {
+			t.Error("<img[alt]> is too long")
 		}
 	}
 
-	normalized, err := i.Normalizer.Normalize(alt)
-	if err != nil {
-		t.Logf(internal.WP+" unable to normalize <img[alt]> text: %v", err)
-	} else if normalized != alt {
-		t.Log(internal.WP + " <img[alt]> is not normalized")
-	}
-	length := len(alt)
-	if length < i.MinimumLength {
-		t.Error("<img[alt]> is too short")
-	} else if length > i.MaximumLength {
-		t.Error("<img[alt]> is too long")
-	}
-
-	switch title {
-	case "":
-	default:
-		switch length = len(title); {
+	title, ok := attributes["title"]
+	if ok {
+		switch length := len(title); {
 		case length < i.MinimumLength:
 			t.Log("<img[title]> is too short")
 		case length > i.MaximumLength:
@@ -100,9 +106,20 @@ func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader L
 		}
 	}
 
-	validateImage(t, origin, source, loader)
-	for _, source = range GetPictureSourceList(node) {
-		validateImage(t, origin, source, loader)
+	src, ok := attributes["src"]
+	if !ok || src == "" {
+		t.Log("If you are loading images lazily with JavaScript, stop,")
+		t.Log("and use modern loading=\"lazy\" attribute instead.")
+		t.Error("empty <image[src]> source")
+	} else {
+		validateImage(t, origin, src, loader)
+	}
+	for _, src = range GetPictureSourceList(node) {
+		if src == "" {
+			t.Error("empty <picture[srcset]> source")
+			continue
+		}
+		validateImage(t, origin, src, loader)
 	}
 }
 
@@ -137,10 +154,6 @@ func validateImage(
 	URL string,
 	loader Loader,
 ) {
-	if URL == "" {
-		t.Error("empty <image> source")
-		return
-	}
 	if strings.HasPrefix(URL, "data:") {
 		// TODO: decode the base64 data and fallthrough
 		return // skip embedded image

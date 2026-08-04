@@ -127,32 +127,37 @@ nextNode:
 			case "name":
 				if name != "" {
 					t.Error("<meta[name]>: duplicate value for", attr.Val)
+				} else {
+					name = strings.ToLower(attr.Val)
 				}
-				name = strings.ToLower(attr.Val)
 			case "property":
 				if property != "" {
 					t.Error("<meta[property]>: duplicate property value for", attr.Val)
+				} else {
+					property = strings.ToLower(attr.Val)
 				}
-				property = strings.ToLower(attr.Val)
 			case "content":
 				if content != "" {
 					t.Error("<meta[content]>: duplicate content value for", attr.Val)
+				} else {
+					content = attr.Val
 				}
-				content = attr.Val
 			case "charset":
 				if characterSet != "" {
 					t.Error("<meta[charset]>: duplicate character set:", attr.Val)
-				}
-				characterSet = attr.Val
-				if strings.ToLower(characterSet) != "utf-8" {
-					t.Error("<meta[charset]>: document character set is not UTF-8:", characterSet)
+				} else {
+					characterSet = attr.Val
+					if strings.ToLower(characterSet) != "utf-8" {
+						t.Error("<meta[charset]>: document character set is not UTF-8:", characterSet)
+					}
 				}
 				continue nextNode
 			case "http-equiv":
 				if name != "" {
 					t.Error("<meta[http-equiv]>: duplicate value for", attr.Val)
+				} else {
+					name = "http-equiv:" + strings.ToLower(attr.Val)
 				}
-				name = "http-equiv:" + strings.ToLower(attr.Val)
 			}
 		}
 		content = strings.TrimSpace(content)
@@ -166,7 +171,8 @@ nextNode:
 					if strings.HasPrefix(property, MetaTwitterPrefix) {
 						t.Log("<meta[property]> must be <meta[content]> for OpenGraph data")
 					}
-					if _, ok = metaProperties[property]; ok {
+					if _, ok = metaProperties[property]; ok && !strings.HasPrefix(property, MetaFacebookPrefix) {
+						// facebook meta properties are often duplicated
 						t.Error("duplicate <meta[property]>:", property)
 					}
 					metaProperties[property] = content

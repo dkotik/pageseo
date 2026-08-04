@@ -11,8 +11,9 @@ short:
 	@date +"[ %T ]"
 generate:
 	@clear
-	@output=$$(go generate ./...) || echo "$$output"
+	@output=$$(go generate ./... && go test . -update) || echo "$$output"
 	@date +"[ %T ]"
+	@echo "Popular pages had 38 failures, new count is:" `cat testdata/popular.golden | grep "        --- FAIL: TestPopularPages" | wc -l`
 build:
 	goreleaser release --snapshot --rm-dist
 install:

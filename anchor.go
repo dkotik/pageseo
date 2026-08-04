@@ -42,11 +42,12 @@ func (a anchor) Match(t testing.TB, node *html.Node) bool {
 
 func (a anchor) ListResourcesForPreloading(origin *url.URL, node *html.Node) (URLs []string) {
 	for _, attr := range node.Attr {
-		if attr.Key == "href" && strings.TrimSpace(attr.Val) != "" {
+		if attr.Key == "href" {
 			url, _, _ := strings.Cut(attr.Val, "#")
 			if url != "" {
 				URLs = append(URLs, joinRelativePath(origin, url))
 			}
+			return URLs // only take the first href attribute
 		}
 	}
 	return URLs
