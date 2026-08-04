@@ -84,3 +84,11 @@ func TestMinimalPage(t *testing.T) {
 	// 	internal.NewTest(t.Name(), pageSEO.TestPage(&url.URL{}, tree)),
 	// })
 }
+
+func TestValidateDocumentTypeElement(t *testing.T) {
+	tree, err := html.Parse(bytes.NewReader([]byte("<!DOCTYPE html><html></html>")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	validateDocumentTypeElement(t, tree)
+}

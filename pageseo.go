@@ -168,73 +168,80 @@ func (p pageSEO) walkNodeTree(
 	}
 }
 
+func validateDocumentTypeElement(t *testing.T, node *html.Node) {
+	if node == nil || node.FirstChild == nil {
+		t.Fatal("HTML document is empty")
+	}
+	if node.FirstChild.Type != html.DoctypeNode {
+		t.Error("HTML document root is not a <!DOCTYPE html>")
+	} else if node.FirstChild.Data != "html" {
+		t.Error("document type is not a <!DOCTYPE html>:", node.FirstChild.Data)
+	}
+}
+
+func validateHTMLElement(t *testing.T, node *html.Node) {
+	if node == nil {
+		t.Fatal("HTML document has no root <html> node")
+	}
+	if node.Type != html.ElementNode || node.Data != "html" {
+		t.Fatal("HTML document root is not an <html> node")
+	}
+	foundLanguageAttribute := 0
+	for _, attr := range node.Attr {
+		if attr.Key == "lang" {
+			foundLanguageAttribute++
+			if _, err := language.Parse(attr.Val); err != nil {
+				t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
+			}
+			if !reValidLanguageCode.MatchString(attr.Val) {
+				t.Errorf("<html> BCP47 [lang] attribute %q is not a valid language code", attr.Val)
+			}
+		}
+	}
+	switch foundLanguageAttribute {
+	case 1: // ok
+	case 0:
+		t.Error("<html> tag has no [lang] attribute")
+	default:
+		t.Errorf("<html> tag has %d extra [lang] attributes", foundLanguageAttribute-1)
+	}
+}
+
 func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 	return func(t *testing.T) {
 		if origin == nil {
 			t.Fatal("origin is nil")
 		}
-		if node == nil || node.FirstChild == nil {
-			t.Fatal("HTML document is empty")
-		}
-		if node.FirstChild.Type != html.DoctypeNode {
-			t.Error("HTML document root is not a <!DOCTYPE html>")
-		} else if node.FirstChild.Data != "html" {
-			t.Error("document type is not a <!DOCTYPE html>:", node.FirstChild.Data)
-		}
-
+		validateDocumentTypeElement(t, node)
 		htmlTag := internal.GetFirstElementOrSibling(node.FirstChild)
-		if htmlTag == nil {
-			t.Error("HTML document has no root <html> node")
-		} else if htmlTag.Type != html.ElementNode || htmlTag.Data != "html" {
-			t.Error("HTML document root is not an <html> node")
-		} else {
-			foundLanguageAttribute := 0
-			for _, attr := range htmlTag.Attr {
-				if attr.Key == "lang" {
-					foundLanguageAttribute++
-					if _, err := language.Parse(attr.Val); err != nil {
-						t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
-					}
-					if !reValidLanguageCode.MatchString(attr.Val) {
-						t.Errorf("<html> BCP47 [lang] attribute %q is not a valid language code", attr.Val)
-					}
-				}
-			}
-			switch foundLanguageAttribute {
-			case 1: // ok
-			case 0:
-				t.Error("<html> tag has no [lang] attribute")
-			default:
-				t.Errorf("<html> tag has %d extra [lang] attributes", foundLanguageAttribute-1)
-			}
+		validateHTMLElement(t, htmlTag)
 
-			head := internal.GetFirstElementOrSibling(htmlTag.FirstChild)
-			if head == nil || head.Data != "head" {
-				t.Fatal("<html> tag has no <head> node")
+		head := internal.GetFirstElementOrSibling(htmlTag.FirstChild)
+		if head == nil || head.Data != "head" {
+			t.Fatal("<html> tag has no <head> node")
+		} else {
+			body := internal.GetFirstElementOrSibling(head.NextSibling)
+			if body == nil || body.Data != "body" {
+				t.Fatal("<html> tag has no <body> node")
 			} else {
-				body := internal.GetFirstElementOrSibling(head.NextSibling)
-				if body == nil || body.Data != "body" {
-					t.Fatal("<html> tag has no <body> node")
-				} else {
-					// standard library parser ignores trailing nodes,
-					// but let's try it anyway, for completeness:
-					// are there any extra trailing body nodes?
-					body = body.NextSibling
-					for {
-						if body == nil {
-							break
-						}
-						switch body.Type {
-						case html.CommentNode: // ok
-						case html.ElementNode:
-							t.Error("HTML document has an extra trailing <" + body.Data + "> node")
-						case html.TextNode:
-							t.Error("HTML document has an extra trailing text node")
-						default:
-							t.Error("HTML document has an unexpected extra trailing node")
-						}
-						body = body.NextSibling
+				// standard library parser ignores trailing nodes,
+				// but let's try it anyway, for completeness:
+				// are there any extra trailing body nodes?
+				body = body.NextSibling
+				for {
+					if body == nil {
+						break
 					}
+					switch body.Type {
+					case html.CommentNode: // ok
+					case html.ElementNode:
+						t.Error("HTML document has an extra trailing <" + body.Data + "> node")
+					case html.TextNode:
+						t.Error("HTML document has an extra trailing text node")
+					default:
+						t.Error("HTML document has an unexpected extra trailing node")
+					}
+					body = body.NextSibling
 				}
 			}
 		}

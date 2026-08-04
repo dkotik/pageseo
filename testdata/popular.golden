@@ -1,6 +1,6 @@
 --- FAIL: TestPopularPages 
     --- FAIL: TestPopularPages/amazon.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/amazon.html/<head> 
             head.go:297: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:302: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
@@ -11,7 +11,7 @@
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/bbc.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:297: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:302: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
@@ -88,14 +88,14 @@
             anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
         heading.go:52: |WARNING| document has 8 extra <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:160: <meta[name="meta-branding"]>: has no content
             opengraph.go:46: unknown Open Graph property: og:site_name CNN
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
-        pageseo.go:206: <html> tag has no [lang] attribute
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:204: <html> tag has no [lang] attribute
         --- FAIL: TestPopularPages/dw.html/<head> 
             head.go:214: |WARNING| title text is not normalized
             head.go:220: head <title> text is too long: 692 vs 55
@@ -106,7 +106,7 @@
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/microsoft.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/microsoft.html/<head> 
             head.go:183: <meta[name="cas-exp-visitor"]>: duplicate meta content
             head.go:183: <meta[name="cas-exp-at"]>: duplicate meta content
@@ -187,7 +187,7 @@
             anchor.go:175: |WARNING| anchor text is not normalized
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/theguardian.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/theguardian.html/<head> 
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
@@ -232,7 +232,7 @@
             image.go:89: <img[alt]> is too long
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/wikipedia.html 
-        pageseo.go:180: HTML document root is not a <!DOCTYPE html>
+        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:160: <meta[name=""]>: has no content
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
