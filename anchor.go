@@ -98,7 +98,9 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 	href, ok := attributes["href"]
 	if !ok {
 		if _, ok = attributes["onclick"]; !ok {
-			t.Error("add <a[href]> link attribute")
+			if _, ok = attributes["id"]; !ok { // <a id="#hash" />
+				t.Error("add <a[href]> link attribute")
+			}
 		}
 	} else if href, _, _ = strings.Cut(href, "#"); href != "" {
 		url, err := a.Cache.Get(href)
@@ -175,7 +177,7 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 			t.Log(internal.WP + " anchor text is not normalized")
 		}
 		length := len(text)
-		if length < a.MinimumLength {
+		if length < a.MinimumLength && href != "" {
 			t.Error("anchor text is too short")
 		} else if length > a.MaximumLength {
 			t.Error("anchor text is too long")

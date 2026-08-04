@@ -1,104 +1,118 @@
 --- FAIL: TestPopularPages 
     --- FAIL: TestPopularPages/amazon.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/amazon.html/<head> 
-            head.go:297: meta tag content for viewport "width=device-width" is missing initial scale attribute
-            head.go:302: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
-            head.go:228: head <description> is absent
+            head.go:160: <meta[name="twitter:card"]>: has no content
+            head.go:160: <meta[name="twitter:site:id"]>: has no content
+            head.go:203: <head> meta viewport definition is absent
+            head.go:241: head <description> text is too long: 366 vs 150
+            head.go:260: head <keywords> text is too long: 439 vs 150
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
-            opengraph.go:67: og:image not found
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
+        --- FAIL: TestPopularPages/amazon.html/<a>#74 
+            └■ body›div›i›i›i›div›div›div›div›div›div›div›div›a#skippedLink
+             │       id: skippedLink |WARNING| DUPLICATE 
+             │ tabindex: -1 |WARNING| DUPLICATE 
+             └───────────────
+            anchor.go:81: |WARNING| <a[title]> attribute is empty
+            anchor.go:177: |WARNING| anchor text is not normalized
+            anchor.go:183: anchor text is too long
+        --- FAIL: TestPopularPages/amazon.html/<h3> 
+            └■ body›div›i›i›i›div›div›div›div›div›div›div›div›a›div›div›div›div›div›div›h3
+             │ class: a-spacing-none |WARNING| DUPLICATE 
+             └───────────────
+            heading.go:71: |WARNING| heading text is not normalized
+            heading.go:76: heading is empty
+        --- FAIL: TestPopularPages/amazon.html/<a>#142 
+            └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a
+             │  href: # |WARNING| DUPLICATE 
+             │ class: gwm-navigation-right-button |WARNING| DUPLICATE 
+             └───────────────
+            anchor.go:81: |WARNING| <a[title]> attribute is empty
+            anchor.go:177: |WARNING| anchor text is not normalized
+            anchor.go:183: anchor text is too long
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/bbc.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:297: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:302: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:220: head <title> text is too long: 116 vs 55
-            opengraph.go:52: og:type not found
             opengraph.go:67: og:image not found
             twitter.go:55: twitter:card not found
             twitter.go:71: twitter:site not found
             twitter.go:74: twitter:image not found
-        --- FAIL: TestPopularPages/bbc.html/<img>#23 
-            └■ body›div›div›div›div›div›main›article›div›div›div›section›div›div›div›div›div›div›div›div›div›div›a›div›div›div›img
-             │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…2c890638b.jpg.webp 1536w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…6b-ab62c890638b.jpg.webp |WARNING| DUPLICATE 
+        --- FAIL: TestPopularPages/bbc.html/<img>#31 
+            └■ body›div›div›div›div›main›article›div›div›div›div›section›section›div›div›div›div›div›div›div›a›div›img
+             │   sizes: (min-width: 768px) 50vw, 100vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…d0cfdafcb.jpg.webp 1536w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…2a-7dfd0cfdafcb.jpg.webp |WARNING| DUPLICATE 
              │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: US President Donald Tru…sey, on April 27, 2025.  |WARNING| DUPLICATE 
-             │   class: sc-4abb68ca-0 ldLcJe |WARNING| DUPLICATE 
+             │     alt: A bearded young man wit…26 in New Delhi, India.  |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:83: |WARNING| <img[alt]> is not normalized
             image.go:89: <img[alt]> is too long
-        --- FAIL: TestPopularPages/bbc.html/<h1>#04 
-            └■ body›div›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›a›h1
-             │ class: sc-5236c23a-2 bpiXST |WARNING| DUPLICATE 
+        --- FAIL: TestPopularPages/bbc.html/<img>#43 
+            └■ body›div›div›div›div›main›article›div›div›div›div›section›div›div›div›div›div›div›a›div›div›div›div›img
+             │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…0adf0800a.png.webp 1536w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…ab-8b30adf0800a.png.webp |WARNING| DUPLICATE 
+             │ loading: lazy |WARNING| DUPLICATE 
+             │     alt: On the left is a screen…that same house in 2025. |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            heading.go:85: top heading text content is too long: 80 vs 70 characters
-        --- FAIL: TestPopularPages/bbc.html/<h1>#06 
-            └■ body›div›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›a›h1
-             │ class: sc-5236c23a-2 bpiXST |WARNING| DUPLICATE 
+            image.go:89: <img[alt]> is too long
+        --- FAIL: TestPopularPages/bbc.html/<img>#67 
+            └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
+             │   sizes: 25vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…c26ad07bb.jpg.webp 1536w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…ee-9b3c26ad07bb.jpg.webp |WARNING| DUPLICATE 
+             │ loading: lazy |WARNING| DUPLICATE 
+             │     alt: A woman dressed in blac…and rubble of a building |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            heading.go:85: top heading text content is too long: 80 vs 70 characters
-        --- FAIL: TestPopularPages/bbc.html/<img>#79 
-            └■ body›div›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›div›div›div›div›div›div›div›div›div›a›div›div›div›img
-             │       sizes: 25vw |WARNING| DUPLICATE 
-             │      srcset: https://ichef.bbci.co.u…a71114000.jpg.webp 1536w |WARNING| DUPLICATE 
-             │         src: https://ichef.bbci.co.u…9f-efaa71114000.jpg.webp |WARNING| DUPLICATE 
-             │     loading: lazy |WARNING| DUPLICATE 
-             │         alt: The biomass satellite s…te elongated cones with  |WARNING| DUPLICATE 
-             │        esa": |WARNING| EMPTY 
-             │     written: |WARNING| EMPTY 
-             │          on: |WARNING| EMPTY 
-             │       them,: |WARNING| EMPTY 
-             │         and: |WARNING| EMPTY 
-             │        held: |WARNING| EMPTY 
-             │          in: |WARNING| EMPTY 
-             │        blue: |WARNING| EMPTY 
-             │ scaffolding: |WARNING| EMPTY 
-             │   trolleys.: |WARNING| EMPTY 
-             │           ": |WARNING| EMPTY 
-             │       class: sc-4abb68ca-0 ldLcJe |WARNING| DUPLICATE 
+            image.go:89: <img[alt]> is too long
+        --- FAIL: TestPopularPages/bbc.html/<img>#69 
+            └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
+             │   sizes: 25vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…f7d0da737.jpg.webp 1536w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…4a-ff2f7d0da737.jpg.webp |WARNING| DUPLICATE 
+             │ loading: lazy |WARNING| DUPLICATE 
+             │     alt: US President Donald Tru…'s distinctive signature |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:83: |WARNING| <img[alt]> is not normalized
             image.go:89: <img[alt]> is too long
-        --- FAIL: TestPopularPages/bbc.html/<a>#197 
-            └■ body›div›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a
-             │   href: https://bbc-global.onelink.me/Ezi6/n4y4nlv7 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  class: sc-8a623a54-0 hMvGwj |WARNING| DUPLICATE 
+        --- FAIL: TestPopularPages/bbc.html/<img>#97 
+            └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
+             │   sizes: 25vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…/p0nsvnlv.jpg.webp 1920w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…80x270/p0nsvnlv.jpg.webp |WARNING| DUPLICATE 
+             │ loading: lazy |WARNING| DUPLICATE 
+             │     alt: A room in a bathhouse w…a)  (Credit: Konparu-yu) |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:111: |WARNING| add "external" directive to [rel] attribute
-            anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
-        --- FAIL: TestPopularPages/bbc.html/<a>#198 
-            └■ body›div›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›div›a
-             │   href: https://bbc-global.onelink.me/Ezi6/n4y4nlv7 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  class: sc-8a623a54-0 hMvGwj |WARNING| DUPLICATE 
+            image.go:83: |WARNING| <img[alt]> is not normalized
+            image.go:89: <img[alt]> is too long
+        --- FAIL: TestPopularPages/bbc.html/<img>#101 
+            └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
+             │   sizes: 25vw |WARNING| DUPLICATE 
+             │  srcset: https://ichef.bbci.co.u…/p0p07d8x.jpg.webp 1920w |WARNING| DUPLICATE 
+             │     src: https://ichef.bbci.co.u…80x270/p0p07d8x.jpg.webp |WARNING| DUPLICATE 
+             │ loading: lazy |WARNING| DUPLICATE 
+             │     alt: A composite of Hannah N… Images/ Harper Collins) |WARNING| DUPLICATE 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:111: |WARNING| add "external" directive to [rel] attribute
-            anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
-        heading.go:52: |WARNING| document has 8 extra <h1> headings
+            image.go:89: <img[alt]> is too long
+        heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:160: <meta[name="meta-branding"]>: has no content
             opengraph.go:46: unknown Open Graph property: og:site_name CNN
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
-        pageseo.go:204: <html> tag has no [lang] attribute
         --- FAIL: TestPopularPages/dw.html/<head> 
-            head.go:214: |WARNING| title text is not normalized
-            head.go:220: head <title> text is too long: 692 vs 55
+            head.go:222: head <title> text is too short: 2 vs 4
             head.go:228: head <description> is absent
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
@@ -106,137 +120,30 @@
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/microsoft.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/microsoft.html/<head> 
-            head.go:183: <meta[name="cas-exp-visitor"]>: duplicate meta content
-            head.go:183: <meta[name="cas-exp-at"]>: duplicate meta content
-            head.go:197: <head> meta charset tag is absent
-            head.go:203: <head> meta viewport definition is absent
             head.go:207: head <title> is absent
             head.go:228: head <description> is absent
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
             opengraph.go:67: og:image not found
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
-        --- FAIL: TestPopularPages/microsoft.html/<img> 
-            └■ body›div›div›div›div›div›div›div›div›div›img
-             │   alt: |WARNING| EMPTY 
-             │   src: |WARNING| EMPTY 
-             │ class: f-img-lzy |WARNING| DUPLICATE 
-             └───────────────
-            image.go:141: empty <image> source
-        --- FAIL: TestPopularPages/microsoft.html/<a> 
-            └■ body›div›div›div›div›div›div›div›div›span›button›a#epbTryNow
-             │                                                                 id: epbTryNow |WARNING| DUPLICATE 
-             │                                                               href: |WARNING| EMPTY 
-             │                                                             target: _blank |WARNING| DUPLICATE 
-             │                                                              class: epb-launch c-action-trigger c-action-open |WARNING| DUPLICATE 
-             │ cn":"pb-launch_nav","id":"n2c1c1m1r1a1","sn":2,"an":"c1c1m1r1a1"}": |WARNING| EMPTY 
-             └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:179: anchor text is too short
-        --- FAIL: TestPopularPages/microsoft.html/<a>#01 
-            └■ body›div›div›div›div›div›div›div›a#epbTryNow
-             │                                                                 id: epbTryNow |WARNING| DUPLICATE 
-             │                                                               href: |WARNING| EMPTY 
-             │                                                             target: _blank |WARNING| DUPLICATE 
-             │                                                              class: epb-launch c-action-trigger c-action-open |WARNING| DUPLICATE 
-             │ cn":"pb-launch_nav","id":"n2c1c1m1r1a1","sn":2,"an":"c1c1m1r1a1"}": |WARNING| EMPTY 
-             └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:179: anchor text is too short
-        --- FAIL: TestPopularPages/microsoft.html/<a>#02 
-            └■ body›div›div›div›div›div›div›a#epbTryNow
-             │                                                                 id: epbTryNow |WARNING| DUPLICATE 
-             │                                                               href: |WARNING| EMPTY 
-             │                                                             target: _blank |WARNING| DUPLICATE 
-             │                                                              class: epb-launch c-action-trigger c-action-open |WARNING| DUPLICATE 
-             │ cn":"pb-launch_nav","id":"n2c1c1m1r1a1","sn":2,"an":"c1c1m1r1a1"}": |WARNING| EMPTY 
-             └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:179: anchor text is too short
-        --- FAIL: TestPopularPages/microsoft.html/<a>#03 
-            └■ body›div›div›div›div›div›a#epbTryNow
-             │                                                                 id: epbTryNow |WARNING| DUPLICATE 
-             │                                                               href: |WARNING| EMPTY 
-             │                                                             target: _blank |WARNING| DUPLICATE 
-             │                                                              class: epb-launch c-action-trigger c-action-open |WARNING| DUPLICATE 
-             │ cn":"pb-launch_nav","id":"n2c1c1m1r1a1","sn":2,"an":"c1c1m1r1a1"}": |WARNING| EMPTY 
-             └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:179: anchor text is too short
-        --- FAIL: TestPopularPages/microsoft.html/<a>#04 
-            └■ body›div›div›div›div›div›div›a#epbTryNow
-             │                                                                 id: epbTryNow |WARNING| DUPLICATE 
-             │                                                               href: |WARNING| EMPTY 
-             │                                                             target: _blank |WARNING| DUPLICATE 
-             │                                                              class: epb-launch c-action-trigger c-action-open |WARNING| DUPLICATE 
-             │ cn":"pb-launch_nav","id":"n2c1c1m1r1a1","sn":2,"an":"c1c1m1r1a1"}": |WARNING| EMPTY 
-             └───────────────
-            anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
-            anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
-            anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:175: |WARNING| anchor text is not normalized
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/theguardian.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/theguardian.html/<head> 
+             │ lang: en |WARNING| DUPLICATE 
+             └───────────────
+            head.go:160: <meta[name="description"]>: has no content
+            head.go:228: head <description> is absent
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
             opengraph.go:67: og:image not found
-            twitter.go:49: unknown Twitter property: twitter:dnt on
-            twitter.go:55: twitter:card not found
-            twitter.go:58: twitter:title not found
-            twitter.go:61: twitter:description not found
-            twitter.go:71: twitter:site not found
-            twitter.go:74: twitter:image not found
-        --- FAIL: TestPopularPages/theguardian.html/<img>#03 
-            └■ body›main›gu-island›section›div›div›ul›li›div›div›a›div›div›picture›img
-             │     alt: European People's Party… 2025. REUTERS/Eva Manez |WARNING| DUPLICATE 
-             │     src: https://i.guim.co.uk/im…&dpr=1&s=none&crop=5%3A3 |WARNING| DUPLICATE 
-             │ loading: eager |WARNING| DUPLICATE 
-             │   class: dcr-l300o4 |WARNING| DUPLICATE 
-             └───────────────
-            image.go:89: <img[alt]> is too long
-        --- FAIL: TestPopularPages/theguardian.html/<img>#05 
-            └■ body›main›gu-island›section›div›div›ul›li›div›div›a›div›div›picture›img
-             │     alt: A container ship is moo…s shipped from Paraguay. |WARNING| DUPLICATE 
-             │     src: https://i.guim.co.uk/im…&dpr=1&s=none&crop=5%3A3 |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │   class: dcr-l300o4 |WARNING| DUPLICATE 
-             └───────────────
-            image.go:89: <img[alt]> is too long
-        --- FAIL: TestPopularPages/theguardian.html/<img>#06 
-            └■ body›main›gu-island›section›div›div›ul›li›div›div›a›div›div›picture›img
-             │     alt: Russian attack on Ukrai…nadolu via Getty Images) |WARNING| DUPLICATE 
-             │     src: https://i.guim.co.uk/im…&dpr=1&s=none&crop=5%3A3 |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │   class: dcr-l300o4 |WARNING| DUPLICATE 
-             └───────────────
-            image.go:89: <img[alt]> is too long
-        --- FAIL: TestPopularPages/theguardian.html/<img>#40 
-            └■ body›main›gu-island›section›div›div›ul›li›div›div›a›div›div›picture›img
-             │     alt: THUNDERBOLTS*<br>(L-R) … Studios. © 2024 MARVEL. |WARNING| DUPLICATE 
-             │     src: https://i.guim.co.uk/im…&dpr=1&s=none&crop=5%3A3 |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │   class: dcr-l300o4 |WARNING| DUPLICATE 
-             └───────────────
-            image.go:89: <img[alt]> is too long
+            head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/wikipedia.html 
-        pageseo.go:176: HTML document root is not a <!DOCTYPE html>
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:160: <meta[name=""]>: has no content
             head.go:274: |WARNING| there is no Twitter (or `X`) <head> meta data
-        --- FAIL: TestPopularPages/wikipedia.html/<a>#350 
+        --- FAIL: TestPopularPages/wikipedia.html/<a>#357 
             └■ body›i›i›i›footer›div›div›div›a
              │   href: https://donate.wikimedi…&wmf_source=portalFooter |WARNING| DUPLICATE 
              │ target: _blank |WARNING| DUPLICATE 
@@ -244,9 +151,9 @@
             anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
             anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:111: |WARNING| add "external" directive to [rel] attribute
-            anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
-        --- FAIL: TestPopularPages/wikipedia.html/<a>#352 
+            anchor.go:113: |WARNING| add "external" directive to [rel] attribute
+            anchor.go:116: |WARNING| add "nofollow" directive to [rel] attribute
+        --- FAIL: TestPopularPages/wikipedia.html/<a>#359 
             └■ body›i›i›i›footer›div›div›div›div›ul›li›a
              │ target: _blank |WARNING| DUPLICATE 
              │    rel: noreferrer |WARNING| DUPLICATE 
@@ -255,9 +162,9 @@
             anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
             anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:111: |WARNING| add "external" directive to [rel] attribute
-            anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
-        --- FAIL: TestPopularPages/wikipedia.html/<a>#353 
+            anchor.go:113: |WARNING| add "external" directive to [rel] attribute
+            anchor.go:116: |WARNING| add "nofollow" directive to [rel] attribute
+        --- FAIL: TestPopularPages/wikipedia.html/<a>#360 
             └■ body›i›i›i›footer›div›div›div›div›ul›li›a
              │ target: _blank |WARNING| DUPLICATE 
              │    rel: noreferrer |WARNING| DUPLICATE 
@@ -266,5 +173,5 @@
             anchor.go:73: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:74: older versions of Firefox require rel="noopener noreferrer"
             anchor.go:81: |WARNING| <a[title]> attribute is empty
-            anchor.go:111: |WARNING| add "external" directive to [rel] attribute
-            anchor.go:114: |WARNING| add "nofollow" directive to [rel] attribute
+            anchor.go:113: |WARNING| add "external" directive to [rel] attribute
+            anchor.go:116: |WARNING| add "nofollow" directive to [rel] attribute

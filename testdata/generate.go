@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -44,7 +43,7 @@ func download(source, destination string) (err error) {
 		err = errors.Join(err, r.Body.Close())
 	}()
 
-	tree, err := html.Parse(bytes.NewReader(r.Body))
+	tree, err := html.Parse(r.Body)
 	if err != nil {
 		return err
 	}
@@ -69,42 +68,43 @@ func download(source, destination string) (err error) {
 }
 
 func main() {
-	var err error
+	// var err error
 	for _, source := range sources {
-		// p := fileName(source)
-		// contents, err := os.ReadFile(p)
-		// if err != nil || contents == nil {
-		// 	panic(err)
-		// }
-		// for child := range tree.Descendants() {
-		// 	fmt.Fprintln(os.Stdout, "found", child.Type, child.Data)
-		// }
-		// b := bytes.NewBuffer(nil)
-		// writeNodesWithLoremIpsum(b, tree, 0)
-		// if err = os.WriteFile(p, b.Bytes(), 0644); err != nil {
-		// 	panic(err)
-		// }
-		// os.Exit(1)
-		if err = download(source, fileName(source)); err != nil {
-			slog.Default().Error(err.Error(), slog.String("URL", source))
+		p := fileName(source)
+		contents, err := os.ReadFile(p)
+		if err != nil || contents == nil {
+			panic(err)
 		}
+		tree, err := html.Parse(bytes.NewReader(contents))
+		if err != nil {
+			panic(err)
+		}
+		if tree == nil {
+			panic(errors.New("parsed HTML is nil"))
+		}
+		for child := range tree.Descendants() {
+			fmt.Fprintln(os.Stdout, "found", child.Type, child.Data)
+		}
+		b := bytes.NewBuffer(nil)
+		writeNodesWithLoremIpsum(b, tree, 0)
+		if err = os.WriteFile(p, b.Bytes(), 0644); err != nil {
+			panic(err)
+		}
+		// os.Exit(1)
+		// if err = download(source, fileName(source)); err != nil {
+		// 	slog.Default().Error(err.Error(), slog.String("URL", source))
+		// }
 	}
 }
 
 func writeNodesWithLoremIpsum(w io.Writer, n *html.Node, depth int) {
 	indent := strings.Repeat("\t", depth)
 	switch n.Type {
-	case html.DocumentNode:
-		// Just parse children for the root document node
-		for c := range n.ChildNodes() {
-			writeNodesWithLoremIpsum(w, c, depth)
-		}
-
 	case html.ElementNode:
 		// Build attributes string
 		var attrs string
 		for _, a := range n.Attr {
-			attrs += fmt.Sprintf(" %s=\"%s\"", a.Key, a.Val)
+			attrs += fmt.Sprintf(" %s=\"%s\"", a.Key, html.EscapeString(a.Val))
 		}
 
 		// Handle self-closing tags or tags with no children
@@ -144,6 +144,13 @@ func writeNodesWithLoremIpsum(w io.Writer, n *html.Node, depth int) {
 	case html.CommentNode:
 		// skip comments
 		// fmt.Fprintf(w, "%s<!-- %s -->\n", indent, n.Data)
+	case html.DocumentNode:
+		// Just parse children for the root document node
+		for c := range n.ChildNodes() {
+			writeNodesWithLoremIpsum(w, c, depth)
+		}
+	case html.DoctypeNode:
+		fmt.Fprintf(w, "%s<!DOCTYPE %s>\n", indent, n.Data)
 	}
 }
 
