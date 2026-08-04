@@ -4,8 +4,8 @@
             head.go:165: <meta[name="twitter:card"]>: has no content
             head.go:165: <meta[name="twitter:site:id"]>: has no content
             head.go:209: <head> meta viewport definition is absent
-            head.go:247: head <description> text is too long: 366 vs 150
-            head.go:266: head <keywords> text is too long: 439 vs 150
+            head.go:247: head <description> text is too long: 366 vs 125
+            head.go:266: head <keywords> text is too long: 439 vs 125
             opengraph.go:52: og:type not found
             opengraph.go:55: og:title not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
@@ -15,6 +15,15 @@
              └───────────────
             heading.go:71: |WARNING| heading text is not normalized
             heading.go:76: heading is empty
+        --- FAIL: TestPopularPages/amazon.html/<img>#05 
+            └■ body›div›i›i›i›div›div›div›div›div›div›div›b›li›div›div›div›div›div›div›div›div›div›div›div›div›div›div›a›div›picture›img
+             │ loading: eager |WARNING| DUPLICATE 
+             │     src: https://m.media-amazon.…g?aicid=homepage-faceout |WARNING| DUPLICATE 
+             │  srcset: https://m.media-amazon.…icid=homepage-faceout 2x |WARNING| DUPLICATE 
+             │     alt: Arrojo ReFINISH Dry Sha…s Oil & Buildup, 8.5 oz. |WARNING| DUPLICATE 
+             │   class: a-amazon-image _npack-a…_style_asin-image__2BYur |WARNING| DUPLICATE 
+             └───────────────
+            image.go:95: <img[alt]> is 136 characters, expected 125 or less
         --- FAIL: TestPopularPages/amazon.html/<a>#150 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a
              │  href: # |WARNING| DUPLICATE 
@@ -34,6 +43,7 @@
             head.go:303: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:308: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:226: head <title> text is too long: 116 vs 55
+            head.go:247: head <description> text is too long: 126 vs 125
             opengraph.go:67: og:image not found
             twitter.go:55: twitter:card not found
             twitter.go:71: twitter:site not found
@@ -48,7 +58,7 @@
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 161 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#43 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw |WARNING| DUPLICATE 
@@ -58,7 +68,7 @@
              │     alt: On the left is a screen…that same house in 2025. |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 157 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#67 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -68,7 +78,7 @@
              │     alt: A woman dressed in blac…and rubble of a building |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 210 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#69 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -79,7 +89,7 @@
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 280 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#97 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -90,7 +100,7 @@
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 151 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#101 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -100,7 +110,7 @@
              │     alt: A composite of Hannah N… Images/ Harper Collins) |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:95: <img[alt]> is too long
+            image.go:95: <img[alt]> is 163 characters, expected 125 or less
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
@@ -109,11 +119,11 @@
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
-            opengraph.go:46: unknown Open Graph property: og:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
-            opengraph.go:46: unknown Open Graph property: og:site_name dw.com
             opengraph.go:46: unknown Open Graph property: og:image:type image/jpeg
+            opengraph.go:46: unknown Open Graph property: og:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
             opengraph.go:46: unknown Open Graph property: og:image:width 940
             opengraph.go:46: unknown Open Graph property: og:image:height 529
+            opengraph.go:46: unknown Open Graph property: og:site_name dw.com
             opengraph.go:52: og:type not found
             twitter.go:49: unknown Twitter property: twitter:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
         --- FAIL: TestPopularPages/dw.html/<img> 
@@ -126,17 +136,17 @@
              │         title: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
              │         width: 100 |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#01 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›span›div›div›div›div›figure›img
              │   alt: Lions in Tama zoo |WARNING| DUPLICATE 
              │ style: padding-bottom: 56.25%;…eight: 0; max-height: 0; |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -144,9 +154,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#03 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -154,9 +164,9 @@
              │ title: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -164,9 +174,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#05 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -174,9 +184,9 @@
              │ title: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#06 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -184,9 +194,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#07 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -194,9 +204,9 @@
              │ title: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:111: If you are loading images lazily with JavaScript, stop,
-            image.go:112: and use modern loading="lazy" attribute instead.
-            image.go:113: empty <image[src]> source
+            image.go:113: If you are loading images lazily with JavaScript, stop,
+            image.go:114: and use modern loading="lazy" attribute instead.
+            image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<a>#66 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
              │   href: https://corporate.dw.com/en/about-dw/s-30688 |WARNING| DUPLICATE 
@@ -352,6 +362,7 @@
     --- FAIL: TestPopularPages/wikipedia.html 
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
+            head.go:247: head <description> text is too long: 130 vs 125
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/wikipedia.html/<a>#357 
             └■ body›i›i›i›footer›div›div›div›a

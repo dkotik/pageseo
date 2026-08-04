@@ -5,19 +5,15 @@ import (
 	"iter"
 	"net/url"
 	"os"
-	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/dkotik/pageseo/internal"
 	"golang.org/x/net/html"
-	"golang.org/x/text/language"
 )
 
 //go:generate go run ./testdata/generate.go
-
-var reValidLanguageCode = regexp.MustCompile(`^\w\w(\-\w\w)?$`)
 
 type StringConstraints struct {
 	Normalizer    Normalizer
@@ -190,12 +186,7 @@ func validateHTMLElement(t *testing.T, node *html.Node) {
 	for _, attr := range node.Attr {
 		if attr.Key == "lang" {
 			foundLanguageAttribute++
-			if _, err := language.Parse(attr.Val); err != nil {
-				t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", attr.Val, err)
-			}
-			if !reValidLanguageCode.MatchString(attr.Val) {
-				t.Errorf("<html> BCP47 [lang] attribute %q is not a valid language code", attr.Val)
-			}
+			internal.ValidateLanguage(t, attr.Val)
 		}
 	}
 	switch foundLanguageAttribute {

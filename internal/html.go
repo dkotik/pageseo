@@ -2,11 +2,24 @@ package internal
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
 	"golang.org/x/net/html"
+	"golang.org/x/text/language"
 )
+
+var reValidLanguageCode = regexp.MustCompile(`^\w\w(\-\w\w)?$`)
+
+func ValidateLanguage(t testing.TB, lang string) {
+	if _, err := language.Parse(lang); err != nil {
+		t.Errorf("<html> BCP47 [lang] attribute %q is not canonical: %v", lang, err)
+	}
+	if !reValidLanguageCode.MatchString(lang) {
+		t.Errorf("<html> BCP47 [lang] attribute %q is not a valid language code", lang)
+	}
+}
 
 // GetAttributes returns the attributes of the node as a map[string]string.
 //

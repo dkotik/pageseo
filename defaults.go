@@ -8,7 +8,7 @@ const (
 	DefaultMinimumHeadingLength      = DefaultMinimumTitleLength
 	DefaultMaximumHeadingLength      = 70
 	DefaultMinimumDescriptionLength  = 4
-	DefaultMaximumDescriptionLength  = 150
+	DefaultMaximumDescriptionLength  = 125
 	DefaultMaximumKeywordsLength     = DefaultMaximumDescriptionLength
 	DefaultMinimumImageAltTextLength = 0
 	DefaultMaximumImageAltTextLength = DefaultMaximumDescriptionLength
@@ -24,6 +24,8 @@ func DefaultNodeTests() []NodeTester {
 		NewAnchorNodeTester(StringConstraints{}),
 		NewImageNodeTester(StringConstraints{}),
 		NewScriptNodeTester(),
+		NewStyleSheetNodeTester(),
+		NewLinkNodeTester(),
 	}
 }
 

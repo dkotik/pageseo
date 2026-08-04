@@ -90,9 +90,11 @@ func (i image) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader L
 		}
 		length := len(alt)
 		if length < i.MinimumLength {
-			t.Error("<img[alt]> is too short")
+			t.Errorf("<img[alt]> is %d characters, expected %d or more", length, i.MinimumLength)
 		} else if length > i.MaximumLength {
-			t.Error("<img[alt]> is too long")
+			t.Errorf("<img[alt]> is %d characters, expected %d or less", length, i.MaximumLength)
+		} else if length > 80 {
+			t.Logf("<img[alt]> is %d characters, screen readers prefer 80 or less", length)
 		}
 	}
 
