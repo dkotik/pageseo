@@ -34,14 +34,14 @@ func (s script) ListResourcesForPreloading(origin *url.URL, node *html.Node) (UR
 
 func (s script) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
 	source := ""
-
 	for _, attr := range node.Attr {
 		switch attr.Key {
 		case "src":
 			if source != "" {
 				t.Error("duplicate <script[src]> attribute:", source)
+			} else {
+				source = attr.Val
 			}
-			source = attr.Val
 		case "language":
 			t.Log(internal.WP, "<script[language]> attribute is deprecated:", attr.Val)
 		}

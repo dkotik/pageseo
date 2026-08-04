@@ -27,7 +27,7 @@
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table›tbody›tr›td›img
              │ src: https://m.media-amazon.…x-gray._CB485916920_.gif |WARNING| DUPLICATE 
              └───────────────
-            image.go:79: missing <img[alt]> attribute
+            image.go:82: missing <img[alt]> attribute
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/bbc.html 
         --- FAIL: TestPopularPages/bbc.html/<head> 
@@ -47,8 +47,8 @@
              │     alt: A bearded young man wit…26 in New Delhi, India.  |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:86: |WARNING| <img[alt]> is not normalized
-            image.go:92: <img[alt]> is too long
+            image.go:89: |WARNING| <img[alt]> is not normalized
+            image.go:95: <img[alt]> is too long
         --- FAIL: TestPopularPages/bbc.html/<img>#43 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw |WARNING| DUPLICATE 
@@ -58,7 +58,7 @@
              │     alt: On the left is a screen…that same house in 2025. |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:92: <img[alt]> is too long
+            image.go:95: <img[alt]> is too long
         --- FAIL: TestPopularPages/bbc.html/<img>#67 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -68,7 +68,7 @@
              │     alt: A woman dressed in blac…and rubble of a building |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:92: <img[alt]> is too long
+            image.go:95: <img[alt]> is too long
         --- FAIL: TestPopularPages/bbc.html/<img>#69 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -78,8 +78,8 @@
              │     alt: US President Donald Tru…'s distinctive signature |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:86: |WARNING| <img[alt]> is not normalized
-            image.go:92: <img[alt]> is too long
+            image.go:89: |WARNING| <img[alt]> is not normalized
+            image.go:95: <img[alt]> is too long
         --- FAIL: TestPopularPages/bbc.html/<img>#97 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -89,8 +89,8 @@
              │     alt: A room in a bathhouse w…a)  (Credit: Konparu-yu) |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:86: |WARNING| <img[alt]> is not normalized
-            image.go:92: <img[alt]> is too long
+            image.go:89: |WARNING| <img[alt]> is not normalized
+            image.go:95: <img[alt]> is too long
         --- FAIL: TestPopularPages/bbc.html/<img>#101 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
              │   sizes: 25vw |WARNING| DUPLICATE 
@@ -100,7 +100,7 @@
              │     alt: A composite of Hannah N… Images/ Harper Collins) |WARNING| DUPLICATE 
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
-            image.go:92: <img[alt]> is too long
+            image.go:95: <img[alt]> is too long
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
@@ -109,11 +109,11 @@
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
+            opengraph.go:46: unknown Open Graph property: og:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
             opengraph.go:46: unknown Open Graph property: og:site_name dw.com
             opengraph.go:46: unknown Open Graph property: og:image:type image/jpeg
-            opengraph.go:46: unknown Open Graph property: og:image:height 529
             opengraph.go:46: unknown Open Graph property: og:image:width 940
-            opengraph.go:46: unknown Open Graph property: og:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
+            opengraph.go:46: unknown Open Graph property: og:image:height 529
             opengraph.go:52: og:type not found
             twitter.go:49: unknown Twitter property: twitter:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
         --- FAIL: TestPopularPages/dw.html/<img> 
@@ -126,17 +126,17 @@
              │         title: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
              │         width: 100 |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#01 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›span›div›div›div›div›figure›img
              │   alt: Lions in Tama zoo |WARNING| DUPLICATE 
              │ style: padding-bottom: 56.25%;…eight: 0; max-height: 0; |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -144,9 +144,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#03 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -154,9 +154,9 @@
              │ title: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -164,9 +164,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#05 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -174,9 +174,9 @@
              │ title: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#06 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -184,9 +184,9 @@
              │         src: |WARNING| EMPTY 
              │       class: lq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#07 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │   alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -194,9 +194,9 @@
              │ title: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
              │ class: hq-img |WARNING| DUPLICATE 
              └───────────────
-            image.go:108: If you are loading images lazily with JavaScript, stop,
-            image.go:109: and use modern loading="lazy" attribute instead.
-            image.go:110: empty <image[src]> source
+            image.go:111: If you are loading images lazily with JavaScript, stop,
+            image.go:112: and use modern loading="lazy" attribute instead.
+            image.go:113: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<a>#66 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
              │   href: https://corporate.dw.com/en/about-dw/s-30688 |WARNING| DUPLICATE 
