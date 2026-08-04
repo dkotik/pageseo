@@ -86,8 +86,19 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Provide a command line scanner that can crawl live websites.
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
+- [ ] Add to social validators:
+        opengraph.go:55: unknown Open Graph properties:
+        opengraph.go:57:  -  og:image:alt
+        opengraph.go:57:  -  og:image:height
+        opengraph.go:57:  -  og:image:type
+        opengraph.go:57:  -  og:image:width
+        opengraph.go:57:  -  og:site_name
+        opengraph.go:62: og:type not found
+        twitter.go:58: unknown Twitter properties:
+        twitter.go:60:  -  twitter:image:alt
 - [ ] analyze `<table><caption></caption></table>`
 - [ ] analyze `<figure><figcaption></figcaption></figure>`
+- [ ] analyze `fb:` meta data
 - [ ] support `--json` tag and redirect t.Output() writers to t.Attr()
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.
 - [ ] Add SQLite backend for the service.

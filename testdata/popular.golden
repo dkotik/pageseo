@@ -6,8 +6,8 @@
             head.go:209: <head> meta viewport definition is absent
             head.go:247: head <description> text is too long: 366 vs 125
             head.go:266: head <keywords> text is too long: 439 vs 125
-            opengraph.go:52: og:type not found
-            opengraph.go:55: og:title not found
+            opengraph.go:62: og:type not found
+            opengraph.go:65: og:title not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/amazon.html/<h3> 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›div›div›div›a›div›div›div›div›h3
@@ -44,10 +44,10 @@
             head.go:308: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:226: head <title> text is too long: 116 vs 55
             head.go:247: head <description> text is too long: 126 vs 125
-            opengraph.go:67: og:image not found
-            twitter.go:55: twitter:card not found
-            twitter.go:71: twitter:site not found
-            twitter.go:74: twitter:image not found
+            opengraph.go:77: og:image not found
+            twitter.go:65: twitter:card not found
+            twitter.go:81: twitter:site not found
+            twitter.go:84: twitter:image not found
         --- FAIL: TestPopularPages/bbc.html/<img>#31 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›section›div›div›div›div›div›div›div›a›div›img
              │   sizes: (min-width: 768px) 50vw, 100vw |WARNING| DUPLICATE 
@@ -115,17 +115,20 @@
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:165: <meta[name="meta-branding"]>: has no content
-            opengraph.go:46: unknown Open Graph property: og:site_name CNN
+            opengraph.go:55: unknown Open Graph properties:
+            opengraph.go:57:  -  og:site_name
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
-            opengraph.go:46: unknown Open Graph property: og:image:type image/jpeg
-            opengraph.go:46: unknown Open Graph property: og:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
-            opengraph.go:46: unknown Open Graph property: og:image:width 940
-            opengraph.go:46: unknown Open Graph property: og:image:height 529
-            opengraph.go:46: unknown Open Graph property: og:site_name dw.com
-            opengraph.go:52: og:type not found
-            twitter.go:49: unknown Twitter property: twitter:image:alt Lion in grassy dirt patch South Africa with saplings visible in background
+            opengraph.go:55: unknown Open Graph properties:
+            opengraph.go:57:  -  og:image:alt
+            opengraph.go:57:  -  og:image:height
+            opengraph.go:57:  -  og:image:type
+            opengraph.go:57:  -  og:image:width
+            opengraph.go:57:  -  og:site_name
+            opengraph.go:62: og:type not found
+            twitter.go:58: unknown Twitter properties:
+            twitter.go:60:  -  twitter:image:alt
         --- FAIL: TestPopularPages/dw.html/<img> 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure›picture›img
              │           alt: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
@@ -343,9 +346,9 @@
         --- FAIL: TestPopularPages/microsoft.html/<head> 
             head.go:213: head <title> is absent
             head.go:234: head <description> is absent
-            opengraph.go:52: og:type not found
-            opengraph.go:55: og:title not found
-            opengraph.go:67: og:image not found
+            opengraph.go:62: og:type not found
+            opengraph.go:65: og:title not found
+            opengraph.go:77: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/theguardian.html 
@@ -354,9 +357,9 @@
              └───────────────
             head.go:165: <meta[name="description"]>: has no content
             head.go:234: head <description> is absent
-            opengraph.go:52: og:type not found
-            opengraph.go:55: og:title not found
-            opengraph.go:67: og:image not found
+            opengraph.go:62: og:type not found
+            opengraph.go:65: og:title not found
+            opengraph.go:77: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         heading.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/wikipedia.html 

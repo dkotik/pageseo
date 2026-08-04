@@ -1,6 +1,7 @@
 package pageseo
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -29,6 +30,7 @@ func TestOpenGraphMeta(
 	requirements HeadNodeConstraints,
 ) {
 	var og openGraphMeta
+	unknownProperties := []string{}
 	for property, content := range metaProperties {
 		switch property {
 		case MetaOpenGraphType:
@@ -43,8 +45,16 @@ func TestOpenGraphMeta(
 			og.Image = content
 		default:
 			if strings.HasPrefix(property, MetaOpenGraphPrefix) {
-				t.Log("unknown Open Graph property:", property, content)
+				unknownProperties = append(unknownProperties, property)
 			}
+		}
+	}
+
+	if len(unknownProperties) > 0 {
+		slices.Sort(unknownProperties)
+		t.Log("unknown Open Graph properties:")
+		for _, property := range unknownProperties {
+			t.Log(" - ", property)
 		}
 	}
 

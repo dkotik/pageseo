@@ -1,6 +1,7 @@
 package pageseo
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -30,6 +31,7 @@ func TestTwitterMeta(
 	requirements HeadNodeConstraints,
 ) {
 	card := twitter{}
+	unknownProperties := []string{}
 	for name, content := range metaData {
 		switch name {
 		case MetaTwitterCard:
@@ -46,8 +48,16 @@ func TestTwitterMeta(
 			card.Image = content
 		default:
 			if strings.HasPrefix(name, MetaTwitterPrefix) {
-				t.Log("unknown Twitter property:", name, content)
+				unknownProperties = append(unknownProperties, name)
 			}
+		}
+	}
+
+	if len(unknownProperties) > 0 {
+		slices.Sort(unknownProperties)
+		t.Log("unknown Twitter properties:")
+		for _, property := range unknownProperties {
+			t.Log(" - ", property)
 		}
 	}
 
