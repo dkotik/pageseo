@@ -96,8 +96,6 @@ pageseo --strict --verbose --failfast=false ./**/*.html
         opengraph.go:62: og:type not found
         twitter.go:58: unknown Twitter properties:
         twitter.go:60:  -  twitter:image:alt
-- [ ] analyze `<table><caption></caption></table>`
-- [ ] analyze `<figure><figcaption></figcaption></figure>`
 - [ ] analyze `fb:` meta data
 - [ ] support `--json` tag and redirect t.Output() writers to t.Attr()
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.

@@ -113,9 +113,9 @@ nextNode:
 		case "meta": // fallthrough
 		case "title":
 			if title != "" {
-				t.Error("duplicate <title>:", internal.GetText(node))
+				t.Error("duplicate <title>:", internal.GetAndTrimText(node))
 			}
-			title = internal.GetText(node)
+			title = internal.GetAndTrimText(node)
 			continue
 		default:
 			continue

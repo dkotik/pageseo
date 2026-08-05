@@ -189,3 +189,33 @@ func validateImage(
 		t.Error("empty image data:", contentType)
 	}
 }
+
+func NewFigureNodeTester() NodeTester {
+	return figure{}
+}
+
+type figure struct{}
+
+func (s figure) Match(t testing.TB, node *html.Node) bool {
+	return node.Type == html.ElementNode && node.Data == "figure"
+}
+
+func (s figure) ListResourcesForPreloading(origin *url.URL, node *html.Node) []string {
+	return nil
+}
+
+func (s figure) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	caption := ""
+	for child := range node.ChildNodes() {
+		if child.Type == html.ElementNode && child.Data == "figcaption" {
+			if caption != "" {
+				t.Error("multiple <figcaption> elements in the figure")
+			}
+			caption = internal.GetAndTrimText(child)
+		}
+	}
+
+	if caption == "" {
+		t.Error("add a <figcaption> element to the figure")
+	}
+}

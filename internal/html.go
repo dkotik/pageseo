@@ -69,7 +69,7 @@ func ParseCommaSeparatedKeyedValues(s string) (map[string]string, error) {
 	return values, nil
 }
 
-func GetText(node *html.Node) string {
+func GetAndTrimText(node *html.Node) string {
 	b := strings.Builder{}
 	if node.Type == html.TextNode {
 		_, _ = b.WriteString(strings.TrimSpace(node.Data))
@@ -85,5 +85,5 @@ func GetText(node *html.Node) string {
 			_, _ = b.WriteRune(' ')
 		}
 	}
-	return b.String()
+	return strings.TrimSpace(b.String())
 }

@@ -170,7 +170,7 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 	if isEmpty {
 		t.Error("anchor is empty of meaningful content")
 	} else {
-		text := internal.GetText(node)
+		text := internal.GetAndTrimText(node)
 		normalized, err := a.Normalizer.Normalize(text)
 		if err != nil {
 			t.Logf(internal.WP+" unable to normalize anchor text: %v", err)

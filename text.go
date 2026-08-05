@@ -63,7 +63,7 @@ func (h heading) ListResourcesForPreloading(*url.URL, *html.Node) []string {
 }
 
 func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
-	textContent := internal.GetText(node)
+	textContent := internal.GetAndTrimText(node)
 	normalized, err := h.Normalizer.Normalize(textContent)
 	if err != nil {
 		t.Logf(internal.WP+" unable to normalize heading text: %v", err)
@@ -86,5 +86,35 @@ func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader
 		} else {
 			t.Log(internal.WP, "text content is too long:", length, "vs", h.MaximumLength, "characters")
 		}
+	}
+}
+
+func NewTableNodeTester() NodeTester {
+	return table{}
+}
+
+type table struct{}
+
+func (s table) Match(t testing.TB, node *html.Node) bool {
+	return node.Type == html.ElementNode && node.Data == "table"
+}
+
+func (s table) ListResourcesForPreloading(origin *url.URL, node *html.Node) []string {
+	return nil
+}
+
+func (s table) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+	caption := ""
+	for child := range node.ChildNodes() {
+		if child.Type == html.ElementNode && child.Data == "caption" {
+			if caption != "" {
+				t.Error("multiple <caption> elements in the table")
+			}
+			caption = internal.GetAndTrimText(child)
+		}
+	}
+
+	if caption == "" {
+		t.Error("add a <caption> element to the table")
 	}
 }

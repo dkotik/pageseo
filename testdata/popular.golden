@@ -13,8 +13,7 @@
             └■ body›div›i›i›i›div›div›div›div›div›div›div›div›div›div›a›div›div›div›div›h3
              │ class: a-spacing-none |WARNING| DUPLICATE 
              └───────────────
-            heading.go:71: |WARNING| heading text is not normalized
-            heading.go:76: heading is empty
+            text.go:76: heading is empty
         --- FAIL: TestPopularPages/amazon.html/<img>#05 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›b›li›div›div›div›div›div›div›div›div›div›div›div›div›div›div›a›div›picture›img
              │ loading: eager |WARNING| DUPLICATE 
@@ -30,14 +29,18 @@
              │ class: gwm-navigation-right-button |WARNING| DUPLICATE 
              └───────────────
             anchor.go:82: |WARNING| <a[title]> attribute is empty
-            anchor.go:178: |WARNING| anchor text is not normalized
             anchor.go:184: anchor text is too long
+        --- FAIL: TestPopularPages/amazon.html/<table> 
+            └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table
+             │ class: rhf-loading-middle |WARNING| DUPLICATE 
+             └───────────────
+            text.go:118: add a <caption> element to the table
         --- FAIL: TestPopularPages/amazon.html/<img>#17 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table›tbody›tr›td›img
              │ src: https://m.media-amazon.…x-gray._CB485916920_.gif |WARNING| DUPLICATE 
              └───────────────
             image.go:82: missing <img[alt]> attribute
-        heading.go:49: document has no <h1> headings
+        text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/bbc.html 
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:303: meta tag content for viewport "width=device-width" is missing initial scale attribute
@@ -111,13 +114,13 @@
              │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
              └───────────────
             image.go:95: <img[alt]> is 163 characters, expected 125 or less
-        heading.go:49: document has no <h1> headings
+        text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:165: <meta[name="meta-branding"]>: has no content
             opengraph.go:55: unknown Open Graph properties:
             opengraph.go:57:  -  og:site_name
-        heading.go:49: document has no <h1> headings
+        text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
             opengraph.go:55: unknown Open Graph properties:
@@ -150,6 +153,12 @@
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
+        --- FAIL: TestPopularPages/dw.html/<figure>#02 
+            └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
+             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             └───────────────
+            image.go:219: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -170,6 +179,12 @@
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
+        --- FAIL: TestPopularPages/dw.html/<figure>#03 
+            └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
+             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             └───────────────
+            image.go:219: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -190,6 +205,12 @@
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
+        --- FAIL: TestPopularPages/dw.html/<figure>#04 
+            └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
+             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             └───────────────
+            image.go:219: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#06 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -350,7 +371,7 @@
             opengraph.go:65: og:title not found
             opengraph.go:77: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
-        heading.go:49: document has no <h1> headings
+        text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/theguardian.html 
         --- FAIL: TestPopularPages/theguardian.html/<head> 
              │ lang: en |WARNING| DUPLICATE 
@@ -361,7 +382,7 @@
             opengraph.go:65: og:title not found
             opengraph.go:77: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
-        heading.go:49: document has no <h1> headings
+        text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/wikipedia.html 
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
