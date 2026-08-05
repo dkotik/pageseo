@@ -88,12 +88,9 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Unique contraint by namespace with a namespace flag for CLI.
 - [ ] Add missing social validators, as image and URL are not tested:
         opengraph.go:55: unknown Open Graph properties:
-        opengraph.go:57:  -  og:image:alt
         opengraph.go:57:  -  og:image:height
         opengraph.go:57:  -  og:image:type
         opengraph.go:57:  -  og:image:width
-        opengraph.go:57:  -  og:site_name
-        opengraph.go:62: og:type not found
         twitter.go:58: unknown Twitter properties:
         twitter.go:60:  -  twitter:image:alt
 - [ ] analyze `fb:` meta data

@@ -14,15 +14,23 @@ const (
 	MetaTwitterSite        = MetaTwitterPrefix + "site"
 	MetaTwitterURL         = MetaTwitterPrefix + "url"
 	MetaTwitterImage       = MetaTwitterPrefix + "image"
+	MetaTwitterImageAlt    = MetaTwitterPrefix + "image:alt"
+	MetaTwitterImageType   = MetaTwitterPrefix + "image:type"
+	MetaTwitterImageHeight = MetaTwitterPrefix + "image:height"
+	MetaTwitterImageWidth  = MetaTwitterPrefix + "image:width"
 )
 
 type twitter struct {
-	Type        string
+	Card        string
 	Title       string
 	Description string
 	Site        string
 	URL         string
 	Image       string
+	ImageAlt    string
+	ImageType   string
+	ImageHeight string
+	ImageWidth  string
 }
 
 func TestTwitterMeta(
@@ -35,7 +43,7 @@ func TestTwitterMeta(
 	for name, content := range metaData {
 		switch name {
 		case MetaTwitterCard:
-			card.Type = content
+			card.Card = content
 		case MetaTwitterTitle:
 			card.Title = content
 		case MetaTwitterDescription:
@@ -46,6 +54,14 @@ func TestTwitterMeta(
 			card.URL = content
 		case MetaTwitterImage:
 			card.Image = content
+		case MetaTwitterImageAlt:
+			card.ImageAlt = content
+		case MetaTwitterImageType:
+			card.ImageType = content
+		case MetaTwitterImageHeight:
+			card.ImageHeight = content
+		case MetaTwitterImageWidth:
+			card.ImageWidth = content
 		default:
 			if strings.HasPrefix(name, MetaTwitterPrefix) {
 				unknownProperties = append(unknownProperties, name)
@@ -61,14 +77,24 @@ func TestTwitterMeta(
 		}
 	}
 
-	if card.Type == "" {
+	if card.Card == "" {
 		t.Error(MetaTwitterCard + " not found")
+	} else {
+		switch card.Card {
+		case "summary", "summary_large_image", "app", "player":
+		default:
+			t.Error(MetaTwitterCard + " is not valid")
+		}
 	}
 	if card.Title == "" {
 		t.Error(MetaTwitterTitle + " not found")
+	} else {
+		requirements.Title.apply(t, MetaTwitterTitle, card.Title)
 	}
 	if card.Description == "" {
 		t.Error(MetaTwitterDescription + " not found")
+	} else {
+		requirements.Description.apply(t, MetaTwitterDescription, card.Description)
 	}
 	// TODO: enforce head requirements
 	// else if err = r.TwitterCardDescription.Validate(card.Description); err != nil {

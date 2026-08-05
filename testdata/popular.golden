@@ -6,8 +6,16 @@
             head.go:209: <head> meta viewport definition is absent
             head.go:247: head <description> text is too long: 366 vs 125
             head.go:266: head <keywords> text is too long: 439 vs 125
-            opengraph.go:84: og:type not found
-            opengraph.go:87: og:title not found
+            opengraph.go:85: og:type not found
+            opengraph.go:96: og:title not found
+            opengraph.go:104: og:url not found
+            pageseo.go:27: og:description text is not normalized
+            pageseo.go:35: Free shipping on millions of items. Get the best of Shopping and Entertainment with Prime. Enjoy low prices and great deals on the largest selection of everyday essentials and other products, including fashion, home, beauty, electronics, Alexa Devices, sporting goods, toys, automotive, pets, baby, books, video games, musical instruments, office supplies, and more. text is too long: got 366, want at most 125
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            opengraph.go:129: og:site_name not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/amazon.html/<h3> 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›div›div›div›a›div›div›div›div›h3
@@ -48,10 +56,23 @@
             head.go:308: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:226: head <title> text is too long: 116 vs 55
             head.go:247: head <description> text is too long: 126 vs 125
-            opengraph.go:99: og:image not found
-            twitter.go:65: twitter:card not found
-            twitter.go:81: twitter:site not found
-            twitter.go:84: twitter:image not found
+            pageseo.go:27: og:title text is not normalized
+            pageseo.go:35: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
+            opengraph.go:101: og:image not found
+            pageseo.go:27: og:description text is not normalized
+            pageseo.go:35: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            opengraph.go:129: og:site_name not found
+            twitter.go:81: twitter:card not found
+            pageseo.go:27: twitter:title text is not normalized
+            pageseo.go:35: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
+            pageseo.go:27: twitter:description text is not normalized
+            pageseo.go:35: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
+            twitter.go:107: twitter:site not found
+            twitter.go:110: twitter:image not found
         --- FAIL: TestPopularPages/bbc.html/<img>#31 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›section›div›div›div›div›div›div›div›a›div›img
              │   sizes: (min-width: 768px) 50vw, 100vw |WARNING| DUPLICATE 
@@ -119,14 +140,26 @@
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:165: <meta[name="meta-branding"]>: has no content
+            pageseo.go:27: og:title text is not normalized
+            opengraph.go:109: og:description not found
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            pageseo.go:27: twitter:title text is not normalized
+            pageseo.go:27: twitter:description text is not normalized
         text.go:49: document has no <h1> headings
         pageseo.go:210: add a <nav> element to the page
         pageseo.go:216: add a <footer> element to the page
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
-            opengraph.go:84: og:type not found
-            twitter.go:58: unknown Twitter properties:
-            twitter.go:60:  -  twitter:image:alt
+            opengraph.go:85: og:type not found
+            pageseo.go:27: og:title text is not normalized
+            pageseo.go:27: og:description text is not normalized
+            pageseo.go:27: og:image:alt text is not normalized
+            pageseo.go:35: Lion in grassy dirt patch South Africa with saplings visible in background text is too long: got 74, want at most 55
+            pageseo.go:27: twitter:title text is not normalized
+            pageseo.go:27: twitter:description text is not normalized
         --- FAIL: TestPopularPages/dw.html/<figure> 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure
              │ class: s4bcs45 |WARNING| DUPLICATE 
@@ -368,9 +401,16 @@
         --- FAIL: TestPopularPages/microsoft.html/<head> 
             head.go:213: head <title> is absent
             head.go:234: head <description> is absent
-            opengraph.go:84: og:type not found
-            opengraph.go:87: og:title not found
-            opengraph.go:99: og:image not found
+            opengraph.go:85: og:type not found
+            opengraph.go:96: og:title not found
+            opengraph.go:101: og:image not found
+            opengraph.go:104: og:url not found
+            opengraph.go:109: og:description not found
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            opengraph.go:129: og:site_name not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
         pageseo.go:210: add a <nav> element to the page
@@ -382,9 +422,16 @@
              └───────────────
             head.go:165: <meta[name="description"]>: has no content
             head.go:234: head <description> is absent
-            opengraph.go:84: og:type not found
-            opengraph.go:87: og:title not found
-            opengraph.go:99: og:image not found
+            opengraph.go:85: og:type not found
+            opengraph.go:96: og:title not found
+            opengraph.go:101: og:image not found
+            opengraph.go:104: og:url not found
+            opengraph.go:109: og:description not found
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            opengraph.go:129: og:site_name not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
         pageseo.go:210: add a <nav> element to the page
@@ -394,6 +441,15 @@
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
             head.go:247: head <description> text is too long: 130 vs 125
+            pageseo.go:27: og:title text is not normalized
+            opengraph.go:104: og:url not found
+            pageseo.go:27: og:description text is not normalized
+            pageseo.go:35: Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation. text is too long: got 130, want at most 125
+            opengraph.go:114: og:image:alt not found
+            opengraph.go:120: og:image:type not found
+            opengraph.go:123: og:image:height not found
+            opengraph.go:126: og:image:width not found
+            opengraph.go:129: og:site_name not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/wikipedia.html/<a>#357 
             └■ body›i›i›i›footer›div›div›div›a

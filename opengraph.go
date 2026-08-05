@@ -83,6 +83,14 @@ func TestOpenGraphMeta(
 	//   og:title, og:type, og:image, and og:url
 	if og.Type == "" {
 		t.Error(MetaOpenGraphType + " not found")
+	} else {
+		switch og.Type {
+		case "website", "article", "book", "profile":
+		case "music.album", "music.song", "music.playlist", "music.radio_station":
+		case "video.movie", "video.episode", "video.tv_show", "video.other":
+		default:
+			t.Error(MetaOpenGraphType + " is not a common type: " + og.Type)
+		}
 	}
 	if og.Title == "" {
 		t.Error(MetaOpenGraphTitle + " not found")
