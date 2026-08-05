@@ -21,8 +21,8 @@ func DefaultNodeTests() []NodeTester {
 	return []NodeTester{
 		NewHeadNodeTester(HeadNodeConstraints{}),
 		NewHeadingNodeTester(StringConstraints{}),
-		NewTableNodeTester(),
-		NewFigureNodeTester(),
+		NewTableNodeTester(StringConstraints{}),
+		NewFigureNodeTester(StringConstraints{}),
 		NewAnchorNodeTester(StringConstraints{}),
 		NewImageNodeTester(StringConstraints{}),
 		NewScriptNodeTester(),

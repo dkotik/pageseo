@@ -2,10 +2,8 @@ package pageseo
 
 import (
 	"io"
-	"iter"
 	"net/url"
 	"os"
-	"slices"
 	"strings"
 	"testing"
 
@@ -19,6 +17,23 @@ type StringConstraints struct {
 	Normalizer    Normalizer
 	MinimumLength int
 	MaximumLength int
+}
+
+func (s StringConstraints) apply(t testing.TB, subject, text string) {
+	normalized, err := s.Normalizer.Normalize(text)
+	if err != nil {
+		t.Logf("%s text cannot be normalized: %v", subject, err)
+	} else if subject != normalized {
+		t.Logf("%s text is not normalized", subject)
+		subject = normalized
+	}
+
+	if s.MinimumLength > 0 && len(subject) < s.MinimumLength {
+		t.Errorf("%s text is too short: got %d, want at least %d", subject, len(subject), s.MinimumLength)
+	}
+	if s.MaximumLength > 0 && len(subject) > s.MaximumLength {
+		t.Errorf("%s text is too long: got %d, want at most %d", subject, len(subject), s.MaximumLength)
+	}
 }
 
 // NodeTester creates HTML node tests.
@@ -116,54 +131,6 @@ type nodeTests struct {
 	Tests []NodeTester
 }
 
-func (p pageSEO) walkNodeTree(
-	t *testing.T,
-	origin *url.URL,
-	root *html.Node,
-	preload func([]string),
-) iter.Seq[nodeTests] {
-	return func(yield func(nodeTests) bool) {
-		next := make([]NodeTester, 0, len(p.nodeTesters))
-		for _, nt := range p.nodeTesters {
-			if nt.Match(t, root) {
-				next = append(next, nt)
-				preload(nt.ListResourcesForPreloading(
-					origin, root,
-				))
-			}
-		}
-		if len(next) > 0 {
-			if !yield(nodeTests{
-				Node:  root,
-				Tests: slices.Clone(next),
-			}) {
-				return
-			}
-			next = next[:0]
-		}
-
-		for child := range root.Descendants() {
-			for _, nt := range p.nodeTesters {
-				if nt.Match(t, child) {
-					next = append(next, nt)
-					preload(nt.ListResourcesForPreloading(
-						origin, child,
-					))
-				}
-			}
-			if len(next) > 0 {
-				if !yield(nodeTests{
-					Node:  child,
-					Tests: slices.Clone(next),
-				}) {
-					return
-				}
-				next = next[:0]
-			}
-		}
-	}
-}
-
 func validateDocumentTypeElement(t *testing.T, node *html.Node) {
 	if node == nil || node.FirstChild == nil {
 		t.Fatal("HTML document is empty")
@@ -237,19 +204,51 @@ func (p pageSEO) TestTree(origin *url.URL, node *html.Node) func(t *testing.T) {
 			}
 		}
 
+		foundNav, foundHeader, foundFooter := false, false, false
+		t.Cleanup(func() {
+			if foundNav == false {
+				t.Log("add a <nav> element to the page")
+			}
+			if foundHeader == false {
+				t.Log("add a <header> element to the page")
+			}
+			if foundFooter == false {
+				t.Log("add a <footer> element to the page")
+			}
+		})
 		testsToRun := make([]nodeTests, 0, 8)
 		reploadURLs := make([]string, 0, 8)
-
-		for nodeTests := range p.walkNodeTree(
-			t, origin, node,
-			func(URLs []string) {
-				if len(URLs) == 0 {
-					return
+		packTests := func(node *html.Node, nts []NodeTester) {
+			next := make([]NodeTester, 0, len(nts)/4)
+			for _, nt := range nts {
+				if nt.Match(t, node) {
+					next = append(next, nt)
+					reploadURLs = append(reploadURLs, nt.ListResourcesForPreloading(
+						origin, node,
+					)...)
+				} else if node.Type == html.ElementNode {
+					switch node.Data {
+					case "nav":
+						foundNav = true
+					case "header":
+						foundHeader = true
+					case "footer":
+						foundFooter = true
+					}
 				}
-				reploadURLs = slices.Concat(reploadURLs, URLs)
-			},
-		) {
-			testsToRun = append(testsToRun, nodeTests)
+			}
+			if len(next) == 0 {
+				return
+			}
+			testsToRun = append(testsToRun, nodeTests{
+				Node:  node,
+				Tests: next,
+			})
+		}
+
+		packTests(node, p.nodeTesters)
+		for child := range node.Descendants() {
+			packTests(child, p.nodeTesters)
 		}
 
 		var hotSwap Loader

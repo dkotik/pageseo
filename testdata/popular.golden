@@ -6,8 +6,8 @@
             head.go:209: <head> meta viewport definition is absent
             head.go:247: head <description> text is too long: 366 vs 125
             head.go:266: head <keywords> text is too long: 439 vs 125
-            opengraph.go:62: og:type not found
-            opengraph.go:65: og:title not found
+            opengraph.go:84: og:type not found
+            opengraph.go:87: og:title not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/amazon.html/<h3> 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›div›div›div›a›div›div›div›div›h3
@@ -34,20 +34,21 @@
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table
              │ class: rhf-loading-middle |WARNING| DUPLICATE 
              └───────────────
-            text.go:118: add a <caption> element to the table
+            text.go:130: add a <caption> element to the table
         --- FAIL: TestPopularPages/amazon.html/<img>#17 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table›tbody›tr›td›img
              │ src: https://m.media-amazon.…x-gray._CB485916920_.gif |WARNING| DUPLICATE 
              └───────────────
             image.go:82: missing <img[alt]> attribute
         text.go:49: document has no <h1> headings
+        pageseo.go:216: add a <footer> element to the page
     --- FAIL: TestPopularPages/bbc.html 
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:303: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:308: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:226: head <title> text is too long: 116 vs 55
             head.go:247: head <description> text is too long: 126 vs 125
-            opengraph.go:77: og:image not found
+            opengraph.go:99: og:image not found
             twitter.go:65: twitter:card not found
             twitter.go:81: twitter:site not found
             twitter.go:84: twitter:image not found
@@ -118,20 +119,20 @@
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:165: <meta[name="meta-branding"]>: has no content
-            opengraph.go:55: unknown Open Graph properties:
-            opengraph.go:57:  -  og:site_name
         text.go:49: document has no <h1> headings
+        pageseo.go:210: add a <nav> element to the page
+        pageseo.go:216: add a <footer> element to the page
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
-            opengraph.go:55: unknown Open Graph properties:
-            opengraph.go:57:  -  og:image:alt
-            opengraph.go:57:  -  og:image:height
-            opengraph.go:57:  -  og:image:type
-            opengraph.go:57:  -  og:image:width
-            opengraph.go:57:  -  og:site_name
-            opengraph.go:62: og:type not found
+            opengraph.go:84: og:type not found
             twitter.go:58: unknown Twitter properties:
             twitter.go:60:  -  twitter:image:alt
+        --- FAIL: TestPopularPages/dw.html/<figure> 
+            └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure
+             │ class: s4bcs45 |WARNING| DUPLICATE 
+             └───────────────
+            pageseo.go:27: <figcaption> text is not normalized
+            pageseo.go:35: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at velit ut velit tincidunt iaculis. Praesent dignissim magna er Lorem ipsum dolor sit amet, consectetur adipisc text is too long: got 175, want at most 125
         --- FAIL: TestPopularPages/dw.html/<img> 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure›picture›img
              │           alt: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
@@ -158,7 +159,7 @@
              │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
              │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
              └───────────────
-            image.go:219: add a <figcaption> element to the figure
+            image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
@@ -184,7 +185,7 @@
              │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
              │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
              └───────────────
-            image.go:219: add a <figcaption> element to the figure
+            image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
@@ -210,7 +211,7 @@
              │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
              │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
              └───────────────
-            image.go:219: add a <figcaption> element to the figure
+            image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#06 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
              │         alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
@@ -367,22 +368,28 @@
         --- FAIL: TestPopularPages/microsoft.html/<head> 
             head.go:213: head <title> is absent
             head.go:234: head <description> is absent
-            opengraph.go:62: og:type not found
-            opengraph.go:65: og:title not found
-            opengraph.go:77: og:image not found
+            opengraph.go:84: og:type not found
+            opengraph.go:87: og:title not found
+            opengraph.go:99: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
+        pageseo.go:210: add a <nav> element to the page
+        pageseo.go:213: add a <header> element to the page
+        pageseo.go:216: add a <footer> element to the page
     --- FAIL: TestPopularPages/theguardian.html 
         --- FAIL: TestPopularPages/theguardian.html/<head> 
              │ lang: en |WARNING| DUPLICATE 
              └───────────────
             head.go:165: <meta[name="description"]>: has no content
             head.go:234: head <description> is absent
-            opengraph.go:62: og:type not found
-            opengraph.go:65: og:title not found
-            opengraph.go:77: og:image not found
+            opengraph.go:84: og:type not found
+            opengraph.go:87: og:title not found
+            opengraph.go:99: og:image not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
+        pageseo.go:210: add a <nav> element to the page
+        pageseo.go:213: add a <header> element to the page
+        pageseo.go:216: add a <footer> element to the page
     --- FAIL: TestPopularPages/wikipedia.html 
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
@@ -420,3 +427,4 @@
             anchor.go:82: |WARNING| <a[title]> attribute is empty
             anchor.go:114: |WARNING| add "external" directive to [rel] attribute
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
+        pageseo.go:213: add a <header> element to the page

@@ -7,6 +7,10 @@
      │ href: #top |WARNING| DUPLICATE 
      └───────────────
     anchor.go:82: |WARNING| <a[title]> attribute is empty
+=== NAME  TestMinimalPage
+    pageseo.go:210: add a <nav> element to the page
+    pageseo.go:213: add a <header> element to the page
+    pageseo.go:216: add a <footer> element to the page
 --- PASS: TestMinimalPage 
     --- PASS: TestMinimalPage/<head> 
     --- PASS: TestMinimalPage/<h1> 

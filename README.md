@@ -86,7 +86,7 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Provide a command line scanner that can crawl live websites.
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
-- [ ] Add to social validators:
+- [ ] Add missing social validators, as image and URL are not tested:
         opengraph.go:55: unknown Open Graph properties:
         opengraph.go:57:  -  og:image:alt
         opengraph.go:57:  -  og:image:height

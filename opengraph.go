@@ -1,6 +1,7 @@
 package pageseo
 
 import (
+	"net/url"
 	"slices"
 	"strings"
 	"testing"
@@ -13,6 +14,11 @@ const (
 	MetaOpenGraphDescription = MetaOpenGraphPrefix + "description"
 	MetaOpenGraphURL         = MetaOpenGraphPrefix + "url"
 	MetaOpenGraphImage       = MetaOpenGraphPrefix + "image"
+	MetaOpenGraphImageAlt    = MetaOpenGraphPrefix + "image:alt"
+	MetaOpenGraphImageType   = MetaOpenGraphPrefix + "image:type"
+	MetaOpenGraphImageHeight = MetaOpenGraphPrefix + "image:height"
+	MetaOpenGraphImageWidth  = MetaOpenGraphPrefix + "image:width"
+	MetaOpenGraphSiteName    = MetaOpenGraphPrefix + "site_name"
 )
 
 type openGraphMeta struct {
@@ -22,6 +28,11 @@ type openGraphMeta struct {
 	Site        string
 	URL         string
 	Image       string
+	ImageAlt    string
+	ImageType   string
+	ImageHeight string
+	ImageWidth  string
+	SiteName    string
 }
 
 func TestOpenGraphMeta(
@@ -33,16 +44,26 @@ func TestOpenGraphMeta(
 	unknownProperties := []string{}
 	for property, content := range metaProperties {
 		switch property {
-		case MetaOpenGraphType:
-			og.Type = content
 		case MetaOpenGraphTitle:
 			og.Title = content
-		case MetaOpenGraphDescription:
-			og.Description = content
-		case MetaOpenGraphURL:
-			og.URL = content
+		case MetaOpenGraphType:
+			og.Type = content
 		case MetaOpenGraphImage:
 			og.Image = content
+		case MetaOpenGraphURL:
+			og.URL = content
+		case MetaOpenGraphDescription:
+			og.Description = content
+		case MetaOpenGraphImageAlt:
+			og.ImageAlt = content
+		case MetaOpenGraphImageType:
+			og.ImageType = content
+		case MetaOpenGraphImageHeight:
+			og.ImageHeight = content
+		case MetaOpenGraphImageWidth:
+			og.ImageWidth = content
+		case MetaOpenGraphSiteName:
+			og.SiteName = content
 		default:
 			if strings.HasPrefix(property, MetaOpenGraphPrefix) {
 				unknownProperties = append(unknownProperties, property)
@@ -58,22 +79,50 @@ func TestOpenGraphMeta(
 		}
 	}
 
+	// The only mandatory basic tags are
+	//   og:title, og:type, og:image, and og:url
 	if og.Type == "" {
 		t.Error(MetaOpenGraphType + " not found")
 	}
 	if og.Title == "" {
 		t.Error(MetaOpenGraphTitle + " not found")
+	} else {
+		requirements.Title.apply(t, MetaOpenGraphTitle, og.Title)
 	}
-	// TODO: apply head node constraints
-	// if og.Description == "" {
-	// 	t.Error(MetaOpenGraphDescription + " not found")
-	// } else if err = requirements.Validate(og.Description); err != nil {
-	// 	t.Error(MetaOpenGraphDescription+" validation failed:", err)
-	// }
-	// if og.URL == "" {
-	// 	t.Error(MetaOpenGraphURL + " not found")
-	// }
 	if og.Image == "" {
 		t.Error(MetaOpenGraphImage + " not found")
+	}
+	if og.URL == "" {
+		t.Error(MetaOpenGraphURL + " not found")
+	}
+
+	// not mandatory
+	if og.Description == "" {
+		t.Log(MetaOpenGraphDescription + " not found")
+	} else {
+		requirements.Description.apply(t, MetaOpenGraphDescription, og.Description)
+	}
+	if og.ImageAlt == "" {
+		t.Log(MetaOpenGraphImageAlt + " not found")
+	} else {
+		// TODO: should be imagealt validator here
+		requirements.Title.apply(t, MetaOpenGraphImageAlt, og.ImageAlt)
+	}
+	if og.ImageType == "" {
+		t.Log(MetaOpenGraphImageType + " not found")
+	}
+	if og.ImageHeight == "" {
+		t.Log(MetaOpenGraphImageHeight + " not found")
+	}
+	if og.ImageWidth == "" {
+		t.Log(MetaOpenGraphImageWidth + " not found")
+	}
+	if og.SiteName == "" {
+		t.Log(MetaOpenGraphSiteName + " not found")
+	} else {
+		_, err := url.Parse(og.SiteName)
+		if err != nil {
+			t.Error(MetaOpenGraphSiteName+" is not a valid URL:", err)
+		}
 	}
 }

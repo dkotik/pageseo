@@ -89,11 +89,22 @@ func (h heading) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader
 	}
 }
 
-func NewTableNodeTester() NodeTester {
-	return table{}
+func NewTableNodeTester(s StringConstraints) NodeTester {
+	if s.Normalizer == nil {
+		s.Normalizer = NormalizeLineToNFC
+	}
+	if s.MinimumLength == 0 {
+		s.MinimumLength = DefaultMinimumImageAltTextLength
+	}
+	if s.MaximumLength == 0 {
+		s.MaximumLength = DefaultMaximumImageAltTextLength
+	}
+	return table{s}
 }
 
-type table struct{}
+type table struct {
+	StringConstraints
+}
 
 func (s table) Match(t testing.TB, node *html.Node) bool {
 	return node.Type == html.ElementNode && node.Data == "table"
@@ -111,6 +122,7 @@ func (s table) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader L
 				t.Error("multiple <caption> elements in the table")
 			}
 			caption = internal.GetAndTrimText(child)
+			s.StringConstraints.apply(t, "<caption>", caption)
 		}
 	}
 

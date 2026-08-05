@@ -190,21 +190,32 @@ func validateImage(
 	}
 }
 
-func NewFigureNodeTester() NodeTester {
-	return figure{}
+func NewFigureNodeTester(s StringConstraints) NodeTester {
+	if s.Normalizer == nil {
+		s.Normalizer = NormalizeLineToNFC
+	}
+	if s.MinimumLength == 0 {
+		s.MinimumLength = DefaultMinimumImageAltTextLength
+	}
+	if s.MaximumLength == 0 {
+		s.MaximumLength = DefaultMaximumImageAltTextLength
+	}
+	return figure{s}
 }
 
-type figure struct{}
+type figure struct {
+	StringConstraints
+}
 
-func (s figure) Match(t testing.TB, node *html.Node) bool {
+func (f figure) Match(t testing.TB, node *html.Node) bool {
 	return node.Type == html.ElementNode && node.Data == "figure"
 }
 
-func (s figure) ListResourcesForPreloading(origin *url.URL, node *html.Node) []string {
+func (f figure) ListResourcesForPreloading(origin *url.URL, node *html.Node) []string {
 	return nil
 }
 
-func (s figure) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
+func (f figure) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader Loader) {
 	caption := ""
 	for child := range node.ChildNodes() {
 		if child.Type == html.ElementNode && child.Data == "figcaption" {
@@ -212,6 +223,7 @@ func (s figure) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 				t.Error("multiple <figcaption> elements in the figure")
 			}
 			caption = internal.GetAndTrimText(child)
+			f.apply(t, "<figcaption>", caption)
 		}
 	}
 
