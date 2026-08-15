@@ -7,30 +7,38 @@ import (
 )
 
 const (
-	MetaTwitterPrefix      = "twitter:"
-	MetaTwitterCard        = MetaTwitterPrefix + "card"
-	MetaTwitterTitle       = MetaTwitterPrefix + "title"
-	MetaTwitterDescription = MetaTwitterPrefix + "description"
-	MetaTwitterSite        = MetaTwitterPrefix + "site"
-	MetaTwitterURL         = MetaTwitterPrefix + "url"
-	MetaTwitterImage       = MetaTwitterPrefix + "image"
-	MetaTwitterImageAlt    = MetaTwitterPrefix + "image:alt"
-	MetaTwitterImageType   = MetaTwitterPrefix + "image:type"
-	MetaTwitterImageHeight = MetaTwitterPrefix + "image:height"
-	MetaTwitterImageWidth  = MetaTwitterPrefix + "image:width"
+	MetaTwitterPrefix       = "twitter:"
+	MetaTwitterCard         = MetaTwitterPrefix + "card"
+	MetaTwitterTitle        = MetaTwitterPrefix + "title"
+	MetaTwitterDescription  = MetaTwitterPrefix + "description"
+	MetaTwitterSite         = MetaTwitterPrefix + "site"
+	MetaTwitterURL          = MetaTwitterPrefix + "url"
+	MetaTwitterImage        = MetaTwitterPrefix + "image"
+	MetaTwitterImageAlt     = MetaTwitterPrefix + "image:alt"
+	MetaTwitterImageType    = MetaTwitterPrefix + "image:type"
+	MetaTwitterImageHeight  = MetaTwitterPrefix + "image:height"
+	MetaTwitterImageWidth   = MetaTwitterPrefix + "image:width"
+	MetaTwitterPlayer       = MetaTwitterPrefix + "player"
+	MetaTwitterPlayerURL    = MetaTwitterPrefix + "player:url"
+	MetaTwitterPlayerWidth  = MetaTwitterPrefix + "player:width"
+	MetaTwitterPlayerHeight = MetaTwitterPrefix + "player:height"
 )
 
 type twitter struct {
-	Card        string
-	Title       string
-	Description string
-	Site        string
-	URL         string
-	Image       string
-	ImageAlt    string
-	ImageType   string
-	ImageHeight string
-	ImageWidth  string
+	Card         string
+	Title        string
+	Description  string
+	Site         string
+	URL          string
+	Image        string
+	ImageAlt     string
+	ImageType    string
+	ImageHeight  string
+	ImageWidth   string
+	Player       string
+	PlayerURL    string
+	PlayerWidth  string
+	PlayerHeight string
 }
 
 func TestTwitterMeta(
@@ -38,6 +46,7 @@ func TestTwitterMeta(
 	metaData map[string]string,
 	requirements HeadNodeConstraints,
 ) {
+	t.Helper()
 	card := twitter{}
 	unknownProperties := []string{}
 	for name, content := range metaData {
@@ -62,6 +71,14 @@ func TestTwitterMeta(
 			card.ImageHeight = content
 		case MetaTwitterImageWidth:
 			card.ImageWidth = content
+		case MetaTwitterPlayer:
+			card.Player = content
+		case MetaTwitterPlayerURL:
+			card.PlayerURL = content
+		case MetaTwitterPlayerWidth:
+			card.PlayerWidth = content
+		case MetaTwitterPlayerHeight:
+			card.PlayerHeight = content
 		default:
 			if strings.HasPrefix(name, MetaTwitterPrefix) {
 				unknownProperties = append(unknownProperties, name)
@@ -83,16 +100,16 @@ func TestTwitterMeta(
 		switch card.Card {
 		case "summary", "summary_large_image", "app", "player":
 		default:
-			t.Error(MetaTwitterCard + " is not valid")
+			t.Error(MetaTwitterCard, " is not valid")
 		}
 	}
 	if card.Title == "" {
-		t.Error(MetaTwitterTitle + " not found")
+		t.Error(MetaTwitterTitle, " not found")
 	} else {
 		requirements.Title.apply(t, MetaTwitterTitle, card.Title)
 	}
 	if card.Description == "" {
-		t.Error(MetaTwitterDescription + " not found")
+		t.Error(MetaTwitterDescription, " not found")
 	} else {
 		requirements.Description.apply(t, MetaTwitterDescription, card.Description)
 	}

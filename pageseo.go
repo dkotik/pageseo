@@ -20,11 +20,12 @@ type StringConstraints struct {
 }
 
 func (s StringConstraints) apply(t testing.TB, subject, text string) {
+	t.Helper()
 	normalized, err := s.Normalizer.Normalize(text)
 	if err != nil {
-		t.Logf("%s text cannot be normalized: %v", subject, err)
+		t.Logf("%s %s text cannot be normalized: %v", internal.WP, subject, err)
 	} else if subject != normalized {
-		t.Logf("%s text is not normalized", subject)
+		t.Logf("%s %s text is not normalized", internal.WP, subject)
 		subject = normalized
 	}
 

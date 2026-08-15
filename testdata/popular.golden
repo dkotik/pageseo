@@ -6,271 +6,271 @@
             head.go:209: <head> meta viewport definition is absent
             head.go:247: head <description> text is too long: 366 vs 125
             head.go:266: head <keywords> text is too long: 439 vs 125
-            opengraph.go:85: og:type not found
-            opengraph.go:96: og:title not found
-            opengraph.go:104: og:url not found
-            pageseo.go:27: og:description text is not normalized
-            pageseo.go:35: Free shipping on millions of items. Get the best of Shopping and Entertainment with Prime. Enjoy low prices and great deals on the largest selection of everyday essentials and other products, including fashion, home, beauty, electronics, Alexa Devices, sporting goods, toys, automotive, pets, baby, books, video games, musical instruments, office supplies, and more. text is too long: got 366, want at most 125
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            opengraph.go:129: og:site_name not found
+            head.go:273: og:type not found
+            head.go:273: og:title not found
+            head.go:273: og:url not found
+            head.go:273: |WARNING| og:description text is not normalized
+            head.go:273: Free shipping on millions of items. Get the best of Shopping and Entertainment with Prime. Enjoy low prices and great deals on the largest selection of everyday essentials and other products, including fashion, home, beauty, electronics, Alexa Devices, sporting goods, toys, automotive, pets, baby, books, video games, musical instruments, office supplies, and more. text is too long: got 366, want at most 125
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/amazon.html/<h3> 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›div›div›div›a›div›div›div›div›h3
-             │ class: a-spacing-none |WARNING| DUPLICATE 
+             │ class: a-spacing-none
              └───────────────
             text.go:76: heading is empty
         --- FAIL: TestPopularPages/amazon.html/<img>#05 
             └■ body›div›i›i›i›div›div›div›div›div›div›div›b›li›div›div›div›div›div›div›div›div›div›div›div›div›div›div›a›div›picture›img
-             │ loading: eager |WARNING| DUPLICATE 
-             │     src: https://m.media-amazon.…g?aicid=homepage-faceout |WARNING| DUPLICATE 
-             │  srcset: https://m.media-amazon.…icid=homepage-faceout 2x |WARNING| DUPLICATE 
-             │     alt: Arrojo ReFINISH Dry Sha…s Oil & Buildup, 8.5 oz. |WARNING| DUPLICATE 
-             │   class: a-amazon-image _npack-a…_style_asin-image__2BYur |WARNING| DUPLICATE 
+             │ loading: eager
+             │     src: https://m.media-amazon.…g?aicid=homepage-faceout
+             │  srcset: https://m.media-amazon.…icid=homepage-faceout 2x
+             │     alt: Arrojo ReFINISH Dry Sha…s Oil & Buildup, 8.5 oz.
+             │   class: a-amazon-image _npack-a…_style_asin-image__2BYur
              └───────────────
             image.go:95: <img[alt]> is 136 characters, expected 125 or less
         --- FAIL: TestPopularPages/amazon.html/<a>#150 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a
-             │  href: # |WARNING| DUPLICATE 
-             │ class: gwm-navigation-right-button |WARNING| DUPLICATE 
+             │  href: #
+             │ class: gwm-navigation-right-button
              └───────────────
             anchor.go:82: |WARNING| <a[title]> attribute is empty
             anchor.go:184: anchor text is too long
         --- FAIL: TestPopularPages/amazon.html/<table> 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table
-             │ class: rhf-loading-middle |WARNING| DUPLICATE 
+             │ class: rhf-loading-middle
              └───────────────
             text.go:130: add a <caption> element to the table
         --- FAIL: TestPopularPages/amazon.html/<img>#17 
             └■ body›div›i›i›i›div›div›div›b›div›div›div›div›a›div›div›table›tbody›tr›td›img
-             │ src: https://m.media-amazon.…x-gray._CB485916920_.gif |WARNING| DUPLICATE 
+             │ src: https://m.media-amazon.…x-gray._CB485916920_.gif
              └───────────────
             image.go:82: missing <img[alt]> attribute
         text.go:49: document has no <h1> headings
-        pageseo.go:216: add a <footer> element to the page
+        pageseo.go:217: add a <footer> element to the page
     --- FAIL: TestPopularPages/bbc.html 
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:303: meta tag content for viewport "width=device-width" is missing initial scale attribute
             head.go:308: meta tag content for viewport scale "" has invalid initial scale attribute: strconv.ParseFloat: parsing "": invalid syntax
             head.go:226: head <title> text is too long: 116 vs 55
             head.go:247: head <description> text is too long: 126 vs 125
-            pageseo.go:27: og:title text is not normalized
-            pageseo.go:35: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
-            opengraph.go:101: og:image not found
-            pageseo.go:27: og:description text is not normalized
-            pageseo.go:35: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            opengraph.go:129: og:site_name not found
-            twitter.go:81: twitter:card not found
-            pageseo.go:27: twitter:title text is not normalized
-            pageseo.go:35: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
-            pageseo.go:27: twitter:description text is not normalized
-            pageseo.go:35: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
-            twitter.go:107: twitter:site not found
-            twitter.go:110: twitter:image not found
+            head.go:273: |WARNING| og:title text is not normalized
+            head.go:273: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
+            head.go:273: og:image not found
+            head.go:273: |WARNING| og:description text is not normalized
+            head.go:273: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:273: |WARNING| og:site_name  not found
+            head.go:278: twitter:card not found
+            head.go:278: |WARNING| twitter:title text is not normalized
+            head.go:278: BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio text is too long: got 116, want at most 55
+            head.go:278: |WARNING| twitter:description text is not normalized
+            head.go:278: Visit BBC for trusted reporting on the latest world and US news, sports, business, climate, innovation, culture and much more. text is too long: got 126, want at most 125
+            head.go:278: twitter:site not found
+            head.go:278: twitter:image not found
         --- FAIL: TestPopularPages/bbc.html/<img>#31 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›section›div›div›div›div›div›div›div›a›div›img
-             │   sizes: (min-width: 768px) 50vw, 100vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…d0cfdafcb.jpg.webp 1536w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…2a-7dfd0cfdafcb.jpg.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: A bearded young man wit…26 in New Delhi, India.  |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: (min-width: 768px) 50vw, 100vw
+             │  srcset: https://ichef.bbci.co.u…d0cfdafcb.jpg.webp 1536w
+             │     src: https://ichef.bbci.co.u…2a-7dfd0cfdafcb.jpg.webp
+             │ loading: lazy
+             │     alt: A bearded young man wit…26 in New Delhi, India. 
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
             image.go:95: <img[alt]> is 161 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#43 
             └■ body›div›div›div›div›main›article›div›div›div›div›section›div›div›div›div›div›div›a›div›div›div›div›img
-             │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…0adf0800a.png.webp 1536w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…ab-8b30adf0800a.png.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: On the left is a screen…that same house in 2025. |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: (min-width: 1280px) 20v…width: 800px) 33vw, 50vw
+             │  srcset: https://ichef.bbci.co.u…0adf0800a.png.webp 1536w
+             │     src: https://ichef.bbci.co.u…ab-8b30adf0800a.png.webp
+             │ loading: lazy
+             │     alt: On the left is a screen…that same house in 2025.
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:95: <img[alt]> is 157 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#67 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
-             │   sizes: 25vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…c26ad07bb.jpg.webp 1536w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…ee-9b3c26ad07bb.jpg.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: A woman dressed in blac…and rubble of a building |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: 25vw
+             │  srcset: https://ichef.bbci.co.u…c26ad07bb.jpg.webp 1536w
+             │     src: https://ichef.bbci.co.u…ee-9b3c26ad07bb.jpg.webp
+             │ loading: lazy
+             │     alt: A woman dressed in blac…and rubble of a building
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:95: <img[alt]> is 210 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#69 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
-             │   sizes: 25vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…f7d0da737.jpg.webp 1536w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…4a-ff2f7d0da737.jpg.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: US President Donald Tru…'s distinctive signature |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: 25vw
+             │  srcset: https://ichef.bbci.co.u…f7d0da737.jpg.webp 1536w
+             │     src: https://ichef.bbci.co.u…4a-ff2f7d0da737.jpg.webp
+             │ loading: lazy
+             │     alt: US President Donald Tru…'s distinctive signature
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
             image.go:95: <img[alt]> is 280 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#97 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
-             │   sizes: 25vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…/p0nsvnlv.jpg.webp 1920w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…80x270/p0nsvnlv.jpg.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: A room in a bathhouse w…a)  (Credit: Konparu-yu) |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: 25vw
+             │  srcset: https://ichef.bbci.co.u…/p0nsvnlv.jpg.webp 1920w
+             │     src: https://ichef.bbci.co.u…80x270/p0nsvnlv.jpg.webp
+             │ loading: lazy
+             │     alt: A room in a bathhouse w…a)  (Credit: Konparu-yu)
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:89: |WARNING| <img[alt]> is not normalized
             image.go:95: <img[alt]> is 151 characters, expected 125 or less
         --- FAIL: TestPopularPages/bbc.html/<img>#101 
             └■ body›div›div›div›div›main›article›div›div›div›div›div›div›div›div›div›section›div›div›div›div›div›div›div›a›div›div›div›div›img
-             │   sizes: 25vw |WARNING| DUPLICATE 
-             │  srcset: https://ichef.bbci.co.u…/p0p07d8x.jpg.webp 1920w |WARNING| DUPLICATE 
-             │     src: https://ichef.bbci.co.u…80x270/p0p07d8x.jpg.webp |WARNING| DUPLICATE 
-             │ loading: lazy |WARNING| DUPLICATE 
-             │     alt: A composite of Hannah N… Images/ Harper Collins) |WARNING| DUPLICATE 
-             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni |WARNING| DUPLICATE 
+             │   sizes: 25vw
+             │  srcset: https://ichef.bbci.co.u…/p0p07d8x.jpg.webp 1920w
+             │     src: https://ichef.bbci.co.u…80x270/p0p07d8x.jpg.webp
+             │ loading: lazy
+             │     alt: A composite of Hannah N… Images/ Harper Collins)
+             │   class: Image-styles__ImageStyled-sc-8c99a12b-0 cVsHni
              └───────────────
             image.go:95: <img[alt]> is 163 characters, expected 125 or less
         text.go:49: document has no <h1> headings
     --- FAIL: TestPopularPages/cnn.html 
         --- FAIL: TestPopularPages/cnn.html/<head> 
             head.go:165: <meta[name="meta-branding"]>: has no content
-            pageseo.go:27: og:title text is not normalized
-            opengraph.go:109: og:description not found
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            pageseo.go:27: twitter:title text is not normalized
-            pageseo.go:27: twitter:description text is not normalized
+            head.go:273: |WARNING| og:title text is not normalized
+            head.go:273: |WARNING| og:description  not found
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:278: |WARNING| twitter:title text is not normalized
+            head.go:278: |WARNING| twitter:description text is not normalized
         text.go:49: document has no <h1> headings
-        pageseo.go:210: add a <nav> element to the page
-        pageseo.go:216: add a <footer> element to the page
+        pageseo.go:211: add a <nav> element to the page
+        pageseo.go:217: add a <footer> element to the page
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
-            opengraph.go:85: og:type not found
-            pageseo.go:27: og:title text is not normalized
-            pageseo.go:27: og:description text is not normalized
-            pageseo.go:27: og:image:alt text is not normalized
-            pageseo.go:35: Lion in grassy dirt patch South Africa with saplings visible in background text is too long: got 74, want at most 55
-            pageseo.go:27: twitter:title text is not normalized
-            pageseo.go:27: twitter:description text is not normalized
+            head.go:273: og:type not found
+            head.go:273: |WARNING| og:title text is not normalized
+            head.go:273: |WARNING| og:description text is not normalized
+            head.go:273: |WARNING| og:image:alt text is not normalized
+            head.go:273: Lion in grassy dirt patch South Africa with saplings visible in background text is too long: got 74, want at most 55
+            head.go:278: |WARNING| twitter:title text is not normalized
+            head.go:278: |WARNING| twitter:description text is not normalized
         --- FAIL: TestPopularPages/dw.html/<figure> 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure
-             │ class: s4bcs45 |WARNING| DUPLICATE 
+             │ class: s4bcs45
              └───────────────
-            pageseo.go:27: <figcaption> text is not normalized
-            pageseo.go:35: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at velit ut velit tincidunt iaculis. Praesent dignissim magna er Lorem ipsum dolor sit amet, consectetur adipisc text is too long: got 175, want at most 125
+            image.go:226: |WARNING| <figcaption> text is not normalized
+            image.go:226: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at velit ut velit tincidunt iaculis. Praesent dignissim magna er Lorem ipsum dolor sit amet, consectetur adipisc text is too long: got 175, want at most 125
         --- FAIL: TestPopularPages/dw.html/<img> 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›figure›picture›img
-             │           alt: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
-             │ fetchpriority: high |WARNING| DUPLICATE 
-             │        height: 56.25 |WARNING| DUPLICATE 
+             │           alt: Lion in grassy dirt pat…gs visible in background
+             │ fetchpriority: high
+             │        height: 56.25
              │           src: |WARNING| EMPTY 
-             │        srcset: https://static.dw.com/i…e/67379136_605.jpg 1199w |WARNING| DUPLICATE 
-             │         title: Lion in grassy dirt pat…gs visible in background |WARNING| DUPLICATE 
-             │         width: 100 |WARNING| DUPLICATE 
+             │        srcset: https://static.dw.com/i…e/67379136_605.jpg 1199w
+             │         title: Lion in grassy dirt pat…gs visible in background
+             │         width: 100
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#01 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›article›div›span›div›div›div›div›figure›img
-             │   alt: Lions in Tama zoo |WARNING| DUPLICATE 
-             │ style: padding-bottom: 56.25%;…eight: 0; max-height: 0; |WARNING| DUPLICATE 
+             │   alt: Lions in Tama zoo
+             │ style: padding-bottom: 56.25%;…eight: 0; max-height: 0;
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<figure>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
-             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
-             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777;
+             │ class: srnoiv7 s1a75hd4 lazy-load-container
              └───────────────
             image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#02 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │         alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
-             │ aria-hidden: true |WARNING| DUPLICATE 
+             │         alt: Two young people outdoo…, one is holding a drink
+             │ aria-hidden: true
              │         src: |WARNING| EMPTY 
-             │       class: lq-img |WARNING| DUPLICATE 
+             │       class: lq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#03 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │   alt: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
+             │   alt: Two young people outdoo…, one is holding a drink
              │   src: |WARNING| EMPTY 
-             │ title: Two young people outdoo…, one is holding a drink |WARNING| DUPLICATE 
-             │ class: hq-img |WARNING| DUPLICATE 
+             │ title: Two young people outdoo…, one is holding a drink
+             │ class: hq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<figure>#03 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
-             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
-             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777;
+             │ class: srnoiv7 s1a75hd4 lazy-load-container
              └───────────────
             image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │         alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
-             │ aria-hidden: true |WARNING| DUPLICATE 
+             │         alt: two hands hold a little…d with a brown substance
+             │ aria-hidden: true
              │         src: |WARNING| EMPTY 
-             │       class: lq-img |WARNING| DUPLICATE 
+             │       class: lq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#05 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │   alt: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
+             │   alt: two hands hold a little…d with a brown substance
              │   src: |WARNING| EMPTY 
-             │ title: two hands hold a little…d with a brown substance |WARNING| DUPLICATE 
-             │ class: hq-img |WARNING| DUPLICATE 
+             │ title: two hands hold a little…d with a brown substance
+             │ class: hq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<figure>#04 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure
-             │ style: --responsive-picture-as…e_xl:1.7777777777777777; |WARNING| DUPLICATE 
-             │ class: srnoiv7 s1a75hd4 lazy-load-container |WARNING| DUPLICATE 
+             │ style: --responsive-picture-as…e_xl:1.7777777777777777;
+             │ class: srnoiv7 s1a75hd4 lazy-load-container
              └───────────────
             image.go:231: add a <figcaption> element to the figure
         --- FAIL: TestPopularPages/dw.html/<img>#06 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │         alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
-             │ aria-hidden: true |WARNING| DUPLICATE 
+             │         alt: Electric vehicles charg…ging station in Shandong
+             │ aria-hidden: true
              │         src: |WARNING| EMPTY 
-             │       class: lq-img |WARNING| DUPLICATE 
+             │       class: lq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<img>#07 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›div›div›section›div›section›div›div›div›div›div›div›a›figure›img
-             │   alt: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
+             │   alt: Electric vehicles charg…ging station in Shandong
              │   src: |WARNING| EMPTY 
-             │ title: Electric vehicles charg…ging station in Shandong |WARNING| DUPLICATE 
-             │ class: hq-img |WARNING| DUPLICATE 
+             │ title: Electric vehicles charg…ging station in Shandong
+             │ class: hq-img
              └───────────────
             image.go:113: If you are loading images lazily with JavaScript, stop,
             image.go:114: and use modern loading="lazy" attribute instead.
             image.go:115: empty <image[src]> source
         --- FAIL: TestPopularPages/dw.html/<a>#66 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.com/en/about-dw/s-30688 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Who we are |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.com/en/about-dw/s-30688
+             │ target: _blank
+             │  title: External link — Who we are
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -278,10 +278,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#67 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.com/en/press/s-3293 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Press |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.com/en/press/s-3293
+             │ target: _blank
+             │  title: External link — Press
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -289,10 +289,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#68 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.com/en/gmf/s-43101535 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — DW Global Media Forum |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.com/en/gmf/s-43101535
+             │ target: _blank
+             │  title: External link — DW Global Media Forum
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -300,10 +300,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#69 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://learngerman.dw.com/en/overview |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Learn German |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://learngerman.dw.com/en/overview
+             │ target: _blank
+             │  title: External link — Learn German
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -311,10 +311,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#70 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://akademie.dw.com/en/home/s-9519 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — DW Akademie |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://akademie.dw.com/en/home/s-9519
+             │ target: _blank
+             │  title: External link — DW Akademie
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -322,10 +322,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#71 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.co…-registration/a-15718229 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Newsletters |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.co…-registration/a-15718229
+             │ target: _blank
+             │  title: External link — Newsletters
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -333,10 +333,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#72 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.co…egional-reception/s-6809 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Reception |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.co…egional-reception/s-6809
+             │ target: _blank
+             │  title: External link — Reception
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -344,10 +344,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#73 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.co…en/faqs-about-dw/s-30600 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — FAQ |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.co…en/faqs-about-dw/s-30600
+             │ target: _blank
+             │  title: External link — FAQ
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -355,10 +355,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#74 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.com/en/contact/s-30606 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Contact |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.com/en/contact/s-30606
+             │ target: _blank
+             │  title: External link — Contact
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -366,10 +366,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#77 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.co…en/business-sales/s-3303 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Sales & Distribution |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.co…en/business-sales/s-3303
+             │ target: _blank
+             │  title: External link — Sales & Distribution
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -377,10 +377,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#78 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.co…ent-for-travelers/s-3972 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Travel |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.co…ent-for-travelers/s-3972
+             │ target: _blank
+             │  title: External link — Travel
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -388,10 +388,10 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/dw.html/<a>#79 
             └■ body›div›div›div›div›div›div›div›div›span›div›div›footer›section›div›div›ul›li›a
-             │   href: https://corporate.dw.com/en/advertising/s-101376 |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
-             │  title: External link — Advertising |WARNING| DUPLICATE 
-             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z |WARNING| DUPLICATE 
+             │   href: https://corporate.dw.com/en/advertising/s-101376
+             │ target: _blank
+             │  title: External link — Advertising
+             │  class: footer-link dofg86o d1j…eo633p w1mzytge b1fzgn0z
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -401,60 +401,60 @@
         --- FAIL: TestPopularPages/microsoft.html/<head> 
             head.go:213: head <title> is absent
             head.go:234: head <description> is absent
-            opengraph.go:85: og:type not found
-            opengraph.go:96: og:title not found
-            opengraph.go:101: og:image not found
-            opengraph.go:104: og:url not found
-            opengraph.go:109: og:description not found
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            opengraph.go:129: og:site_name not found
+            head.go:273: og:type not found
+            head.go:273: og:title not found
+            head.go:273: og:image not found
+            head.go:273: og:url not found
+            head.go:273: |WARNING| og:description  not found
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
-        pageseo.go:210: add a <nav> element to the page
-        pageseo.go:213: add a <header> element to the page
-        pageseo.go:216: add a <footer> element to the page
+        pageseo.go:211: add a <nav> element to the page
+        pageseo.go:214: add a <header> element to the page
+        pageseo.go:217: add a <footer> element to the page
     --- FAIL: TestPopularPages/theguardian.html 
         --- FAIL: TestPopularPages/theguardian.html/<head> 
-             │ lang: en |WARNING| DUPLICATE 
+             │ lang: en
              └───────────────
             head.go:165: <meta[name="description"]>: has no content
             head.go:234: head <description> is absent
-            opengraph.go:85: og:type not found
-            opengraph.go:96: og:title not found
-            opengraph.go:101: og:image not found
-            opengraph.go:104: og:url not found
-            opengraph.go:109: og:description not found
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            opengraph.go:129: og:site_name not found
+            head.go:273: og:type not found
+            head.go:273: og:title not found
+            head.go:273: og:image not found
+            head.go:273: og:url not found
+            head.go:273: |WARNING| og:description  not found
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
-        pageseo.go:210: add a <nav> element to the page
-        pageseo.go:213: add a <header> element to the page
-        pageseo.go:216: add a <footer> element to the page
+        pageseo.go:211: add a <nav> element to the page
+        pageseo.go:214: add a <header> element to the page
+        pageseo.go:217: add a <footer> element to the page
     --- FAIL: TestPopularPages/wikipedia.html 
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
             head.go:247: head <description> text is too long: 130 vs 125
-            pageseo.go:27: og:title text is not normalized
-            opengraph.go:104: og:url not found
-            pageseo.go:27: og:description text is not normalized
-            pageseo.go:35: Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation. text is too long: got 130, want at most 125
-            opengraph.go:114: og:image:alt not found
-            opengraph.go:120: og:image:type not found
-            opengraph.go:123: og:image:height not found
-            opengraph.go:126: og:image:width not found
-            opengraph.go:129: og:site_name not found
+            head.go:273: |WARNING| og:title text is not normalized
+            head.go:273: og:url not found
+            head.go:273: |WARNING| og:description text is not normalized
+            head.go:273: Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation. text is too long: got 130, want at most 125
+            head.go:273: |WARNING| og:image:alt  not found
+            head.go:273: |WARNING| og:image:type  not found
+            head.go:273: |WARNING| og:image:height  not found
+            head.go:273: |WARNING| og:image:width  not found
+            head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         --- FAIL: TestPopularPages/wikipedia.html/<a>#357 
             └■ body›i›i›i›footer›div›div›div›a
-             │   href: https://donate.wikimedi…&wmf_source=portalFooter |WARNING| DUPLICATE 
-             │ target: _blank |WARNING| DUPLICATE 
+             │   href: https://donate.wikimedi…&wmf_source=portalFooter
+             │ target: _blank
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -463,9 +463,9 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/wikipedia.html/<a>#359 
             └■ body›i›i›i›footer›div›div›div›div›ul›li›a
-             │ target: _blank |WARNING| DUPLICATE 
-             │    rel: noreferrer |WARNING| DUPLICATE 
-             │   href: https://play.google.com…%3Dbutton%26anid%3Dadmob |WARNING| DUPLICATE 
+             │ target: _blank
+             │    rel: noreferrer
+             │   href: https://play.google.com…%3Dbutton%26anid%3Dadmob
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
@@ -474,13 +474,13 @@
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
         --- FAIL: TestPopularPages/wikipedia.html/<a>#360 
             └■ body›i›i›i›footer›div›div›div›div›ul›li›a
-             │ target: _blank |WARNING| DUPLICATE 
-             │    rel: noreferrer |WARNING| DUPLICATE 
-             │   href: https://itunes.apple.co…pt=208305&ct=portal&mt=8 |WARNING| DUPLICATE 
+             │ target: _blank
+             │    rel: noreferrer
+             │   href: https://itunes.apple.co…pt=208305&ct=portal&mt=8
              └───────────────
             anchor.go:74: add rel="noopener" attribute to prevent tab nabbing
             anchor.go:75: older versions of Firefox require rel="noopener noreferrer"
             anchor.go:82: |WARNING| <a[title]> attribute is empty
             anchor.go:114: |WARNING| add "external" directive to [rel] attribute
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
-        pageseo.go:213: add a <header> element to the page
+        pageseo.go:214: add a <header> element to the page

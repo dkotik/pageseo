@@ -12,6 +12,7 @@ require github.com/urfave/cli/v3 v3.10.1
 
 require (
 	github.com/sebdah/goldie/v2 v2.8.0
+	golang.org/x/sync v0.22.0
 	mvdan.cc/xurls/v2 v2.6.0
 )
 

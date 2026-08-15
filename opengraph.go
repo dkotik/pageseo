@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/dkotik/pageseo/internal"
 )
 
 const (
@@ -40,6 +42,7 @@ func TestOpenGraphMeta(
 	metaProperties map[string]string,
 	requirements HeadNodeConstraints,
 ) {
+	t.Helper()
 	var og openGraphMeta
 	unknownProperties := []string{}
 	for property, content := range metaProperties {
@@ -106,27 +109,27 @@ func TestOpenGraphMeta(
 
 	// not mandatory
 	if og.Description == "" {
-		t.Log(MetaOpenGraphDescription + " not found")
+		t.Log(internal.WP, MetaOpenGraphDescription, " not found")
 	} else {
 		requirements.Description.apply(t, MetaOpenGraphDescription, og.Description)
 	}
 	if og.ImageAlt == "" {
-		t.Log(MetaOpenGraphImageAlt + " not found")
+		t.Log(internal.WP, MetaOpenGraphImageAlt, " not found")
 	} else {
 		// TODO: should be imagealt validator here
 		requirements.Title.apply(t, MetaOpenGraphImageAlt, og.ImageAlt)
 	}
 	if og.ImageType == "" {
-		t.Log(MetaOpenGraphImageType + " not found")
+		t.Log(internal.WP, MetaOpenGraphImageType, " not found")
 	}
 	if og.ImageHeight == "" {
-		t.Log(MetaOpenGraphImageHeight + " not found")
+		t.Log(internal.WP, MetaOpenGraphImageHeight, " not found")
 	}
 	if og.ImageWidth == "" {
-		t.Log(MetaOpenGraphImageWidth + " not found")
+		t.Log(internal.WP, MetaOpenGraphImageWidth, " not found")
 	}
 	if og.SiteName == "" {
-		t.Log(MetaOpenGraphSiteName + " not found")
+		t.Log(internal.WP, MetaOpenGraphSiteName, " not found")
 	} else {
 		_, err := url.Parse(og.SiteName)
 		if err != nil {

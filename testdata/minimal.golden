@@ -1,25 +1,25 @@
 === RUN   TestMinimalPage
 === RUN   TestMinimalPage/<head>
-    pageseo.go:27: og:title text is not normalized
-    pageseo.go:27: og:description text is not normalized
-    opengraph.go:114: og:image:alt not found
-    opengraph.go:120: og:image:type not found
-    opengraph.go:123: og:image:height not found
-    opengraph.go:126: og:image:width not found
-    opengraph.go:129: og:site_name not found
-    pageseo.go:27: twitter:title text is not normalized
-    pageseo.go:27: twitter:description text is not normalized
+    head.go:273: |WARNING| og:title text is not normalized
+    head.go:273: |WARNING| og:description text is not normalized
+    head.go:273: |WARNING| og:image:alt  not found
+    head.go:273: |WARNING| og:image:type  not found
+    head.go:273: |WARNING| og:image:height  not found
+    head.go:273: |WARNING| og:image:width  not found
+    head.go:273: |WARNING| og:site_name  not found
+    head.go:278: |WARNING| twitter:title text is not normalized
+    head.go:278: |WARNING| twitter:description text is not normalized
 === RUN   TestMinimalPage/<h1>
     └■ body›h1
 === RUN   TestMinimalPage/<a>
     └■ body›p›a
-     │ href: #top |WARNING| DUPLICATE 
+     │ href: #top
      └───────────────
     anchor.go:82: |WARNING| <a[title]> attribute is empty
 === NAME  TestMinimalPage
-    pageseo.go:210: add a <nav> element to the page
-    pageseo.go:213: add a <header> element to the page
-    pageseo.go:216: add a <footer> element to the page
+    pageseo.go:211: add a <nav> element to the page
+    pageseo.go:214: add a <header> element to the page
+    pageseo.go:217: add a <footer> element to the page
 --- PASS: TestMinimalPage 
     --- PASS: TestMinimalPage/<head> 
     --- PASS: TestMinimalPage/<h1> 

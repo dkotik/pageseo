@@ -60,7 +60,7 @@ func LogAttributes(t testing.TB, attrs []html.Attribute) {
 	maximumLength := 0
 	length := 0
 	filtered := make([]html.Attribute, 0, len(attrs))
-	keys := []string{}
+	duplicateKeys := []string{}
 	for _, attr := range attrs {
 		if strings.HasPrefix(attr.Key, "data-") {
 			continue
@@ -69,8 +69,10 @@ func LogAttributes(t testing.TB, attrs []html.Attribute) {
 		if length > maximumLength {
 			maximumLength = length
 		}
+		if slices.Index(filtered, attr) > -1 {
+			duplicateKeys = append(duplicateKeys, attr.Key)
+		}
 		filtered = append(filtered, attr)
-		keys = append(keys, attr.Key)
 	}
 	if len(filtered) == 0 {
 		return
@@ -85,7 +87,7 @@ func LogAttributes(t testing.TB, attrs []html.Attribute) {
 
 		if attr.Val == "" {
 			_, _ = w.Write([]byte(WP + " EMPTY \n"))
-		} else if slices.Index(keys, attr.Key) != -1 {
+		} else if slices.Index(duplicateKeys, attr.Key) != -1 {
 			_, _ = w.Write([]byte(" " + WP + " DUPLICATE \n"))
 		} else {
 			_, _ = w.Write([]byte("\n"))

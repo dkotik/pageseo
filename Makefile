@@ -15,7 +15,7 @@ generate:
 	@date +"[ %T ]"
 	@echo "Popular pages had 44 failures, new count is:" `cat testdata/popular.golden | grep "        --- FAIL: TestPopularPages" | wc -l`
 build:
-	goreleaser release --snapshot --rm-dist
+	goreleaser release --snapshot --clean
 install:
 	cd ./cmd/pageseo && go build -trimpath -o ~/.local/bin/pageseo
 	chmod +x ~/.local/bin/pageseo
