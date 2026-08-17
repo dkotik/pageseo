@@ -2,6 +2,8 @@ package pageseo
 
 import (
 	"testing"
+
+	"github.com/dkotik/pageseo/internal"
 )
 
 func TestResourceCache(t *testing.T) {
@@ -9,7 +11,7 @@ func TestResourceCache(t *testing.T) {
 	cache := NewCache(func(r Resource) {
 		called++
 		t.Log("called cache:", r.URL)
-	}).WrapLoader(mockLoader{})
+	}).WrapLoader(internal.NewMockLoader(nil, ""))
 
 	_, _, _ = cache.Load(nil, "string")
 	_, _, _ = cache.Load(nil, "string")

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/dkotik/pageseo"
-	"github.com/dkotik/pageseo/crawler"
 )
 
 var headers = http.Header{
@@ -27,14 +26,14 @@ func newClientPool(depth uint8) pageseo.Loader {
 	case 0:
 		panic("zero clients")
 	case 1:
-		return retry.WrapLoader(crawler.NewClient(newClientHTTP(), headers))
+		return retry.WrapLoader(pageseo.NewHTTPClient(newClientHTTP(), headers))
 	}
 
 	loaders := make([]pageseo.Loader, depth)
 	for i := range depth {
 		loaders[i] = retry.WrapLoader(
 			// delay.WrapLoader(
-			crawler.NewClient(newClientHTTP(), headers),
+			pageseo.NewHTTPClient(newClientHTTP(), headers),
 			// ),
 		)
 	}

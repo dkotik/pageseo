@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"net/http"
-	"slices"
 	"sync"
-	"time"
+
+	"golang.org/x/sync/singleflight"
 )
 
 // Skip is a sentinel error that indicates a page resource
@@ -40,88 +41,6 @@ type Resource struct {
 	ContentType string
 	Content     []byte
 	Error       error
-}
-
-// TODO: deprecate in favor of hotSwapLoader
-type preloader struct {
-	Loader
-	Mutex        sync.Mutex
-	Cursor       int
-	PendingTasks []string
-	Preloaded    []Resource
-}
-
-func newPreloader(loader Loader) *preloader {
-	if loader == nil {
-		panic("nil loader")
-	}
-	return &preloader{
-		Loader: loader,
-	}
-}
-
-func (p *preloader) Preload(ctx context.Context, URL string) {
-	go func(ctx context.Context) {
-		p.Mutex.Lock()
-		if slices.Index(p.PendingTasks, URL) != -1 {
-			p.Mutex.Unlock()
-			return
-		}
-		p.PendingTasks = append(p.PendingTasks, URL)
-		p.Mutex.Unlock()
-
-		content, contentType, err := p.Loader.Load(ctx, URL)
-
-		p.Mutex.Lock()
-		p.Preloaded = append(
-			p.Preloaded,
-			Resource{
-				URL:         URL,
-				Content:     content,
-				ContentType: contentType,
-				Error:       err,
-			})
-		p.PendingTasks = slices.Delete(p.PendingTasks, slices.Index(p.PendingTasks, URL), 1)
-		p.Mutex.Unlock()
-	}(ctx)
-}
-
-func (p *preloader) Load(ctx context.Context, URL string) ([]byte, string, error) {
-	var i, pending int
-	var r Resource
-	for {
-		p.Mutex.Lock()
-		// search forward from cursor
-		for i = p.Cursor; i < len(p.Preloaded); i++ {
-			r = p.Preloaded[i]
-			if r.URL == URL {
-				p.Cursor = i + 1 // next time begin iteration from same point
-				p.Mutex.Unlock()
-				return r.Content, r.ContentType, nil
-			}
-		}
-		// search backward from cursor
-		for i = p.Cursor - 1; i >= 0; i-- {
-			r = p.Preloaded[i]
-			if r.URL == URL {
-				p.Mutex.Unlock()
-				return r.Content, r.ContentType, nil
-			}
-		}
-		pending = len(p.PendingTasks)
-		p.Mutex.Unlock()
-
-		if pending == 0 {
-			// fallback on slow loader
-			return p.Loader.Load(ctx, URL)
-		}
-
-		select { // try again after a short break
-		case <-ctx.Done():
-			return nil, "", ctx.Err()
-		case <-time.After(time.Millisecond * 300):
-		}
-	}
 }
 
 type fsLoader struct {
@@ -240,4 +159,83 @@ func (h hotSwapLoader) Load(ctx context.Context, URL string) ([]byte, string, er
 
 	// fallback on loader
 	return h.Loader.Load(ctx, URL)
+}
+
+type singleFlightLoader struct {
+	Loader
+	*singleflight.Group
+}
+
+func NewSingleFlightLoader(loader Loader) Loader {
+	if loader == nil {
+		panic("nil loader")
+	}
+	return &singleFlightLoader{
+		Loader: loader,
+		Group:  &singleflight.Group{},
+	}
+}
+
+func (l *singleFlightLoader) Load(ctx context.Context, URL string) ([]byte, string, error) {
+	result, err, _ := l.Group.Do(URL, func() (any, error) {
+		data, ct, err := l.Loader.Load(ctx, URL)
+		return Resource{
+			URL:         URL,
+			ContentType: ct,
+			Content:     data,
+		}, err
+	})
+	r := result.(Resource)
+	return r.Content, r.ContentType, err
+}
+
+type loaderHTTP struct {
+	*http.Client
+	Headers http.Header
+}
+
+func NewHTTPClient(client *http.Client, headers http.Header) Loader {
+	if client == nil {
+		panic("nil HTTP client")
+	}
+	return loaderHTTP{
+		Client:  client,
+		Headers: headers,
+	}
+}
+
+func (web loaderHTTP) Load(ctx context.Context, url string) (data []byte, contentType string, err error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to open <%s>: %w", url, err)
+	}
+	for key, values := range web.Headers {
+		for _, value := range values {
+			req.Header.Set(key, value)
+		}
+	}
+	resp, err := web.Client.Do(req)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to load <%s>: %w", url, err)
+	}
+	defer func() {
+		err = errors.Join(err, resp.Body.Close())
+	}()
+
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to load <%s>: %w", url, err)
+	}
+	contentTypeRaw := resp.Header.Get(`Content-Type`)
+	contentType, _, err = mime.ParseMediaType(contentTypeRaw)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to parse header <Content-Type> <%s>: %w", contentTypeRaw, err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		err = fmt.Errorf("HTTP %d error: %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+	// if contentType == "" {
+	// 	contentType = "application/octet-stream"
+	// }
+	return data, contentType, err
 }
