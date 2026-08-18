@@ -21,8 +21,8 @@ func (f FilterFunc) IsAllowed(r pageseo.Resource) bool {
 
 type options struct {
 	Targets []string
-	Filter  Filter
-	Logger  *slog.Logger
+	// Filter  Filter
+	Logger *slog.Logger
 }
 
 type Option func(options) (options, error)
@@ -37,19 +37,6 @@ func WithTargets(URLs ...string) Option {
 			}
 			o.Targets = append(o.Targets, URL)
 		}
-		return o, nil
-	}
-}
-
-func WithFilter(filter Filter) Option {
-	return func(o options) (options, error) {
-		if filter == nil {
-			return o, errors.New("nil filter")
-		}
-		if o.Filter != nil {
-			return o, errors.New("filter is already set")
-		}
-		o.Filter = filter
 		return o, nil
 	}
 }
@@ -69,25 +56,25 @@ func WithLogger(logger *slog.Logger) Option {
 
 func withDefaults() Option {
 	return func(o options) (_ options, err error) {
-		if o.Filter == nil {
-			if len(o.Targets) == 0 {
-				o, err = WithFilter(FilterFunc(func(r pageseo.Resource) bool {
-					return true
-				}))(o)
-				if err != nil {
-					return o, err
-				}
-			} else {
-				filter, err := NewTargetFilter(o.Targets...)
-				if err != nil {
-					return o, err
-				}
-				o, err = WithFilter(filter)(o)
-				if err != nil {
-					return o, err
-				}
-			}
-		}
+		// if o.Filter == nil {
+		// 	if len(o.Targets) == 0 {
+		// 		o, err = WithFilter(FilterFunc(func(r pageseo.Resource) bool {
+		// 			return true
+		// 		}))(o)
+		// 		if err != nil {
+		// 			return o, err
+		// 		}
+		// 	} else {
+		// 		filter, err := NewTargetFilter(o.Targets...)
+		// 		if err != nil {
+		// 			return o, err
+		// 		}
+		// 		o, err = WithFilter(filter)(o)
+		// 		if err != nil {
+		// 			return o, err
+		// 		}
+		// 	}
+		// }
 		if o.Logger == nil {
 			o, err = WithLogger(slog.Default())(o)
 			if err != nil {

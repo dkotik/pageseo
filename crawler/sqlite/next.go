@@ -7,50 +7,53 @@ import (
 	"github.com/dkotik/pageseo/crawler"
 )
 
-func (c *cache) GetNextTarget(ctx context.Context) (t crawler.Target, err error) {
+func (c *cache) GetTargetBatch(ctx context.Context, cursor crawler.Cursor) (targets []crawler.Target, err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtNext.Reset(); err != nil {
-		return t, err
+		return nil, err
 	}
 
 	c.stmtNext.BindText(1, encodeTime(time.Now().Add(c.TimeToLive)))
+	c.stmtNext.BindText(2, cursor.LikeFilter)
+	c.stmtNext.BindInt64(3, cursor.ID)
+	c.stmtNext.BindInt64(4, cursor.Limit)
 
+	var t crawler.Target
 	var ok bool
 	for {
 		ok, err = c.stmtNext.Step()
 		if err != nil {
-			return t, err
+			return nil, err
 		}
 		if !ok {
 			break
 		}
-		// url, content_type, content, created_at, updated_at, analyzed_at
-		t.Location = c.stmtNext.ColumnText(0)
-		t.ContentType = c.stmtNext.ColumnText(1)
-		_ = c.stmtNext.ColumnBytes(2, t.Content)
-		t.CreatedAt, err = decodeTime(c.stmtNext.ColumnText(3))
+		// id, url, content_type, content, created_at, updated_at, analyzed_at
+		t.ID = c.stmtNext.ColumnInt64(0)
+		t.Location = c.stmtNext.ColumnText(1)
+		t.ContentType = c.stmtNext.ColumnText(2)
+		_ = c.stmtNext.ColumnBytes(3, t.Content)
+		t.CreatedAt, err = decodeTime(c.stmtNext.ColumnText(4))
 		if err != nil {
-			return t, err
+			return nil, err
 		}
-		t.UpdatedAt, err = decodeTime(c.stmtNext.ColumnText(4))
+		t.UpdatedAt, err = decodeTime(c.stmtNext.ColumnText(5))
 		if err != nil {
-			return t, err
+			return nil, err
 		}
 		if !c.stmtNext.ColumnIsNull(6) {
-			t.LastAnalyzedAt, err = decodeTime(c.stmtNext.ColumnText(5))
+			t.LastAnalyzedAt, err = decodeTime(c.stmtNext.ColumnText(6))
 			if err != nil {
-				return t, err
+				return nil, err
 			}
 		}
+		targets = append(targets, t)
 	}
-	if t.Location == "" {
-		return t, crawler.ErrNoMoreTargets
-	}
-	return t, nil
+	return targets, nil
 }
 
-func (c *cache) MarkAsAnalyzed(ctx context.Context, target crawler.Target) (err error) {
+func (c *cache) MarkAsAnalyzed(ctx context.Context, id int64) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtMark.Reset(); err != nil {
@@ -58,7 +61,7 @@ func (c *cache) MarkAsAnalyzed(ctx context.Context, target crawler.Target) (err 
 	}
 
 	c.stmtMark.BindText(1, encodeTime(time.Now()))
-	c.stmtMark.BindText(2, target.Location)
+	c.stmtMark.BindInt64(2, id)
 
 	var ok bool
 	for {

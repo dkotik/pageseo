@@ -2,16 +2,14 @@ package crawler
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/dkotik/pageseo"
 )
 
-var ErrNoMoreTargets = errors.New("there are no targets left")
-
 type Target struct {
+	ID             int64
 	Location       string
 	ContentType    string
 	Content        []byte
@@ -20,10 +18,16 @@ type Target struct {
 	LastAnalyzedAt time.Time
 }
 
+type Cursor struct {
+	LikeFilter string
+	ID         int64
+	Limit      int64
+}
+
 type Cache interface {
 	pageseo.Loader
-	GetNextTarget(context.Context) (Target, error)
-	MarkAsAnalyzed(context.Context, Target) error
+	GetTargetBatch(context.Context, Cursor) ([]Target, error)
+	MarkAsAnalyzed(context.Context, int64) error
 }
 
 func TestCache(t *testing.T, c Cache) {
@@ -43,13 +47,17 @@ func TestCache(t *testing.T, c Cache) {
 		t.Fatal("wrong content type:", ct)
 	}
 
-	target, err := c.GetNextTarget(ctx)
+	targets, err := c.GetTargetBatch(ctx, Cursor{
+		LikeFilter: "http://localhost/%",
+		Limit:      1,
+	})
 	if err != nil {
-		if errors.Is(err, ErrNoMoreTargets) {
-			t.Fatal("nothing returned, got error:", err)
-		}
 		t.Fatal(err)
 	}
+	if len(targets) != 1 {
+		t.Fatal("expected 1 target, got:", len(targets))
+	}
+	target := targets[0]
 	if target.Location != "http://localhost/" {
 		t.Fatal("wrong target location:", target.Location)
 	}
@@ -57,13 +65,19 @@ func TestCache(t *testing.T, c Cache) {
 		t.Fatal("wrong content type:", target.ContentType)
 	}
 
-	if err = c.MarkAsAnalyzed(ctx, target); err != nil {
+	if err = c.MarkAsAnalyzed(ctx, target.ID); err != nil {
 		t.Fatal(err)
 	}
 
-	target, err = c.GetNextTarget(ctx)
-	if !errors.Is(err, ErrNoMoreTargets) {
-		t.Log("location:", target.Location)
-		t.Fatal("expected ErrNoMoreTargets, got error:", err)
+	targets, err = c.GetTargetBatch(ctx, Cursor{
+		ID:         target.ID,
+		LikeFilter: "http://localhost/%",
+		Limit:      1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(targets) != 0 {
+		t.Fatal("expected 0 targets, got:", len(targets))
 	}
 }

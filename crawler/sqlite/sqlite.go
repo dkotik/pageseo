@@ -4,7 +4,6 @@ Package sqlite provides a SQLite-backed cache for the crawler.
 package sqlite
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"sync"
@@ -28,23 +27,6 @@ type cache struct {
 	stmtNext *sqlite.Stmt
 }
 
-func chainLikeOperators(prefixes ...string) string {
-	if len(prefixes) == 0 {
-		return "1"
-	}
-	b := bytes.Buffer{}
-	for _, p := range prefixes {
-		if !strings.HasSuffix(p, "/") {
-			p += "/"
-		}
-		_, _ = b.WriteString(`url LIKE '`)
-		_, _ = b.WriteString(p)
-		_, _ = b.WriteString(`%' OR `)
-	}
-	b.Truncate(b.Len() - 4)
-	return b.String()
-}
-
 func New(
 	conn *sqlite.Conn,
 	loader pageseo.Loader,
@@ -59,7 +41,8 @@ func New(
 
 	if err = sqlitex.ExecScript(conn, `
 		CREATE TABLE IF NOT EXISTS `+tableName+` (
-			url text PRIMARY KEY,
+			id integer PRIMARY KEY,
+			url text NOT NULL UNIQUE,
 			content_type text NOT NULL,
 			content blob NOT NULL,
 			created_at text NOT NULL,
@@ -87,7 +70,7 @@ func New(
 		return nil, err
 	}
 	c.stmtMark, err = conn.Prepare(`
-		UPDATE ` + tableName + ` SET analyzed_at=? WHERE url=?
+		UPDATE ` + tableName + ` SET analyzed_at=? WHERE id=?
 	`)
 	if err != nil {
 		return nil, err
@@ -99,7 +82,7 @@ func New(
 		return nil, err
 	}
 	c.stmtNext, err = conn.Prepare(`
-		SELECT url, content_type, content, created_at, updated_at, analyzed_at FROM ` + tableName + ` WHERE content_type='text/html' AND (analyzed_at IS NULL OR analyzed_at<?) AND (` + chainLikeOperators(allTargetPrefixes...) + `) ORDER BY created_at DESC LIMIT 1
+		SELECT id, url, content_type, content, created_at, updated_at, analyzed_at FROM ` + tableName + ` WHERE content_type='text/html' AND (analyzed_at IS NULL OR analyzed_at<?) AND url LIKE ? AND id>? ORDER BY id DESC LIMIT ?
 	`)
 	if err != nil {
 		return nil, err

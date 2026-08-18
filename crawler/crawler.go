@@ -38,7 +38,6 @@ func New(withOptions ...Option) (_ Crawler, _ <-chan pageseo.Resource, err error
 	}
 	c := &crawler{
 		ActiveTaskCount: &atomic.Int32{},
-		Filter:          o.Filter,
 		Discovered:      make(chan pageseo.Resource, 64),
 		Logger:          o.Logger,
 	}
