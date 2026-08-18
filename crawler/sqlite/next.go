@@ -26,20 +26,22 @@ func (c *cache) GetNextTarget(ctx context.Context) (t crawler.Target, err error)
 			break
 		}
 		// url, content_type, content, created_at, updated_at, analyzed_at
-		t.Location = c.stmtNext.ColumnText(1)
-		t.ContentType = c.stmtNext.ColumnText(2)
-		_ = c.stmtNext.ColumnBytes(3, t.Content)
-		t.CreatedAt, err = decodeTime(c.stmtNext.ColumnText(4))
+		t.Location = c.stmtNext.ColumnText(0)
+		t.ContentType = c.stmtNext.ColumnText(1)
+		_ = c.stmtNext.ColumnBytes(2, t.Content)
+		t.CreatedAt, err = decodeTime(c.stmtNext.ColumnText(3))
 		if err != nil {
 			return t, err
 		}
-		t.UpdatedAt, err = decodeTime(c.stmtNext.ColumnText(5))
+		t.UpdatedAt, err = decodeTime(c.stmtNext.ColumnText(4))
 		if err != nil {
 			return t, err
 		}
-		t.LastAnalyzedAt, err = decodeTime(c.stmtNext.ColumnText(6))
-		if err != nil {
-			return t, err
+		if !c.stmtNext.ColumnIsNull(6) {
+			t.LastAnalyzedAt, err = decodeTime(c.stmtNext.ColumnText(5))
+			if err != nil {
+				return t, err
+			}
 		}
 	}
 	if t.Location == "" {
@@ -55,8 +57,8 @@ func (c *cache) MarkAsAnalyzed(ctx context.Context, target crawler.Target) (err 
 		return err
 	}
 
-	c.stmtMark.BindText(1, target.Location)
-	c.stmtMark.BindText(2, encodeTime(time.Now()))
+	c.stmtMark.BindText(1, encodeTime(time.Now()))
+	c.stmtMark.BindText(2, target.Location)
 
 	var ok bool
 	for {

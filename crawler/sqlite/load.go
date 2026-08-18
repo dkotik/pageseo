@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,8 @@ func (c *cache) load(ctx context.Context, URL string) (content []byte, contentTy
 		if !ok {
 			break
 		}
+		c.stmtPull.ColumnBytes(0, content)
+		contentType = c.stmtPull.ColumnText(1)
 	}
 	return content, contentType, nil
 }
@@ -46,7 +49,7 @@ func (c *cache) Load(ctx context.Context, URL string) (content []byte, contentTy
 	// url, content_type, content, created_at, updated_at
 	t := time.Now()
 	c.stmtPush.BindText(1, URL)
-	c.stmtPush.BindText(2, contentType)
+	c.stmtPush.BindText(2, strings.ToLower(contentType))
 	c.stmtPush.BindBytes(3, content)
 	c.stmtPush.BindText(4, encodeTime(t))
 	c.stmtPush.BindText(5, encodeTime(t))

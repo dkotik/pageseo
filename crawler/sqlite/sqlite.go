@@ -1,3 +1,6 @@
+/*
+Package sqlite provides a SQLite-backed cache for the crawler.
+*/
 package sqlite
 
 import (
@@ -34,9 +37,9 @@ func chainLikeOperators(prefixes ...string) string {
 		if !strings.HasSuffix(p, "/") {
 			p += "/"
 		}
-		_, _ = b.WriteString(` url LIKE '`)
+		_, _ = b.WriteString(`url LIKE '`)
 		_, _ = b.WriteString(p)
-		_, _ = b.WriteString(`%' OR`)
+		_, _ = b.WriteString(`%' OR `)
 	}
 	b.Truncate(b.Len() - 4)
 	return b.String()
@@ -78,26 +81,25 @@ func New(
 	}
 	c.stmtPush, err = conn.Prepare(`
 		INSERT INTO ` + tableName + ` (url, content_type, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(url) DO UPDATE SET content_type = excluded.content_type, content = excluded.content, updated_at = excluded.updated_at;
-		;
+		ON CONFLICT(url) DO UPDATE SET content_type = excluded.content_type, content = excluded.content, updated_at = excluded.updated_at
 	`)
 	if err != nil {
 		return nil, err
 	}
 	c.stmtMark, err = conn.Prepare(`
-		UPDATE ` + tableName + ` SET analyzed_at=? WHERE url=?;
+		UPDATE ` + tableName + ` SET analyzed_at=? WHERE url=?
 	`)
 	if err != nil {
 		return nil, err
 	}
 	c.stmtPull, err = conn.Prepare(`
-		SELECT content_type, content FROM ` + tableName + ` WHERE url=? AND updated_at>?;
+		SELECT content_type, content FROM ` + tableName + ` WHERE url=? AND updated_at>?
 	`)
 	if err != nil {
 		return nil, err
 	}
 	c.stmtNext, err = conn.Prepare(`
-		SELECT url, content_type, content, created_at, updated_at, analyzed_at FROM ` + tableName + ` WHERE analyzed_at>? AND (` + chainLikeOperators(allTargetPrefixes...) + `);
+		SELECT url, content_type, content, created_at, updated_at, analyzed_at FROM ` + tableName + ` WHERE content_type='text/html' AND (analyzed_at IS NULL OR analyzed_at<?) AND (` + chainLikeOperators(allTargetPrefixes...) + `) ORDER BY created_at DESC LIMIT 1
 	`)
 	if err != nil {
 		return nil, err
