@@ -43,12 +43,12 @@ var (
 	// 	Value:   false,
 	// }
 
-	//	flagNameSpace =			&cli.StringFlag{
-	//					Name:    "namespace",
-	//					Aliases: []string{"n"},
-	//					Usage:   "namespace for metadata unique constraint",
-	//					Value:   "",
-	//				}
+	flagCache = &cli.StringFlag{
+		Name:    "cache",
+		Aliases: []string{"c"},
+		Usage:   "cache file for storing page resources",
+		Value:   ":memory:",
+	}
 
 	flagFailFast = &cli.BoolFlag{
 		Name:  "failfast",

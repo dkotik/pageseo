@@ -17,6 +17,12 @@ func (c *crawler) CrawlLocation(ctx context.Context, URL string) (err error) {
 		ID:         0,
 		Limit:      int64(c.BatchSize),
 	}
+	// seed the repository with the initial URL
+	_, _, err = c.Repository.Load(ctx, URL)
+	if err != nil {
+		return err
+	}
+
 	var t repository.Target
 	for {
 		batch, err := c.Repository.GetTargetBatch(ctx, cursor)
@@ -32,6 +38,9 @@ func (c *crawler) CrawlLocation(ctx context.Context, URL string) (err error) {
 				t.UpdatedAt = time.Now()
 			}
 			if err = c.Analyzer.Analyze(ctx, t); err != nil {
+				return err
+			}
+			if err = c.Repository.MarkAsAnalyzed(ctx, t.ID); err != nil {
 				return err
 			}
 		}

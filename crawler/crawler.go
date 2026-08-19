@@ -6,6 +6,7 @@ package crawler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"slices"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/dkotik/pageseo/crawler/repository"
 	sqr "github.com/dkotik/pageseo/crawler/repository/sqlite"
-	"zombiezen.com/go/sqlite"
 )
 
 type Analyzer interface {
@@ -57,12 +57,11 @@ func New(analyzer Analyzer, withOptions ...Option) (_ Crawler, err error) {
 			}
 
 			if o.Repository == nil {
-				conn, err := sqlite.OpenConn(":memory:")
-				if err != nil {
-					return o, err
+				if o.SQLiteConn == nil {
+					return o, errors.New("SQLite connection is required when a repository is not provided")
 				}
 				o.Repository, err = sqr.New(
-					conn,
+					o.SQLiteConn,
 					newClientPool(8),
 					"pageseo_targets",
 					o.TimeToLive,

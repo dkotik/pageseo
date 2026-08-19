@@ -13,12 +13,18 @@ import (
 	"testing"
 
 	"github.com/dkotik/pageseo"
+	"github.com/dkotik/pageseo/crawler"
+	"github.com/dkotik/pageseo/crawler/repository"
 	"github.com/dkotik/pageseo/internal"
 	"github.com/urfave/cli/v3"
 	"mvdan.cc/xurls/v2"
+	"zombiezen.com/go/sqlite"
 )
 
-var atLeastOneInternalTestFailed = false
+var (
+	atLeastOneInternalTestFailed = false
+	errLimitExceeded             = errors.New("limit exceeded")
+)
 
 func runTests(set []testing.InternalTest) {
 	err := internal.RunTests(set)
@@ -40,6 +46,7 @@ func main() {
 		Flags: []cli.Flag{
 			flagLimit,
 			// flagStrict,
+			flagCache,
 			flagFailFast,
 			flagVerbose,
 		},
@@ -93,30 +100,48 @@ func main() {
 
 			remote = remote[:min(len(remote), int(limit))]
 			if len(remote) > 0 {
-				queue := newResourceQueue(remote...)
-				loader := pageseo.NewCache(queue.Push).WrapLoader(newClientPool(6))
-				v = pageseo.New(loader)
-				for _, target := range remote {
-					_, _, _ = loader.Load(ctx, target)
+				conn, err := sqlite.OpenConn(cmd.String(flagCache.Name))
+				if err != nil {
+					return err
+				}
+				defer func() {
+					err = errors.Join(err, conn.Close())
+				}()
+
+				cr, err := crawler.New(
+					crawler.AnalyzerFunc(func(ctx context.Context, t repository.Target) error {
+						// for _, target := range batch {
+						// tests = append(tests, )
+						// }
+						// runTests(tests)
+						// limit = limit - min(limit, uint(len(tests)))
+						runTests([]testing.InternalTest{
+							internal.NewTest(
+								t.Location,
+								v.TestPage(t.Location, bytes.NewReader(t.Content)),
+							),
+						})
+						limit = limit - 1
+						if limit == 0 {
+							return errLimitExceeded
+						}
+						return nil
+					}),
+					crawler.WithSQLiteConn(conn),
+				)
+				if err != nil {
+					return err
 				}
 
-				for {
-					batch := queue.Pull()
-					batch = batch[:min(len(batch), int(limit))]
-					if len(batch) == 0 {
-						return nil // all finished
+				for _, r := range remote {
+					if err = cr.CrawlLocation(ctx, r); err != nil {
+						if !errors.Is(err, errLimitExceeded) {
+							return err
+						}
 					}
-					for _, target := range batch {
-						tests = append(tests, internal.NewParallelTest(
-							target.URL,
-							v.TestPage(target.URL, bytes.NewReader(target.Content)),
-						))
-					}
-					runTests(tests)
-					limit = limit - min(limit, uint(len(tests)))
 				}
 			}
-			return nil
+			return err
 		}),
 	}
 

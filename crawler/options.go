@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/dkotik/pageseo/crawler/repository"
+	"zombiezen.com/go/sqlite"
 )
 
 type options struct {
 	// Filter  Filter
+	SQLiteConn *sqlite.Conn
 	Repository repository.Repository
 	TimeToLive time.Duration
 	BatchSize  int
@@ -18,6 +20,19 @@ type options struct {
 
 type Option func(options) (options, error)
 
+func WithSQLiteConn(conn *sqlite.Conn) Option {
+	return func(o options) (options, error) {
+		if conn == nil {
+			return o, errors.New("nil connection")
+		}
+		if o.SQLiteConn != nil {
+			return o, errors.New("connection is already set")
+		}
+		o.SQLiteConn = conn
+		return o, nil
+	}
+}
+
 func WithRepository(repo repository.Repository) Option {
 	return func(o options) (options, error) {
 		if repo == nil {
@@ -25,6 +40,9 @@ func WithRepository(repo repository.Repository) Option {
 		}
 		if o.Repository != nil {
 			return o, errors.New("repository is already set")
+		}
+		if o.SQLiteConn != nil {
+			return o, errors.New("SQLite connection conflicts with the repository option")
 		}
 		o.Repository = repo
 		return o, nil
