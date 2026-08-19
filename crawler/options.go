@@ -3,40 +3,56 @@ package crawler
 import (
 	"errors"
 	"log/slog"
-	"slices"
-	"strings"
+	"time"
 
-	"github.com/dkotik/pageseo"
+	"github.com/dkotik/pageseo/crawler/repository"
 )
 
-type Filter interface {
-	IsAllowed(pageseo.Resource) bool
-}
-
-type FilterFunc func(pageseo.Resource) bool
-
-func (f FilterFunc) IsAllowed(r pageseo.Resource) bool {
-	return f(r)
-}
-
 type options struct {
-	Targets []string
 	// Filter  Filter
-	Logger *slog.Logger
+	Repository repository.Repository
+	TimeToLive time.Duration
+	BatchSize  int
+	Logger     *slog.Logger
 }
 
 type Option func(options) (options, error)
 
-func WithTargets(URLs ...string) Option {
+func WithRepository(repo repository.Repository) Option {
 	return func(o options) (options, error) {
-		o.Targets = slices.Grow(o.Targets, len(URLs))
-		for _, URL := range URLs {
-			URL = strings.TrimSpace(URL)
-			if URL == "" {
-				return o, errors.New("empty URL provided as target")
-			}
-			o.Targets = append(o.Targets, URL)
+		if repo == nil {
+			return o, errors.New("nil repository")
 		}
+		if o.Repository != nil {
+			return o, errors.New("repository is already set")
+		}
+		o.Repository = repo
+		return o, nil
+	}
+}
+
+func WithTimeToLive(d time.Duration) Option {
+	return func(o options) (options, error) {
+		if d == 0 {
+			return o, errors.New("invalid time to live")
+		}
+		if o.TimeToLive != 0 {
+			return o, errors.New("time to live is already set")
+		}
+		o.TimeToLive = d
+		return o, nil
+	}
+}
+
+func WithBatchSize(size int) Option {
+	return func(o options) (options, error) {
+		if size == 0 {
+			return o, errors.New("invalid batch size")
+		}
+		if o.BatchSize != 0 {
+			return o, errors.New("batch size is already set")
+		}
+		o.BatchSize = size
 		return o, nil
 	}
 }
@@ -50,37 +66,6 @@ func WithLogger(logger *slog.Logger) Option {
 			return o, errors.New("logger is already set")
 		}
 		o.Logger = logger
-		return o, nil
-	}
-}
-
-func withDefaults() Option {
-	return func(o options) (_ options, err error) {
-		// if o.Filter == nil {
-		// 	if len(o.Targets) == 0 {
-		// 		o, err = WithFilter(FilterFunc(func(r pageseo.Resource) bool {
-		// 			return true
-		// 		}))(o)
-		// 		if err != nil {
-		// 			return o, err
-		// 		}
-		// 	} else {
-		// 		filter, err := NewTargetFilter(o.Targets...)
-		// 		if err != nil {
-		// 			return o, err
-		// 		}
-		// 		o, err = WithFilter(filter)(o)
-		// 		if err != nil {
-		// 			return o, err
-		// 		}
-		// 	}
-		// }
-		if o.Logger == nil {
-			o, err = WithLogger(slog.Default())(o)
-			if err != nil {
-				return o, err
-			}
-		}
 		return o, nil
 	}
 }

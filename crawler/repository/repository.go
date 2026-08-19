@@ -1,4 +1,4 @@
-package crawler
+package repository
 
 import (
 	"context"
@@ -24,13 +24,13 @@ type Cursor struct {
 	Limit      int64
 }
 
-type Cache interface {
+type Repository interface {
 	pageseo.Loader
 	GetTargetBatch(context.Context, Cursor) ([]Target, error)
 	MarkAsAnalyzed(context.Context, int64) error
 }
 
-func TestCache(t *testing.T, c Cache) {
+func Test(t *testing.T, c Repository) {
 	t.Helper()
 	if c == nil {
 		t.Fatal("nil cache")

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dkotik/pageseo/crawler"
+	"github.com/dkotik/pageseo/crawler/repository"
 	"github.com/dkotik/pageseo/internal"
 	"zombiezen.com/go/sqlite"
 )
@@ -22,10 +22,9 @@ func TestRepository(t *testing.T) {
 		}, "text/html"),
 		"tableName",
 		time.Minute,
-		"http://localhost/",
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	crawler.TestCache(t, c)
+	repository.Test(t, c)
 }

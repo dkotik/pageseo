@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/dkotik/pageseo"
-	"github.com/dkotik/pageseo/crawler"
+	"github.com/dkotik/pageseo/crawler/repository"
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
-type cache struct {
+type sqliteRepository struct {
 	mu         *sync.Mutex
 	Conn       *sqlite.Conn
 	Loader     pageseo.Loader
@@ -32,8 +32,7 @@ func New(
 	loader pageseo.Loader,
 	tableName string,
 	timeToLive time.Duration,
-	allTargetPrefixes ...string,
-) (_ crawler.Cache, err error) {
+) (_ repository.Repository, err error) {
 	if tableName == "" {
 		tableName = "pageseo_cache"
 	}
@@ -56,7 +55,7 @@ func New(
 		panic("negative time to live")
 	}
 
-	c := &cache{
+	c := &sqliteRepository{
 		mu:         &sync.Mutex{},
 		Conn:       conn,
 		Loader:     loader,

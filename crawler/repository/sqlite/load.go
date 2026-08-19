@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (c *cache) load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
+func (c *sqliteRepository) load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtPull.Reset(); err != nil {
@@ -29,7 +29,7 @@ func (c *cache) load(ctx context.Context, URL string) (content []byte, contentTy
 	return content, contentType, nil
 }
 
-func (c *cache) Load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
+func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
 	content, contentType, err = c.load(ctx, URL)
 	if err != nil || len(content) > 0 {
 		return content, contentType, err

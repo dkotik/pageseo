@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/dkotik/pageseo/crawler"
+	"github.com/dkotik/pageseo/crawler/repository"
 )
 
-func (c *cache) GetTargetBatch(ctx context.Context, cursor crawler.Cursor) (targets []crawler.Target, err error) {
+func (c *sqliteRepository) GetTargetBatch(ctx context.Context, cursor repository.Cursor) (targets []repository.Target, err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtNext.Reset(); err != nil {
@@ -19,7 +19,7 @@ func (c *cache) GetTargetBatch(ctx context.Context, cursor crawler.Cursor) (targ
 	c.stmtNext.BindInt64(3, cursor.ID)
 	c.stmtNext.BindInt64(4, cursor.Limit)
 
-	var t crawler.Target
+	var t repository.Target
 	var ok bool
 	for {
 		ok, err = c.stmtNext.Step()
@@ -53,7 +53,7 @@ func (c *cache) GetTargetBatch(ctx context.Context, cursor crawler.Cursor) (targ
 	return targets, nil
 }
 
-func (c *cache) MarkAsAnalyzed(ctx context.Context, id int64) (err error) {
+func (c *sqliteRepository) MarkAsAnalyzed(ctx context.Context, id int64) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtMark.Reset(); err != nil {

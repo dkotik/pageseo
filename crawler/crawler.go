@@ -9,84 +9,82 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
-	"sync/atomic"
+	"time"
 
-	"github.com/dkotik/pageseo"
+	"github.com/dkotik/pageseo/crawler/repository"
+	sqr "github.com/dkotik/pageseo/crawler/repository/sqlite"
+	"zombiezen.com/go/sqlite"
 )
 
+type Analyzer interface {
+	Analyze(context.Context, repository.Target) error
+}
+
+type AnalyzerFunc func(context.Context, repository.Target) error
+
+func (f AnalyzerFunc) Analyze(ctx context.Context, t repository.Target) error {
+	return f(ctx, t)
+}
+
 type Crawler interface {
-	IsBusy() bool
+	CrawlLocation(context.Context, string) error
 }
 
 type crawler struct {
-	ActiveTaskCount *atomic.Int32
-	Filter          Filter
-	Discovered      chan pageseo.Resource
-	Logger          *slog.Logger
+	Analyzer   Analyzer
+	Repository repository.Repository
+	BatchSize  int
+	TimeToLive time.Duration
+	Logger     *slog.Logger
 }
 
-func New(withOptions ...Option) (_ Crawler, _ <-chan pageseo.Resource, err error) {
+func New(analyzer Analyzer, withOptions ...Option) (_ Crawler, err error) {
 	o := options{}
 	for _, option := range append(
 		slices.Grow(withOptions, len(withOptions)+1),
-		withDefaults(),
+		func(o options) (_ options, err error) {
+			if o.TimeToLive == 0 {
+				o.TimeToLive = 5 * time.Minute
+			}
+			if o.BatchSize == 0 {
+				o.BatchSize = 5
+			}
+			if o.Logger == nil {
+				o, err = WithLogger(slog.New(slog.DiscardHandler))(o)
+				if err != nil {
+					return o, err
+				}
+			}
+
+			if o.Repository == nil {
+				conn, err := sqlite.OpenConn(":memory:")
+				if err != nil {
+					return o, err
+				}
+				o.Repository, err = sqr.New(
+					conn,
+					newClientPool(8),
+					"pageseo_targets",
+					o.TimeToLive,
+				)
+				if err != nil {
+					return o, err
+				}
+			}
+			return o, nil
+		},
 	) {
 		o, err = option(o)
 		if err != nil {
-			return nil, nil, fmt.Errorf("invalid crawler configuration: %w", err)
+			return nil, fmt.Errorf("invalid crawler configuration: %w", err)
 		}
 	}
 	c := &crawler{
-		ActiveTaskCount: &atomic.Int32{},
-		Discovered:      make(chan pageseo.Resource, 64),
-		Logger:          o.Logger,
+		Analyzer:   analyzer,
+		Repository: o.Repository,
+		BatchSize:  o.BatchSize,
+		TimeToLive: o.TimeToLive,
+		Logger:     o.Logger,
 	}
-	ch := make(chan pageseo.Resource)
-	return c, ch, nil
+	return c, nil
 }
-
-func (c *crawler) Issue(r pageseo.Resource) {
-	// TODO: check if unique first
-	// TODO: store into cache
-	select {
-	case c.Discovered <- r:
-		// resource was sent to the channel
-	default:
-		// channel was full, so spawn a goroutine to send the resource
-		// later to prevent contention lock
-		if c.ActiveTaskCount.Add(1) > 256 {
-			c.Logger.Warn(
-				"crawler is chocking on data",
-				slog.String("state", "skipped"),
-				slog.String("URL", r.URL),
-			)
-			c.ActiveTaskCount.Add(-1) // undo the add
-			return
-		}
-
-		go func() {
-			c.Discovered <- r
-			c.ActiveTaskCount.Add(-1)
-		}()
-	}
-}
-
-func (c *crawler) IsBusy() bool {
-	return c.ActiveTaskCount.Load() > 0 || len(c.Discovered) > 0
-}
-
-func (c *crawler) Load(ctx context.Context, URL string) pageseo.Resource {
-	c.ActiveTaskCount.Add(1)
-	defer c.ActiveTaskCount.Add(-1)
-	// return nil, "", errors.New("not implemented")
-	return pageseo.Resource{}
-}
-
-// func (c *crawler) Wait(ctx context.Context) error {
-// 	select {
-// 	case <-c.Closer:
-// 		return nil
-// 	case <-ctx.Done():
-// 		return ctx.Err()
-// 	}
-// }
