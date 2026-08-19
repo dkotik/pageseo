@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -88,7 +87,8 @@ func main() {
 					}
 				}
 			}
-			if total := len(tests); total > 0 {
+			total := len(tests)
+			if total > 0 {
 				tests = tests[:min(total, int(limit))]
 				runTests(tests)
 				limit = limit - min(limit, uint(len(tests)))
@@ -118,7 +118,7 @@ func main() {
 						runTests([]testing.InternalTest{
 							internal.NewTest(
 								t.Location,
-								v.TestPage(t.Location, bytes.NewReader(t.Content)),
+								v.TestPage(t.Location, t.Content),
 							),
 						})
 						limit = limit - 1
@@ -141,14 +141,16 @@ func main() {
 					}
 				}
 			}
+
+			if err == nil && total > 0 && !atLeastOneInternalTestFailed {
+				fmt.Println(" [🟢] Scanned pages are optimized for search engines.")
+			}
 			return err
 		}),
 	}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Printf(" [🚫] Unable to analyze pages: %v.\n", err.Error())
-	} else if !atLeastOneInternalTestFailed {
-		fmt.Println(" [🟢] Scanned pages are optimized for search engines.")
 	}
 }
 

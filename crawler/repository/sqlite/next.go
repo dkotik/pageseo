@@ -33,6 +33,7 @@ func (c *sqliteRepository) GetTargetBatch(ctx context.Context, cursor repository
 		t.ID = c.stmtNext.ColumnInt64(0)
 		t.Location = c.stmtNext.ColumnText(1)
 		t.ContentType = c.stmtNext.ColumnText(2)
+		t.Content = make([]byte, c.stmtNext.ColumnLen(3))
 		_ = c.stmtNext.ColumnBytes(3, t.Content)
 		t.CreatedAt, err = decodeTime(c.stmtNext.ColumnText(4))
 		if err != nil {

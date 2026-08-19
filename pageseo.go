@@ -1,7 +1,7 @@
 package pageseo
 
 import (
-	"io"
+	"bytes"
 	"net/url"
 	"os"
 	"strings"
@@ -66,7 +66,7 @@ type NodeTester interface {
 }
 
 type PageTester interface {
-	TestPage(string, io.Reader) func(t *testing.T)
+	TestPage(string, []byte) func(t *testing.T)
 	TestFile(string) func(t *testing.T)
 }
 
@@ -96,13 +96,16 @@ func New(
 	}
 }
 
-func (p pageSEO) TestPage(URL string, r io.Reader) func(t *testing.T) {
+func (p pageSEO) TestPage(URL string, content []byte) func(t *testing.T) {
 	return func(t *testing.T) {
 		origin, err := url.Parse(URL)
 		if err != nil {
 			t.Fatalf("unable to parse URL for file %q: %v", URL, err)
 		}
-		tree, err := html.Parse(r)
+		if len(content) == 0 {
+			t.Fatal("no content")
+		}
+		tree, err := html.Parse(bytes.NewReader(content))
 		if err != nil {
 			t.Fatalf("unable to parse HTML file %q: %v", URL, err)
 		}

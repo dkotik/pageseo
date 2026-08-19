@@ -67,5 +67,6 @@ func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte
 		// contentType = c.stmtPull.ColumnText(2)
 	}
 
+	// fmt.Println("####", content)
 	return content, contentType, nil
 }
