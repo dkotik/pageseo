@@ -98,7 +98,6 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [ ] support `--json` tag and redirect t.Output() writers to t.Attr()
 - [ ] Provide a service that can crawl a target at an interval, and pause at failing crawl until the issue is fixed.
 - [ ] add `monitor` command that rescans the website daily for SEO purity and broken links
-- [ ] Add SQLite backend for the service.
 - [ ] Validate image sizes.
 - [ ] Validate dependencies in style sheets.
 

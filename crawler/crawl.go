@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -27,7 +26,6 @@ func (c *crawler) CrawlLocation(ctx context.Context, URL string) (err error) {
 	var t repository.Target
 	for {
 		batch, err := c.Repository.GetTargetBatch(ctx, cursor)
-		fmt.Println("batch:", len(batch))
 		if err != nil || len(batch) == 0 {
 			break
 		}

@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -37,7 +36,7 @@ func (c *sqliteRepository) load(ctx context.Context, URL string) (content []byte
 
 func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
 	content, contentType, err = c.load(ctx, URL)
-	if err != nil && !os.IsNotExist(err) { // || len(content) > 0
+	if err == nil || !os.IsNotExist(err) {
 		return content, contentType, err
 	}
 
@@ -65,8 +64,6 @@ func (c *sqliteRepository) push(ctx context.Context, URL, contentType string, co
 	c.stmtPush.BindBytes(3, content)
 	c.stmtPush.BindText(4, encodeTime(t))
 	c.stmtPush.BindText(5, encodeTime(t))
-
-	fmt.Println("add URL:", URL)
 
 	var ok bool
 	for {

@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	atLeastOneInternalTestFailed = false
-	errLimitExceeded             = errors.New("limit exceeded")
+	numberOfPagesFailed = 0
+	errLimitExceeded    = errors.New("limit exceeded")
 )
 
 func runTests(set []testing.InternalTest) {
@@ -32,7 +32,7 @@ func runTests(set []testing.InternalTest) {
 		return
 	}
 	if errors.Is(err, internal.ErrAtLeastOneInternalTestFailed) {
-		atLeastOneInternalTestFailed = true
+		numberOfPagesFailed++
 		return
 	}
 	panic(err)
@@ -111,11 +111,6 @@ func main() {
 
 				cr, err := crawler.New(
 					crawler.AnalyzerFunc(func(ctx context.Context, t repository.Target) error {
-						// for _, target := range batch {
-						// tests = append(tests, )
-						// }
-						// runTests(tests)
-						// limit = limit - min(limit, uint(len(tests)))
 						runTests([]testing.InternalTest{
 							internal.NewTest(
 								t.Location,
@@ -129,7 +124,8 @@ func main() {
 						return nil
 					}),
 					crawler.WithSQLiteConn(conn),
-					crawler.WithDelay(time.Second, time.Second),
+					crawler.WithDelay(time.Second, time.Second*5),
+					crawler.WithTimeToLive(time.Minute*10),
 				)
 				if err != nil {
 					return err
@@ -147,7 +143,11 @@ func main() {
 				}
 			}
 
-			if err == nil && total > 0 && !atLeastOneInternalTestFailed {
+			if err == nil && total > 0 {
+				if numberOfPagesFailed > 0 {
+					fmt.Printf(" [🔴] %d pages are not optimized for search engines.\n", numberOfPagesFailed)
+					return nil
+				}
 				fmt.Println(" [🟢] Scanned pages are optimized for search engines.")
 			}
 			return err
