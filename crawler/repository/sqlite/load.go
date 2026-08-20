@@ -2,6 +2,8 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 )
@@ -23,15 +25,19 @@ func (c *sqliteRepository) load(ctx context.Context, URL string) (content []byte
 		if !ok {
 			break
 		}
-		c.stmtPull.ColumnBytes(0, content)
-		contentType = c.stmtPull.ColumnText(1)
+		contentType = c.stmtPull.ColumnText(0)
+		content = make([]byte, c.stmtPull.ColumnLen(1))
+		_ = c.stmtPull.ColumnBytes(1, content)
+	}
+	if contentType == "" {
+		return nil, "", os.ErrNotExist
 	}
 	return content, contentType, nil
 }
 
 func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte, contentType string, err error) {
 	content, contentType, err = c.load(ctx, URL)
-	if err != nil || len(content) > 0 {
+	if err != nil && !os.IsNotExist(err) { // || len(content) > 0
 		return content, contentType, err
 	}
 
@@ -39,11 +45,17 @@ func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte
 	if err != nil {
 		return nil, "", err
 	}
+	if err = c.push(ctx, URL, contentType, content); err != nil {
+		return nil, "", err
+	}
+	return content, contentType, nil
+}
 
+func (c *sqliteRepository) push(ctx context.Context, URL, contentType string, content []byte) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err = c.stmtPush.Reset(); err != nil {
-		return nil, "", err
+		return err
 	}
 
 	// url, content_type, content, created_at, updated_at
@@ -54,19 +66,14 @@ func (c *sqliteRepository) Load(ctx context.Context, URL string) (content []byte
 	c.stmtPush.BindText(4, encodeTime(t))
 	c.stmtPush.BindText(5, encodeTime(t))
 
+	fmt.Println("add URL:", URL)
+
 	var ok bool
 	for {
 		ok, err = c.stmtPush.Step()
-		if err != nil {
-			return nil, "", err
-		}
-		if !ok {
+		if err != nil || !ok {
 			break
 		}
-		// _ = c.stmtPull.ColumnBytes(1, content)
-		// contentType = c.stmtPull.ColumnText(2)
 	}
-
-	// fmt.Println("####", content)
-	return content, contentType, nil
+	return err
 }

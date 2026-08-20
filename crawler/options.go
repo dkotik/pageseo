@@ -11,14 +11,30 @@ import (
 
 type options struct {
 	// Filter  Filter
-	SQLiteConn *sqlite.Conn
-	Repository repository.Repository
-	TimeToLive time.Duration
-	BatchSize  int
-	Logger     *slog.Logger
+	Delay          time.Duration
+	DelayFluctuate time.Duration
+	SQLiteConn     *sqlite.Conn
+	Repository     repository.Repository
+	TimeToLive     time.Duration
+	BatchSize      int
+	Logger         *slog.Logger
 }
 
 type Option func(options) (options, error)
+
+func WithDelay(base, fluctuation time.Duration) Option {
+	return func(o options) (options, error) {
+		if base == 0 {
+			return o, errors.New("zero delay")
+		}
+		if o.Delay != 0 {
+			return o, errors.New("delay is already set")
+		}
+		o.Delay = base
+		o.DelayFluctuate = fluctuation
+		return o, nil
+	}
+}
 
 func WithSQLiteConn(conn *sqlite.Conn) Option {
 	return func(o options) (options, error) {

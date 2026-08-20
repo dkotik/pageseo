@@ -12,6 +12,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/dkotik/pageseo"
 	"github.com/dkotik/pageseo/crawler/repository"
 	sqr "github.com/dkotik/pageseo/crawler/repository/sqlite"
 )
@@ -27,6 +28,7 @@ func (f AnalyzerFunc) Analyze(ctx context.Context, t repository.Target) error {
 }
 
 type Crawler interface {
+	pageseo.Loader
 	CrawlLocation(context.Context, string) error
 }
 
@@ -60,9 +62,13 @@ func New(analyzer Analyzer, withOptions ...Option) (_ Crawler, err error) {
 				if o.SQLiteConn == nil {
 					return o, errors.New("SQLite connection is required when a repository is not provided")
 				}
+				loader := newClientPool(8)
+				if o.Delay != 0 || o.DelayFluctuate != 0 {
+					loader = pageseo.NewDelay(o.Delay, o.DelayFluctuate).WrapLoader(loader)
+				}
 				o.Repository, err = sqr.New(
 					o.SQLiteConn,
-					newClientPool(8),
+					loader,
 					"pageseo_targets",
 					o.TimeToLive,
 				)
@@ -86,4 +92,8 @@ func New(analyzer Analyzer, withOptions ...Option) (_ Crawler, err error) {
 		Logger:     o.Logger,
 	}
 	return c, nil
+}
+
+func (c *crawler) Load(ctx context.Context, URL string) ([]byte, string, error) {
+	return c.Repository.Load(ctx, URL)
 }

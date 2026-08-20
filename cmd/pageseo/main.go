@@ -10,6 +10,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dkotik/pageseo"
 	"github.com/dkotik/pageseo/crawler"
@@ -128,10 +129,14 @@ func main() {
 						return nil
 					}),
 					crawler.WithSQLiteConn(conn),
+					crawler.WithDelay(time.Second, time.Second),
 				)
 				if err != nil {
 					return err
 				}
+
+				// override the tester with crawler as the loader
+				v = pageseo.New(cr)
 
 				for _, r := range remote {
 					if err = cr.CrawlLocation(ctx, r); err != nil {

@@ -63,7 +63,7 @@ func New(
 	}
 	c.stmtPush, err = conn.Prepare(`
 		INSERT INTO ` + tableName + ` (url, content_type, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(url) DO UPDATE SET content_type = excluded.content_type, content = excluded.content, updated_at = excluded.updated_at
+		ON CONFLICT(url) DO UPDATE SET content_type=excluded.content_type, content=excluded.content, updated_at=excluded.updated_at
 	`)
 	if err != nil {
 		return nil, err
