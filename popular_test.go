@@ -3,7 +3,6 @@
 package pageseo
 
 import (
-	"bytes"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -29,7 +28,7 @@ func TestPopularPages(t *testing.T) {
 		if len(contents) == 0 {
 			t.Fatalf("file %s is empty", file.Name())
 		}
-		t.Run(file.Name(), pageSEO.TestPage(file.Name(), bytes.NewReader(contents)))
+		t.Run(file.Name(), pageSEO.TestPage(file.Name(), contents))
 	}
 	// t.Fail()
 }

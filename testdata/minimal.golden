@@ -17,9 +17,9 @@
      └───────────────
     anchor.go:82: |WARNING| <a[title]> attribute is empty
 === NAME  TestMinimalPage
-    pageseo.go:211: add a <nav> element to the page
-    pageseo.go:214: add a <header> element to the page
-    pageseo.go:217: add a <footer> element to the page
+    pageseo.go:214: add a <nav> element to the page
+    pageseo.go:217: add a <header> element to the page
+    pageseo.go:220: add a <footer> element to the page
 --- PASS: TestMinimalPage 
     --- PASS: TestMinimalPage/<head> 
     --- PASS: TestMinimalPage/<h1> 

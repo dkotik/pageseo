@@ -49,7 +49,7 @@
              └───────────────
             image.go:82: missing <img[alt]> attribute
         text.go:49: document has no <h1> headings
-        pageseo.go:217: add a <footer> element to the page
+        pageseo.go:220: add a <footer> element to the page
     --- FAIL: TestPopularPages/bbc.html 
         --- FAIL: TestPopularPages/bbc.html/<head> 
             head.go:303: meta tag content for viewport "width=device-width" is missing initial scale attribute
@@ -149,8 +149,8 @@
             head.go:278: |WARNING| twitter:title text is not normalized
             head.go:278: |WARNING| twitter:description text is not normalized
         text.go:49: document has no <h1> headings
-        pageseo.go:211: add a <nav> element to the page
-        pageseo.go:217: add a <footer> element to the page
+        pageseo.go:214: add a <nav> element to the page
+        pageseo.go:220: add a <footer> element to the page
     --- FAIL: TestPopularPages/dw.html 
         --- FAIL: TestPopularPages/dw.html/<head> 
             head.go:273: og:type not found
@@ -413,9 +413,9 @@
             head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
-        pageseo.go:211: add a <nav> element to the page
-        pageseo.go:214: add a <header> element to the page
-        pageseo.go:217: add a <footer> element to the page
+        pageseo.go:214: add a <nav> element to the page
+        pageseo.go:217: add a <header> element to the page
+        pageseo.go:220: add a <footer> element to the page
     --- FAIL: TestPopularPages/theguardian.html 
         --- FAIL: TestPopularPages/theguardian.html/<head> 
              │ lang: en
@@ -434,9 +434,9 @@
             head.go:273: |WARNING| og:site_name  not found
             head.go:280: |WARNING| there is no Twitter (or `X`) <head> meta data
         text.go:49: document has no <h1> headings
-        pageseo.go:211: add a <nav> element to the page
-        pageseo.go:214: add a <header> element to the page
-        pageseo.go:217: add a <footer> element to the page
+        pageseo.go:214: add a <nav> element to the page
+        pageseo.go:217: add a <header> element to the page
+        pageseo.go:220: add a <footer> element to the page
     --- FAIL: TestPopularPages/wikipedia.html 
         --- FAIL: TestPopularPages/wikipedia.html/<head> 
             head.go:165: <meta[name=""]>: has no content
@@ -483,4 +483,4 @@
             anchor.go:82: |WARNING| <a[title]> attribute is empty
             anchor.go:114: |WARNING| add "external" directive to [rel] attribute
             anchor.go:117: |WARNING| add "nofollow" directive to [rel] attribute
-        pageseo.go:214: add a <header> element to the page
+        pageseo.go:217: add a <header> element to the page

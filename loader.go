@@ -65,7 +65,11 @@ func (fs fsLoader) Load(_ context.Context, url string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", fmt.Errorf("unable to load <%s>: %w", url, err)
 	}
-	return data, http.DetectContentType(data), nil
+	ct, _, err := mime.ParseMediaType(http.DetectContentType(data))
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to parse media type: %w", err)
+	}
+	return data, ct, nil
 }
 
 type semaphoreLoader struct {
