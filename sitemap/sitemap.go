@@ -54,5 +54,9 @@ func Test(loader pageseo.Loader, URL string) func(testing.TB) {
 				t.Fatal("expected non-empty sitemap")
 			}
 		}
+
+		// for _, sm := range index.SiteMaps {
+
+		// }
 	}
 }

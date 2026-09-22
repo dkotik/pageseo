@@ -179,9 +179,24 @@ func (a anchor) TestNode(t testing.TB, origin *url.URL, node *html.Node, loader 
 		}
 		length := len(text)
 		if length < a.MinimumLength && href != "" {
-			t.Error("anchor text is too short")
+			if !nodeContainsImage(node) {
+				t.Error("anchor text is too short")
+			}
 		} else if length > a.MaximumLength {
 			t.Error("anchor text is too long")
 		}
 	}
+}
+
+func nodeContainsImage(node *html.Node) bool {
+	for descendant := range node.Descendants() {
+		switch descendant.Type {
+		case html.ElementNode:
+			switch descendant.Data {
+			case "img", "figure", "svg":
+				return true
+			}
+		}
+	}
+	return false
 }

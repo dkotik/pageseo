@@ -86,6 +86,7 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [x] Provide a command line scanner that can crawl live websites.
 - [x] Provide a command line scanner that can validate statically generated websites.
 - [x] Unique contraint by namespace with a namespace flag for CLI.
+- [ ] https://github.com/jitsi/jitsi-meet/issues/6031
 - [ ] Add missing social validators, as image and URL are not tested:
         opengraph.go:55: unknown Open Graph properties:
         opengraph.go:57:  -  og:image:height
@@ -93,6 +94,17 @@ pageseo --strict --verbose --failfast=false ./**/*.html
         opengraph.go:57:  -  og:image:width
         twitter.go:58: unknown Twitter properties:
         twitter.go:60:  -  twitter:image:alt
+- [ ] `og:locale` is not present or is empty
+- [ ] `og:site_name` is not present or is empty
+- [ ] Twitter/X: robots.txt on truthonly.com blocks Twitterbot from /assets/og.jpg.
+- [ ] `<link rel="canonical" href="..." />` should be required
+- [ ] `<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />` should be recommended; The apple-touch-icon is used when users add your site to their iOS home screen. Without it, iOS takes a screenshot instead, which looks unprofessional.
+- [ ] <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+- [ ] <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+- [ ] <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+- [ ] <link rel="manifest" href="/site.webmanifest">
+- [ ] <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+- [ ] robots.txt can block og:image tags
 - [ ] analyze `fb:` meta data
 - [ ] load /sitemap
 - [ ] support `--json` tag and redirect t.Output() writers to t.Attr()
@@ -100,6 +112,7 @@ pageseo --strict --verbose --failfast=false ./**/*.html
 - [ ] add `monitor` command that rescans the website daily for SEO purity and broken links
 - [ ] Validate image sizes.
 - [ ] Validate dependencies in style sheets.
+- [ ] <https://www.opengraph.to/> is excellent for analysis
 
 ## Similar Projects
 
