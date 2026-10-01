@@ -18,6 +18,9 @@ import (
 var Skip = errors.New("do not validate this resource")
 
 // Loader fetches the resource from a given location.
+// It returns the contents of the location and its
+// content type.
+//
 // Implementations should handle caching and other
 // performance optimizations.
 //

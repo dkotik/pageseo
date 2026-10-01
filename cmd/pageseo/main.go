@@ -62,7 +62,7 @@ func main() {
 			fsys := os.DirFS(".")
 			loader := pageseo.NewFS(fsys)
 
-			v = pageseo.New(loader)
+			v = pageseo.New(pageseo.NewGzip(loader))
 			tests := make([]testing.InternalTest, 0, targets.Len())
 			local, remote := separateLocalFromRemoteTargets(targets.Slice())
 			if len(local) > 0 {
